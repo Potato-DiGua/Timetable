@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 
 public class EditActivity extends AppCompatActivity {
 
-    public static final String EXTRA_UPDATE_TIMETABLE="update_timetable";
+    public static final String EXTRA_UPDATE_TIMETABLE = "update_timetable";
     private List<String> weekItems;
     private List<String> startItems;
     private List<String> endItems;
@@ -62,9 +62,9 @@ public class EditActivity extends AppCompatActivity {
      */
     private int mIndex;
 
-    private int mClassStart =0;
-    private int mClassEnd =0;
-    private int mDayOfWeek =0;
+    private int mClassStart = 0;
+    private int mClassEnd = 0;
+    private int mDayOfWeek = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,9 +83,9 @@ public class EditActivity extends AppCompatActivity {
         if (mIndex != -1) {
             try {
                 mCourse = (Course) MainActivity.sCourseList.get(mIndex).clone();
-                mClassStart =mCourse.getClassStart();
-                mClassEnd = mClassStart +mCourse.getClassLength()-1;
-                mDayOfWeek =mCourse.getDayOfWeek();
+                mClassStart = mCourse.getClassStart();
+                mClassEnd = mClassStart + mCourse.getClassLength() - 1;
+                mDayOfWeek = mCourse.getDayOfWeek();
             } catch (CloneNotSupportedException e) {
                 e.printStackTrace();
             }
@@ -96,7 +96,7 @@ public class EditActivity extends AppCompatActivity {
 
         setData();
         setCardViewAlpha();
-        ImageView imageView=findViewById(R.id.iv_bg_edit);
+        ImageView imageView = findViewById(R.id.iv_bg_edit);
 
         Utils.setBackGround(imageView);
 
@@ -117,21 +117,20 @@ public class EditActivity extends AppCompatActivity {
 
     }
 
-    private void setCardViewAlpha()
-    {
-        float alpha= Config.getCardViewAlpha();
-        CardView cardView=findViewById(R.id.cv_edit_1);
+    private void setCardViewAlpha() {
+        float alpha = Config.getCardViewAlpha();
+        CardView cardView = findViewById(R.id.cv_edit_1);
         cardView.setAlpha(alpha);
-        cardView=findViewById(R.id.cv_edit_2);
+        cardView = findViewById(R.id.cv_edit_2);
         cardView.setAlpha(alpha);
     }
 
-    private void setUpdateResult()
-    {
-        Intent intent=new Intent();
-        intent.putExtra(EXTRA_UPDATE_TIMETABLE,true);
-        setResult(RESULT_OK,intent);
+    private void setUpdateResult() {
+        Intent intent = new Intent();
+        intent.putExtra(EXTRA_UPDATE_TIMETABLE, true);
+        setResult(RESULT_OK, intent);
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_edit, menu);
@@ -178,7 +177,7 @@ public class EditActivity extends AppCompatActivity {
             }
             FileUtils.saveToJson(MainActivity.sCourseList, this);
             setUpdateResult();
-            Toast.makeText(this,"保存成功", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -333,9 +332,9 @@ public class EditActivity extends AppCompatActivity {
 
     private void initOptionsPicker(int options1, int options2, int options3) {
 
-        mClassStart = options1+1;
-        mClassEnd = options2+1;
-        mDayOfWeek = options3+1;
+        mClassStart = options1 + 1;
+        mClassEnd = options2 + 1;
+        mDayOfWeek = options3 + 1;
 
         final String str = "%s %d-%d节";
         pvOptions = new OptionsPickerBuilder(this, new OnOptionsSelectListener() {
@@ -364,8 +363,7 @@ public class EditActivity extends AppCompatActivity {
                     }
                 })
                 .build();
-        if(pvOptions!=null)
-        {
+        if (pvOptions != null) {
             pvOptions.setNPicker(weekItems, startItems, endItems);
             pvOptions.setSelectOptions(options1, options2, options3);
             pvOptions.setTitleText("选择上课节数");

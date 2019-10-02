@@ -35,8 +35,6 @@ public class FileUtils {
     private static final String FILE_NAME = "timetable.json";
 
     public static void saveToJson(List<Course> courseList, Context context) {
-
-
         BufferedWriter bw = null;
         OutputStream os = null;
         try {

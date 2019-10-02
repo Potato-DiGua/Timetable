@@ -1,6 +1,7 @@
 package com.potato.timetable.activity;
 
 
+import android.content.ClipData;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -27,6 +28,12 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
+import com.bigkoo.pickerview.configure.PickerOptions;
+import com.bigkoo.pickerview.listener.OnOptionsSelectChangeListener;
+import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
+import com.bigkoo.pickerview.view.OptionsPickerView;
+import com.contrarywind.view.WheelView;
 import com.potato.timetable.bean.Course;
 import com.potato.timetable.R;
 import com.potato.timetable.util.Config;
@@ -55,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_FILE_CHOOSE = 2;
     private static final int REQUEST_CODE_CONFIG = 3;
     private static final int CELL_HEIGHT = 70;
+    private OptionsPickerView mOptionsPv;
 
     private static int sHeaderClassNumWidth;
 
@@ -77,26 +85,22 @@ public class MainActivity extends AppCompatActivity {
 
             "android.permission.WRITE_EXTERNAL_STORAGE"};
 
-    private  Handler mHandler=new Handler(){
+    private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(@NonNull Message msg) {
-            int what=msg.what;
-            if(what==MSG_UPDATE)
-            {
-                String str=msg.obj.toString();
-                if(str.isEmpty())
-                {
-                    Toast.makeText(MainActivity.this,"当前版本已经是最新版",Toast.LENGTH_SHORT).show();
-                }
-                else
-                {
+            int what = msg.what;
+            if (what == MSG_UPDATE) {
+                String str = msg.obj.toString();
+                if (str.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "当前版本已经是最新版", Toast.LENGTH_SHORT).show();
+                } else {
                     showUpdateDialog(str);
                 }
 
             }
         }
     };
-    private static int MSG_UPDATE=1;
+    private static int MSG_UPDATE = 1;
 
 
     @Override
@@ -132,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
         //Log.d("1dp",String.valueOf(VALUE_1DP));
         //获取屏幕宽度，用于设置课程视图的宽度
         DISPLAY_WIDTH = getResources().getDisplayMetrics().widthPixels;
-
 
 
         int week = getWeekOfDay();
@@ -226,28 +229,28 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.menu_update:
                 callCheckUpdate();
-                    break;
+                break;
             default:
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
-    private void showUpdateDialog(final String url)
-    {
-        final AlertDialog alertDialog=new AlertDialog.Builder(MainActivity.this)
-            .setTitle("提示")
-            .setMessage("检测到新版本,是否下载?").create();
-        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE,"确定", new DialogInterface.OnClickListener() {
+
+    private void showUpdateDialog(final String url) {
+        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this)
+                .setTitle("提示")
+                .setMessage("检测到新版本,是否下载?").create();
+        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 //Log.d("update",url);
-                Uri uri=Uri.parse(url);
-                Intent intent3=new Intent(Intent.ACTION_VIEW, uri);
+                Uri uri = Uri.parse(url);
+                Intent intent3 = new Intent(Intent.ACTION_VIEW, uri);
                 startActivity(intent3);
                 alertDialog.dismiss();
             }
         });
-        alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE,"取消", new DialogInterface.OnClickListener() {
+        alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "取消", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 alertDialog.dismiss();
@@ -256,51 +259,58 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
 
     }
-    private void callCheckUpdate()
-    {
 
-        final long versionCode=Utils.getLocalVersionCode(this);
+    private void callCheckUpdate() {
+
+        final long versionCode = Utils.getLocalVersionCode(this);
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final String url=Utils.checkUpdate(versionCode);
-                    Message message=new Message();
-                    message.what=MSG_UPDATE;
-                    message.obj=url;
-                    mHandler.sendMessage(message);
+                final String url = Utils.checkUpdate(versionCode);
+                Message message = new Message();
+                message.what = MSG_UPDATE;
+                message.obj = url;
+                mHandler.sendMessage(message);
             }
         }).start();
     }
 
     private void showSelectCurrentWeekDialog() {//显示周数列表,让用户从中选择
-        String[] items = new String[25];
+        //String[] items = new String[25];
+
+        final int currentWeek = Config.getCurrentWeek();
+        final String str = "当前周为：";
+        final List<String> items = new ArrayList<>();
         for (int i = 0; i < 25; i++) {
-            items[i] = String.valueOf(i + 1);
+            //items[i] = String.valueOf(i + 1);
+            items.add("第" + (i + 1) + "周");
         }
 
-        AlertDialog.Builder singleChoiceDialog =
-                new AlertDialog.Builder(MainActivity.this);
-        singleChoiceDialog.setTitle("选择当前周");
-        // 第二个参数是默认选项，此处设置为0
-        singleChoiceDialog.setSingleChoiceItems(items, Config.getCurrentWeek() - 1,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        choice = which;
-                    }
-                });
-        singleChoiceDialog.setPositiveButton("确定",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (choice != -1) {
-                            Config.setCurrentWeek(choice + 1);//选中项的序号+1即为用户设置的周数
-                            updateTimetable();
-                            Config.saveSharedPreferences(MainActivity.this);
-                        }
-                    }
-                });
-        singleChoiceDialog.show();
+        mOptionsPv = new OptionsPickerBuilder(this, new OnOptionsSelectListener() {
+            @Override
+            public void onOptionsSelect(int options1, int options2, int options3, View v) {
+                int week=options1+1;
+                if(options1!=currentWeek)
+                {
+                    Config.setCurrentWeek(week);
+                    updateTimetable();
+                    Config.saveSharedPreferences(MainActivity.this);
+
+                }
+            }
+        }).setOptionsSelectChangeListener(new OnOptionsSelectChangeListener() {
+            @Override
+            public void onOptionsSelectChanged(int options1, int options2, int options3) {
+                mOptionsPv.setTitleText(str + items.get(options1));
+            }
+        }).build();
+
+
+        mOptionsPv.setTitleText("当前周为:" + items.get(currentWeek-1));
+
+        mOptionsPv.setNPicker(items, null, null);
+        mOptionsPv.setSelectOptions(currentWeek - 1);
+        mOptionsPv.show();
     }
 
     private void getWritePermission() {
@@ -337,9 +347,8 @@ public class MainActivity extends AppCompatActivity {
         sCourseList = FileUtils.readFromJson(this);
 
         //读取失败返回
-        if (sCourseList == null)
-        {
-            sCourseList=new ArrayList<>();
+        if (sCourseList == null) {
+            sCourseList = new ArrayList<>();
             return;
         }
 
@@ -413,7 +422,6 @@ public class MainActivity extends AppCompatActivity {
         int count = mFrameLayout.getChildCount();
         for (int i = count - 1; i > 1; i--)
             mFrameLayout.removeViewAt(i);
-
 
 
         float width = (DISPLAY_WIDTH - sHeaderClassNumWidth) / 7.0f;
@@ -514,7 +522,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean courseIsThisWeek(Course course)//判断是否为本周
     {
         String class_week = course.getWeekOfTerm();
-        if(class_week==null)
+        if (class_week == null)
             return false;
         String[] strings = class_week.split(",");
         int currentWeek = Config.getCurrentWeek();
@@ -547,7 +555,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_FILE_CHOOSE) {
 
 
-            Uri uri= data.getData();
+            Uri uri = data.getData();
 
             String path = FileUtils.getPath(MainActivity.this, uri);
             sCourseList = ExcelUtils.handleExcel(path);
