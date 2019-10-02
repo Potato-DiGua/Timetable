@@ -4,13 +4,13 @@
 ---
 # 界面
 <p>
-<img src="https://raw.githubusercontent.com/Potato-DiGua/ClassTimetables/master/ReadmeResourse/gui.png" height="30%" width="30%">
+<img src="https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/ReadmeResourse/gui.png" height="30%" width="30%">
 <p/>
 <p>
-<img src="https://raw.githubusercontent.com/Potato-DiGua/ClassTimetables/master/ReadmeResourse/guitool.png" height="30%" width="30%">
+<img src="https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/ReadmeResourse/guitool.png" height="30%" width="30%">
 <p/>
 <p>
-<img src="https://raw.githubusercontent.com/Potato-DiGua/ClassTimetables/master/ReadmeResourse/gui_course.png" height="30%" width="30%">
+<img src="https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/ReadmeResourse/gui_course.png" height="30%" width="30%">
 <p/>
 
 ---
@@ -19,7 +19,7 @@
 不支持冲突课程，如果冲突，会显示最后的课程<br>
 Excel格式示例
 <p>
-<img src="https://raw.githubusercontent.com/Potato-DiGua/ClassTimetables/master/ReadmeResourse/Excel_example.png" height="50%" width="50%">
+<img src="https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/ReadmeResourse/Excel_example.png" height="50%" width="50%">
 <p/>
 
 **单元格格式:**
