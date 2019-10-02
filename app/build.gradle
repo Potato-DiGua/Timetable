@@ -1,0 +1,61 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.0"
+    defaultConfig {
+        applicationId "com.potato.timetable"
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 2
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    android.applicationVariants.all {
+        variant ->
+            variant.outputs.all {
+                //在这里修改apk文件名
+                outputFileName = "LightTimetable-v${variant.versionName}-${buildTime()}.apk"
+                createReleaseVersion(versionCode,outputFileName)
+            }
+    }
+}
+
+def buildTime() {
+    def date = new Date()
+    def formattedDate = date.format('yyyyMMdd',TimeZone.getTimeZone("GMT+08:00"))
+    return formattedDate
+}
+def createReleaseVersion(int versioncode,String name)
+{
+    File file =new File(".\\app\\release","version.json")
+    BufferedWriter bw=new BufferedWriter(new FileWriter(file))
+    bw.write("{" +
+            "\"versionCode\":" +versioncode+
+            ",\"releaseName\":\""+name+"\""+
+            "}")
+    bw.flush()
+    bw.close()
+}
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'com.contrarywind:Android-PickerView:4.1.8'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.alibaba:fastjson:1.1.71.android'
+    implementation 'net.sourceforge.jexcelapi:jxl:2.6.12'
+    implementation 'androidx.gridlayout:gridlayout:1.0.0'
+
+
+}

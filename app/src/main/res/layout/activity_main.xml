@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".activity.MainActivity">
+
+    <include layout="@layout/toolbar"/>
+
+    <LinearLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/colorGray"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="@dimen/table_header_class_width"
+            android:layout_height="match_parent"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/tv_mon"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/mon" />
+
+        <TextView
+            android:id="@+id/tv_tues"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/tues" />
+
+        <TextView
+            android:id="@+id/tv_wed"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/wed" />
+
+        <TextView
+            android:id="@+id/tv_thur"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/thur" />
+
+        <TextView
+            android:id="@+id/tv_fri"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/fri" />
+
+        <TextView
+            android:id="@+id/tv_sat"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/sat" />
+
+        <TextView
+            android:id="@+id/tv_sun"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/sun" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+            <!--节数表头-->
+
+            <LinearLayout
+                android:id="@+id/ll_header_class_num"
+                android:layout_width="@dimen/table_header_class_width"
+                android:layout_height="wrap_content"
+                android:background="@color/background_color_white"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/cell_height"
+                    android:gravity="center"
+                    android:text="@string/class1" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/cell_height"
+                    android:gravity="center"
+                    android:text="@string/class2" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/cell_height"
+                    android:gravity="center"
+                    android:text="@string/class3" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/cell_height"
+                    android:gravity="center"
+                    android:text="@string/class4" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/cell_height"
+                    android:gravity="center"
+                    android:text="@string/class5" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/cell_height"
+                    android:gravity="center"
+                    android:text="@string/class6" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/cell_height"
+                    android:gravity="center"
+                    android:text="@string/class7" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/cell_height"
+                    android:gravity="center"
+                    android:text="@string/class8" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/cell_height"
+                    android:gravity="center"
+                    android:text="@string/class9" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/cell_height"
+                    android:gravity="center"
+                    android:text="@string/class10" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/cell_height"
+                    android:gravity="center"
+                    android:text="@string/class11" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/cell_height"
+                    android:gravity="center"
+                    android:text="@string/class12" />
+
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/fl_timetable"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/timetable_height"
+                android:layout_weight="7">
+                <ImageView
+                    android:id="@+id/iv_bg_main"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
+                <View
+                    android:id="@+id/back_line_dash"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/shape_line_dash"/>
+            </FrameLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
