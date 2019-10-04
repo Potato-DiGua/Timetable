@@ -157,6 +157,9 @@ public class MainActivity extends AppCompatActivity {
         initTimetable();
 
         Utils.setPATH(getExternalFilesDir(null).getAbsolutePath() + File.separator + "pictures");
+
+        checkUpdate();
+
     }
 
 

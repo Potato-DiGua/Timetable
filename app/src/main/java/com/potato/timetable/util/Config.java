@@ -54,7 +54,6 @@ public class Config {
     public static void setFlagCurrentWeek(boolean flagCurrentWeek) {
         Config.flagCurrentWeek = flagCurrentWeek;
     }
-
     /**
      * 保存用户设置
      * @param context

@@ -62,6 +62,7 @@ public class LoginActivity extends AppCompatActivity {
                     break;
                 case MSG_LOGIN_FAILED:
                     setLoading(false);
+                    setRandomCodeImg();
                     Toast.makeText(LoginActivity.this,"账号密码验证码错误",Toast.LENGTH_SHORT).show();
                     break;
                 case MSG_GET_COURSES_SUCCESS:
