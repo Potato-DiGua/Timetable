@@ -15,9 +15,15 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,14 +35,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
+import com.potato.timetable.BgBtnAdapter;
 import com.potato.timetable.R;
 import com.potato.timetable.util.Config;
 import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.Utils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ConfigActivity extends AppCompatActivity implements View.OnClickListener {
+public class ConfigActivity extends AppCompatActivity{
 
     private TextView mAlphaTextView;
     private CardView mCardView;
@@ -66,12 +75,8 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 
         mBgImageView = findViewById(R.id.iv_bg_config);
 
-        setIvListener(R.id.iv_select_user);
-        setIvListener(R.id.iv_select_bg_1);
-        setIvListener(R.id.iv_select_bg_2);
-        setIvListener(R.id.iv_select_bg_3);
-        setIvListener(R.id.iv_select_bg_4);
-        setIvListener(R.id.iv_select_bg_5);
+
+        initGridView();
 
 
         setCardViewAlpha();
@@ -108,14 +113,40 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 
         Utils.setBackGround(mBgImageView);
     }
+    private void initGridView()
+    {
+        GridView gridView=findViewById(R.id.gv_bg_select);
+        final BgBtnAdapter bgBtnAdapter=new BgBtnAdapter(this);
+        bgBtnAdapter.bgIdList.add(R.drawable.camera_logo);
+        bgBtnAdapter.bgIdList.add(R.drawable.bg_x);
+        bgBtnAdapter.bgIdList.add(R.drawable.bg_gradient);
+        bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_rem);
+        bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_1);
+        bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_2);
 
-    /**
-     * 设置监听
-     * @param id ImageView id
-     */
-    private void setIvListener(int id) {
-        ImageView imageView = findViewById(id);
-        imageView.setOnClickListener(this);
+        final int[] bgId=new int[]{0,
+                R.color.background_color_white,
+                R.drawable.bg_gradient,
+                R.drawable.bg_rem,
+                R.drawable.bg_1,
+                R.drawable.bg_2
+        };
+
+        gridView.setAdapter(bgBtnAdapter);
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                if(i==0)
+                {
+                    userSelectBg();
+                }
+                else
+                {
+                    showBgConfirmDialog(bgId[i]);
+                }
+
+            }
+        });
     }
 
     /**
@@ -127,38 +158,6 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
         //打开图库选取图片
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, REQUEST_CODE_SYSTEM_PIC);//打开系统相册
-    }
-
-    /**
-     * 设置该界面背景
-     *
-     * @param view
-     */
-    @Override
-    public void onClick(final View view) {
-        final int id = view.getId();
-        switch (id) {
-            case R.id.iv_select_user:
-                userSelectBg();
-                break;
-            case R.id.iv_select_bg_1:
-                showBgConfirmDialog(R.color.background_color_white);
-                break;
-            case R.id.iv_select_bg_2:
-                showBgConfirmDialog(R.drawable.bg_rem);
-                break;
-            case R.id.iv_select_bg_3:
-                showBgConfirmDialog(R.drawable.bg_1);
-                break;
-            case R.id.iv_select_bg_4:
-                showBgConfirmDialog(R.drawable.bg_2);
-                break;
-            case R.id.iv_select_bg_5:
-                showBgConfirmDialog(R.drawable.bg_gradient);
-                break;
-            default:
-                break;
-        }
     }
 
     /**

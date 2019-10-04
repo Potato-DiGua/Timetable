@@ -97,51 +97,16 @@
                     android:layout_marginBottom="5dp"
                     android:background="?android:listDivider" />
 
-                <androidx.gridlayout.widget.GridLayout
+                <GridView
+                    android:id="@+id/gv_bg_select"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    app:columnCount="5"
-                    app:useDefaultMargins="true">
-                    <ImageView
-                        android:id="@+id/iv_select_user"
-                        android:layout_width="@dimen/img_view_width"
-                        android:layout_height="@dimen/img_view_height"
-                        android:background="@color/colorLightGray"
-                        app:srcCompat="@drawable/camera_logo" />
-                    <ImageView
-                        android:id="@+id/iv_select_bg_1"
-                        android:layout_width="@dimen/img_view_width"
-                        android:layout_height="@dimen/img_view_height"
-                        android:background="@color/colorLightGray"
-                        app:srcCompat="@drawable/bg_x" />
-                    <ImageView
-                        android:id="@+id/iv_select_bg_5"
-                        android:layout_width="@dimen/img_view_width"
-                        android:layout_height="@dimen/img_view_height"
-                        app:srcCompat="@drawable/bg_gradient" />
-                    <ImageView
-                        android:id="@+id/iv_select_bg_2"
-                        android:layout_width="@dimen/img_view_width"
-                        android:layout_height="@dimen/img_view_height"
-                        android:scaleType="centerCrop"
-                        app:srcCompat="@drawable/btn_bg_rem" />
-
-                    <ImageView
-                        android:id="@+id/iv_select_bg_3"
-                        android:layout_width="@dimen/img_view_width"
-                        android:layout_height="@dimen/img_view_height"
-                        android:scaleType="centerCrop"
-                        app:srcCompat="@drawable/btn_bg_1" />
-
-                    <ImageView
-                        android:id="@+id/iv_select_bg_4"
-                        android:layout_width="@dimen/img_view_width"
-                        android:layout_height="@dimen/img_view_height"
-                        android:scaleType="centerCrop"
-                        app:srcCompat="@drawable/btn_bg_2" />
-
-                </androidx.gridlayout.widget.GridLayout>
+                    android:horizontalSpacing="3dp"
+                    android:verticalSpacing="10dp"
+                    android:stretchMode="spacingWidth"
+                    android:columnWidth="@dimen/img_view_width"
+                    android:numColumns="auto_fit"
+                    />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
     </LinearLayout>

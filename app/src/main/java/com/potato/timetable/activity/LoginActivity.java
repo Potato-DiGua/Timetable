@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -118,6 +119,7 @@ public class LoginActivity extends AppCompatActivity {
         mLoginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                hideInput();
 
                 String account=mAccountEt.getText().toString();
                 String pw=mPwEt.getText().toString();
@@ -250,6 +252,16 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * 隐藏键盘
+     */
+    private void hideInput() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        View v = getWindow().peekDecorView();
+        if (null != v) {
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+        }
+    }
     /**
      * 登录
      * @param account
