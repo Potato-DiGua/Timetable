@@ -158,8 +158,6 @@ public class MainActivity extends AppCompatActivity {
 
         Utils.setPATH(getExternalFilesDir(null).getAbsolutePath() + File.separator + "pictures");
 
-        checkUpdate();
-
     }
 
 
