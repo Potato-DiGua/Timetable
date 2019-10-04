@@ -23,7 +23,7 @@
             android:id="@+id/cv_course_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="15dp"
             android:alpha="0.7"
             android:background="@color/colorWhite"
             app:cardCornerRadius="15dp"
@@ -34,7 +34,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="10dp">
+                android:padding="20dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -97,7 +97,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="25dp"
                         android:layout_marginEnd="5dp"
-                        android:text="@string/week_num"
+                        android:text="@string/week_of_term"
                         android:textSize="@dimen/course_details_text_size" />
 
                     <TextView

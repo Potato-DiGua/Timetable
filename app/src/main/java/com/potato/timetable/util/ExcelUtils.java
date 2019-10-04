@@ -18,7 +18,16 @@ import jxl.read.biff.BiffException;
 
 public class ExcelUtils {
 
-    public static List<Course> handleExcel(String path) {
+    /**
+     *
+     * @param path String
+     * @param startRow int 课程表（不算表头）开始行数（从1开始）
+     * @param startCol int 课程表（不算表头）开始列数（从1开始）
+     * @return List<Course> 返回课程列表
+     *
+     * 只读取6行7列
+     */
+    public static List<Course> handleExcel(String path,int startRow,int startCol) {
         InputStream inputStream = null;
         List<Course> courseList = new ArrayList<>();
         //Log.d("filePath",path);
@@ -35,14 +44,8 @@ public class ExcelUtils {
             }
             excel = Workbook.getWorkbook(inputStream);
             Sheet rs = excel.getSheet(0);
-            int rowCount = rs.getRows() - 1;
-            int weight;
-            if(rowCount==6||rowCount==12)
-            {
-                weight=12 / rowCount;
-            }
-            else
-                return null;
+            int rowCount = 6;
+            int weight=2;
 
             Range[] ranges = rs.getMergedCells();
 
@@ -51,10 +54,11 @@ public class ExcelUtils {
 //                System.out.println(ranges[i].getBottomRight().getRow()-ranges[i].getTopLeft().getRow()+1);
 //            }
 
-
+            startCol-=2;
+            startRow-=2;
             for (int i = 1; i <=7; i++) {
                 for (int j = 1; j <=rowCount; j++) {
-                    Cell cell = rs.getCell(i, j);
+                    Cell cell = rs.getCell(startCol+i, startRow+j);
                     String str = handleCell(cell.getContents());
 
                     int row_length = 1;
@@ -104,6 +108,16 @@ public class ExcelUtils {
         }
 
     }
+    public static List<Course> handleExcel(String path)
+    {
+        return handleExcel(path,2,2);
+    }
+
+    /**
+     * 从表格中的内容提取课程信息
+     * @param str String
+     * @return Course
+     */
     private static Course getCourseFromString(String str) {
 
         String[] contents = str.split("\n");
@@ -127,6 +141,11 @@ public class ExcelUtils {
 
     }
 
+    /**
+     * 去除字符串的首尾回车和空格
+     * @param str
+     * @return
+     */
     private static String handleCell(String str) {
         str = str.replaceAll("^\n|\n$", "");//去除首尾换行符
         str = str.trim();//去除首尾空格

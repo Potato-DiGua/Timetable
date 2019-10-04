@@ -30,7 +30,7 @@ public class CourseDetailsActivity extends AppCompatActivity {
             "周一","周二","周三","周四","周五","周六","周日"
     };
     public static final int EDIT_ID=0;
-    private int index;
+    private int mIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,13 +40,15 @@ public class CourseDetailsActivity extends AppCompatActivity {
 
         setActionBar();
 
+        mIndex =getIntent().getIntExtra(KEY_COURSE_INDEX,0);
+
         setCourseTextView();
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent=new Intent(CourseDetailsActivity.this,EditActivity.class);
-                intent.putExtra(EditActivity.KEY_COURSE_INDEX,index);
+                intent.putExtra(EditActivity.KEY_COURSE_INDEX, mIndex);
                 startActivityForResult(intent,EDIT_ID);
             }
         });
@@ -57,6 +59,10 @@ public class CourseDetailsActivity extends AppCompatActivity {
         Utils.setBackGround(imageView);
 
     }
+
+    /**
+     * 设置CardView透明度
+     */
     private void setCardViewAlpha()
     {
         float alpha= Config.getCardViewAlpha();
@@ -64,6 +70,9 @@ public class CourseDetailsActivity extends AppCompatActivity {
         cardView.setAlpha(alpha);
     }
 
+    /**
+     * 通知主界面更新
+     */
     private void setUpdateResult()
     {
         Intent intent=new Intent();
@@ -84,17 +93,22 @@ public class CourseDetailsActivity extends AppCompatActivity {
         {
             if(data!=null)
             {
+                if(data.getBooleanExtra(EditActivity.EXTRA_UPDATE_TIMETABLE,false))
+                {
+                    setCourseTextView();
+                }
                 setResult(RESULT_OK,data);//回传给MainActivity,让其更新课表
             }
 
         }
     }
 
+    /**
+     * 初始化TextView
+     */
     private void setCourseTextView()
     {
-        index=getIntent().getIntExtra(KEY_COURSE_INDEX,0);
-
-        Course course =MainActivity.sCourseList.get(index);
+        Course course =MainActivity.sCourseList.get(mIndex);
         TextView textView=findViewById(R.id.tv_class_name);
         textView.setText(course.getName());
 
@@ -110,18 +124,28 @@ public class CourseDetailsActivity extends AppCompatActivity {
                 aStrWeek[course.getDayOfWeek()-1],class_start,(class_start+class_num-1)));
 
         textView=findViewById(R.id.tv_week_of_term);
-        textView.setText(String.format(getString(R.string.week_num_format),
+        textView.setText(String.format(getString(R.string.week_of_term_format),
                 course.getWeekOfTerm(), course.getWeekOptions()));
 
         textView=findViewById(R.id.tv_teacher);
         textView.setText(course.getTeacher());
     }
+
+    /**
+     * 初始化ActionBar
+     */
     private void setActionBar()
     {
         ActionBar actionBar=getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setTitle(R.string.course_details);
     }
+
+    /**
+     * 菜单栏
+     * @param item
+     * @return
+     */
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -138,7 +162,7 @@ public class CourseDetailsActivity extends AppCompatActivity {
                 alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        MainActivity.sCourseList.remove(index);
+                        MainActivity.sCourseList.remove(mIndex);
                         FileUtils.saveToJson(MainActivity.sCourseList,
                                 CourseDetailsActivity.this);
                         Toast.makeText(CourseDetailsActivity.this,"成功删除",Toast.LENGTH_SHORT).show();

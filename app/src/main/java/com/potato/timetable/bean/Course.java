@@ -79,7 +79,6 @@ public class Course implements Cloneable{
     public void setWeekOptions(String weekOptions) {
         this.weekOptions = weekOptions;
     }
-
     @NonNull
     @Override
     public Object clone() throws CloneNotSupportedException {

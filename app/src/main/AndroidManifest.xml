@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.potato.timetable">
-
     <!-- 权限要放在application之前 -->
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
@@ -15,16 +13,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <activity android:name="com.potato.timetable.activity.ConfigActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name="com.potato.timetable.activity.EditActivity"
-            android:screenOrientation="portrait"/>
         <activity
-            android:name="com.potato.timetable.activity.CourseDetailsActivity"
+            android:name=".activity.LoginActivity"/>
+        <activity
+            android:name=".activity.ConfigActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.potato.timetable.activity.MainActivity"
+            android:name=".activity.EditActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.CourseDetailsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -32,7 +33,6 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
     </application>
 

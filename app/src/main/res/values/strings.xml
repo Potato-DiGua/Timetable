@@ -21,7 +21,7 @@
     <string name="course_edit">编辑课程</string>
 
     <string name="day_of_week">第%1$d周</string>
-    <string name="week_num_format">%1$s [%2$s]</string>
+    <string name="week_of_term_format">%1$s [%2$s]</string>
 
     <!--    节数-->
     <string name="schedule_section">%1$s %2$d-%3$d节</string>
@@ -31,7 +31,7 @@
 
     <string name="course_name">课名</string>
     <string name="classroom">教室</string>
-    <string name="week_num">周数</string>
+    <string name="week_of_term">周数</string>
     <string name="classLength">节数</string>
     <string name="teacher">老师</string>
 
@@ -60,11 +60,20 @@
     <string name="menu_append">导入Excel</string>
     <string name="menu_set_current_week">修改当前周数</string>
     <string name="menu_append_class">添加课程</string>
+    <string name="menu_import">从教务系统导入</string>
 
     <!--    EditActivity-->
     <string name="edit_course_btn">编辑</string>
     <string name="edit_text_hint">未输入</string>
     <string name="menu_save">保存</string>
     <string name="weekOptions">单双</string>
-    <string name="week_num_example">示例:1,7,9,11&#8211;17,19(英文标点)</string>
+    <string name="week_of_term_example">示例:1,7,9,11&#8211;17,19(英文标点)</string>
+
+
+<!--    LoginActivity-->
+    <string name="prompt_id">学号</string>
+    <string name="prompt_password">密码</string>
+    <string name="action_sign_in">登录</string>
+    <string name="hint_random_code">验证码</string>
+    <string name="title_activity_login">%1$s教务系统登录</string>
 </resources>

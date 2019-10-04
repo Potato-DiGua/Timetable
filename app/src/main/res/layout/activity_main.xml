@@ -94,7 +94,7 @@
                 android:id="@+id/ll_header_class_num"
                 android:layout_width="@dimen/table_header_class_width"
                 android:layout_height="wrap_content"
-                android:background="@color/background_color_white"
+                android:background="@color/colorLightGray"
                 android:orientation="vertical">
 
                 <TextView
@@ -181,11 +181,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop" />
-                <View
-                    android:id="@+id/back_line_dash"
-                    android:layout_width="50dp"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/shape_line_dash"/>
             </FrameLayout>
 
         </LinearLayout>

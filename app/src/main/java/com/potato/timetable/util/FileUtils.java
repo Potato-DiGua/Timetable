@@ -11,8 +11,8 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.potato.timetable.bean.Course;
 
 import java.io.BufferedInputStream;
@@ -29,11 +29,16 @@ import java.io.OutputStreamWriter;
 import java.util.List;
 
 /**
- * 已json格式保存课程表信息
+ * 文件工具类
  */
 public class FileUtils {
     private static final String FILE_NAME = "timetable.json";
 
+    /**
+     * 将课表信息以json格式保存
+     * @param courseList
+     * @param context
+     */
     public static void saveToJson(List<Course> courseList, Context context) {
         BufferedWriter bw = null;
         OutputStream os = null;
@@ -58,6 +63,11 @@ public class FileUtils {
         }
     }
 
+    /**
+     * json反序列化生成Course对象
+     * @param context
+     * @return List<Course> 返回课程列表
+     */
     public static List<Course> readFromJson(Context context) {
         File file = new File(context.getFilesDir().getPath(), FILE_NAME);
         if (!file.exists())
@@ -70,7 +80,7 @@ public class FileUtils {
             while ((line = br.readLine()) != null) {
                 stringBuilder.append(line);
             }
-            return JSONObject.parseArray(stringBuilder.toString(), Course.class);
+            return new Gson().fromJson(stringBuilder.toString(),new TypeToken<List<Course>>(){}.getType());
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -84,6 +94,13 @@ public class FileUtils {
         }
 
     }
+
+    /**
+     * 文件复制
+     * @param inpath  String 源文件路径
+     * @param outpath  String 目的文件路径
+     * @return boolean 是否复制成功
+     */
 
     public static boolean fileCopy(String inpath, String outpath) {
         File infile = new File(inpath);
@@ -123,8 +140,15 @@ public class FileUtils {
         return true;
 
     }
+
+
+
+
+
     /**
-     * Get a file path from a Uri. This will get the the path for Storage Access
+     * 从uri获取路径
+     *
+     * Get a file path from a Uri. This will sendGet the the path for Storage Access
      * Framework Documents, as well as the _data field for the MediaStore and
      * other file-based ContentProviders.
      *
@@ -134,10 +158,9 @@ public class FileUtils {
      */
     public static String getPath(final Context context, final Uri uri) {
 
-        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
 
         // DocumentProvider
-        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+        if (DocumentsContract.isDocumentUri(context, uri)) {
             // ExternalStorageProvider
             if (isExternalStorageDocument(uri)) {
                 final String docId = DocumentsContract.getDocumentId(uri);

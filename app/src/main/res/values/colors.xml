@@ -16,5 +16,6 @@
     <color name="colorPurple">#d58dfb</color>
     <color name="colorLightGray">#eaeff5</color>
     <color name="text_view_color">#0C0B0B</color>
-    <color name="background_color_white">#F5F5F5</color>
+    <color name="background_color_white">#EEEEEE</color>
+    <color name="bg_color_gray">#D0D0D0</color>
 </resources>

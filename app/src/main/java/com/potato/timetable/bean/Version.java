@@ -1,8 +1,11 @@
 package com.potato.timetable.bean;
 
+/**
+ * 用于app更新
+ */
 public class Version {
-    private long versionCode;
-    private String releaseName;
+    private long versionCode;//版本号
+    private String releaseName;//文件名
 
     public long getVersionCode() {
         return versionCode;

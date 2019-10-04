@@ -8,4 +8,7 @@
     <dimen name="course_details_text_size">16sp</dimen>
     <dimen name="img_view_height">144dp</dimen>
     <dimen name="img_view_width">81dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
 </resources>

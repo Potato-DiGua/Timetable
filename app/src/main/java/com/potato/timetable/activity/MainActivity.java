@@ -1,7 +1,6 @@
 package com.potato.timetable.activity;
 
 
-import android.content.ClipData;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -29,11 +28,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
-import com.bigkoo.pickerview.configure.PickerOptions;
 import com.bigkoo.pickerview.listener.OnOptionsSelectChangeListener;
 import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
 import com.bigkoo.pickerview.view.OptionsPickerView;
-import com.contrarywind.view.WheelView;
 import com.potato.timetable.bean.Course;
 import com.potato.timetable.R;
 import com.potato.timetable.util.Config;
@@ -61,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_COURSE_EDIT = 1;
     private static final int REQUEST_CODE_FILE_CHOOSE = 2;
     private static final int REQUEST_CODE_CONFIG = 3;
+    private static final int REQUEST_CODE_LOGIN = 4;
+
     private static final int CELL_HEIGHT = 70;
     private OptionsPickerView mOptionsPv;
 
@@ -147,10 +146,9 @@ public class MainActivity extends AppCompatActivity {
 
         weekArrayTextView[week - 1].setBackground(getDrawable(R.color.colorLightBlue));
 
-        setBackGroundDash(week);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
         //设置标题为自定义toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
 
@@ -161,16 +159,12 @@ public class MainActivity extends AppCompatActivity {
         Utils.setPATH(getExternalFilesDir(null).getAbsolutePath() + File.separator + "pictures");
     }
 
-    private void setBackGroundDash(int week)//设置课表当天的虚线框,在create时初始化,在destroy之前不会改变
-    {
-        View back = findViewById(R.id.back_line_dash);
-        FrameLayout.LayoutParams backlayoutParams = (FrameLayout.LayoutParams) back.getLayoutParams();
-        float width = (DISPLAY_WIDTH - sHeaderClassNumWidth) / 7.0f;
-        backlayoutParams.width = (int) width;
-        backlayoutParams.leftMargin = (int) (width * (week == 1 ? 6 : week - 2));
-    }
 
-    private int getWeekOfDay()//获取今天周几
+    /**
+     *
+     * @return 今天是周几
+     */
+    private int getWeekOfDay()
     {
         //周日为一个星期的第一天，数值为1-7
         Date date = new Date();
@@ -210,25 +204,32 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         switch (id) {
+            case R.id.menu_config://菜单设置
+                Intent intent2 = new Intent(this, ConfigActivity.class);
+                startActivityForResult(intent2, REQUEST_CODE_CONFIG);
+                break;
+
+            case R.id.menu_set_week://菜单设置当前周
+                showSelectCurrentWeekDialog();
+                break;
+
+            case R.id.menu_import://菜单登录教务系统
+                Intent intent3=new Intent(this,LoginActivity.class);
+                startActivityForResult(intent3,REQUEST_CODE_LOGIN);
+                break;
             case R.id.menu_append://菜单导入Excel
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("*Excel/xls");
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 startActivityForResult(intent, REQUEST_CODE_FILE_CHOOSE);
                 break;
-            case R.id.menu_set_week://菜单设置当前周
-                showSelectCurrentWeekDialog();
-                break;
             case R.id.menu_append_class://菜单添加课程
                 Intent intent1 = new Intent(this, EditActivity.class);
                 startActivityForResult(intent1, REQUEST_CODE_COURSE_EDIT);
                 break;
-            case R.id.menu_config:
-                Intent intent2 = new Intent(this, ConfigActivity.class);
-                startActivityForResult(intent2, REQUEST_CODE_CONFIG);
-                break;
-            case R.id.menu_update:
-                callCheckUpdate();
+
+            case R.id.menu_update://菜单检查更新
+                checkUpdate();
                 break;
             default:
                 break;
@@ -236,6 +237,10 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * 更新对话框
+     * @param url
+     */
     private void showUpdateDialog(final String url) {
         final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this)
                 .setTitle("提示")
@@ -260,7 +265,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void callCheckUpdate() {
+    /**
+     * 检查更新
+     */
+    private void checkUpdate() {
 
         final long versionCode = Utils.getLocalVersionCode(this);
         new Thread(new Runnable() {
@@ -275,7 +283,10 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void showSelectCurrentWeekDialog() {//显示周数列表,让用户从中选择
+    /**
+     * 显示周数列表,让用户从中选择
+     */
+    private void showSelectCurrentWeekDialog() {
         //String[] items = new String[25];
 
         final int currentWeek = Config.getCurrentWeek();
@@ -289,9 +300,8 @@ public class MainActivity extends AppCompatActivity {
         mOptionsPv = new OptionsPickerBuilder(this, new OnOptionsSelectListener() {
             @Override
             public void onOptionsSelect(int options1, int options2, int options3, View v) {
-                int week=options1+1;
-                if(options1!=currentWeek)
-                {
+                int week = options1 + 1;
+                if (options1 != currentWeek) {
                     Config.setCurrentWeek(week);
                     updateTimetable();
                     Config.saveSharedPreferences(MainActivity.this);
@@ -306,12 +316,16 @@ public class MainActivity extends AppCompatActivity {
         }).build();
 
 
-        mOptionsPv.setTitleText("当前周为:" + items.get(currentWeek-1));
+        mOptionsPv.setTitleText("当前周为:" + items.get(currentWeek - 1));
 
         mOptionsPv.setNPicker(items, null, null);
         mOptionsPv.setSelectOptions(currentWeek - 1);
         mOptionsPv.show();
     }
+
+    /**
+     * 获取读写权限
+     */
 
     private void getWritePermission() {
         try {
@@ -337,6 +351,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 初始化课表
+     */
     private void initTimetable()//根据保存的信息，创建课程表
     {
 
@@ -361,7 +378,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void updateTimetable() {//更新课程表视图
+    /**
+     * 更新课程表视图
+     */
+    private void updateTimetable() {
 
         //设置标题中显示的当前周数
         mWeekOfTermTextView.setText(String.format(getString(R.string.day_of_week), Config.getCurrentWeek()));
@@ -418,9 +438,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        //清空除背景ImageView和充当背景的虚线框view以外的所有子对象
+        //清空除背景ImageView以外的所有子对象
         int count = mFrameLayout.getChildCount();
-        for (int i = count - 1; i > 1; i--)
+        for (int i = count - 1; i > 0; i--)
             mFrameLayout.removeViewAt(i);
 
 
@@ -491,6 +511,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * 设置课程视图的监听
+     * @param textView
+     * @param index
+     */
     private void setTableClickListener(TextView textView, final int index)//设置课程视图的监听
     {
         textView.setOnClickListener(new View.OnClickListener() {
@@ -503,6 +528,14 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * 初始化课程视图
+     *
+     * @param class_num 课程节数
+     * @param left 左边距
+     * @param top 上边距
+     * @return 课程视图
+     */
     private View initTextView(int class_num, final int left, final int top) {
 
         View view = getLayoutInflater().inflate(R.layout.item_timetable, mFrameLayout, false);
@@ -519,7 +552,12 @@ public class MainActivity extends AppCompatActivity {
         return view;
     }
 
-    private boolean courseIsThisWeek(Course course)//判断是否为本周
+    /**
+     *
+     * @param course 课程
+     * @return 是否为本周应该上的课程
+     */
+    private boolean courseIsThisWeek(Course course)
     {
         String class_week = course.getWeekOfTerm();
         if (class_week == null)
@@ -552,37 +590,50 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode != RESULT_OK)
             return;
-        if (requestCode == REQUEST_CODE_FILE_CHOOSE) {
+        switch (requestCode)
+        {
+            case REQUEST_CODE_FILE_CHOOSE:
+                Uri uri = data.getData();
 
+                String path = FileUtils.getPath(MainActivity.this, uri);
+                sCourseList = ExcelUtils.handleExcel(path);
+                if (path == null || path.isEmpty())
+                    return;
+                //mMyDBHelper.insertItems(sCourseList);
+                FileUtils.saveToJson(sCourseList, MainActivity.this);
+                initTimetable();
+                //Log.d("path", path);
+                break;
 
-            Uri uri = data.getData();
+            case REQUEST_CODE_COURSE_EDIT:
+            case REQUEST_CODE_COURSE_DETAILS:
+                if (data == null)
+                    return;
+                boolean update = data.getBooleanExtra(EditActivity.EXTRA_UPDATE_TIMETABLE, false);
+                if (update)
+                    updateTimetable();
+                break;
 
-            String path = FileUtils.getPath(MainActivity.this, uri);
-            sCourseList = ExcelUtils.handleExcel(path);
-            if (path == null || path.isEmpty())
-                return;
-            //mMyDBHelper.insertItems(sCourseList);
-            FileUtils.saveToJson(sCourseList, MainActivity.this);
-            initTimetable();
-            //Log.d("path", path);
-        } else if (requestCode == REQUEST_CODE_COURSE_EDIT) {
-            if (data == null)
-                return;
-            boolean update = data.getBooleanExtra(EditActivity.EXTRA_UPDATE_TIMETABLE, false);
-            if (update)
-                updateTimetable();
-        } else if (requestCode == REQUEST_CODE_COURSE_DETAILS) {
-            if (data == null)
-                return;
-            boolean update = data.getBooleanExtra(EditActivity.EXTRA_UPDATE_TIMETABLE, false);
-            if (update)
-                updateTimetable();
-        } else if (requestCode == REQUEST_CODE_CONFIG) {//更新背景
-            if (data == null)
-                return;
-            boolean update = data.getBooleanExtra(ConfigActivity.EXTRA_UPDATE_BG, false);
-            if (update)
-                Utils.setBackGround(mbgImageView);
+            case REQUEST_CODE_CONFIG:
+                if (data == null)
+                    return;
+                boolean update_bg = data.getBooleanExtra(ConfigActivity.EXTRA_UPDATE_BG, false);
+                if (update_bg)
+                    Utils.setBackGround(mbgImageView);
+                break;
+
+            case REQUEST_CODE_LOGIN:
+                if(data==null)
+                    return;
+                boolean update_login=data.getBooleanExtra(LoginActivity.EXTRA_UPDATE_TIMETABLE,false);
+                if(update_login)
+                    updateTimetable();
+                    FileUtils.saveToJson(sCourseList,this);
+                    break;
+
+                    default:
+                        break;
+
         }
     }
 }
