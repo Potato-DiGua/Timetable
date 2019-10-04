@@ -121,15 +121,12 @@ public class CsuCollege {
 
         String data = "view=0&useDogCode=&encoded=" + encoded + "&RANDOMCODE=" + RandomCode;
 
-        Log.d("data", data);
+        //Log.d("data", data);
         String result = postLogin(LOGIN_URL, mCookie, data);
 
 
         Document doc = Jsoup.parse(result);
-        if (doc.title().equals("中南大学教务系统")) {
-            Log.d("term", "error");
-            return "";
-        } else {
+        if (doc.title().equals("学生个人中心")) {
             Element e=doc.select("select[id=xnxq01id]").first();
             Elements es=e.children();
             StringBuilder stringBuilder=new StringBuilder();
@@ -137,9 +134,12 @@ public class CsuCollege {
             {
                 stringBuilder.append(element.text());
                 stringBuilder.append("&&");//分隔符
-               Log.d("term",element.text());
+                //Log.d("term",element.text());
             }
             return stringBuilder.toString();
+        } else {
+            //Log.d("term", "error");
+            return "";
         }
     }
 

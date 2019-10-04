@@ -68,7 +68,7 @@ public class Utils {
             {
                 localVersion=packageInfo.versionCode;
             }
-            Log.d("TAG", "当前版本号：" + localVersion);
+            //Log.d("TAG", "当前版本号：" + localVersion);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -77,7 +77,7 @@ public class Utils {
     public static String checkUpdate(long versionCode)
     {
             Version version=new Gson().fromJson(HttpUtils.sendGet(UPDATE_URL),Version.class);
-            Log.d("update","最新版本号"+version.getVersionCode());
+            //Log.d("update","最新版本号"+version.getVersionCode());
 
             if(version.getVersionCode()>versionCode)
             {
@@ -85,7 +85,7 @@ public class Utils {
             }
             else
             {
-                Log.d("update","最新版");
+                //Log.d("update","最新版");
                 return "";
             }
 
