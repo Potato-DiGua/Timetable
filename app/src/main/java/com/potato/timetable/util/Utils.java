@@ -28,6 +28,7 @@ public class Utils {
             "https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/app/release/version.json";
 
     private static final String BASE_URL="https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/app/release/";
+    private static Bitmap bgUser=null;
     public static void setPATH(String PATH) {
         Utils.PATH = PATH;
     }
@@ -35,17 +36,29 @@ public class Utils {
     public static void setBackGround(ImageView imageView)
     {
         setBackGround(imageView, Config.getBgId());
+
+    }
+    public static void refreshBg()
+    {
+        File file=new File(PATH,BG_NAME);
+        if(file.exists())
+        {
+            bgUser= BitmapFactory.decodeFile(file.getAbsolutePath());
+        }
     }
     public static void setBackGround(ImageView imageView, int id)
     {
         if(id==0)
         {
-            File file=new File(PATH,BG_NAME);
-            if(file.exists())
+            if(bgUser==null)
             {
-                Bitmap bitmap= BitmapFactory.decodeFile(file.getAbsolutePath());
-                imageView.setImageBitmap(bitmap);
+                File file=new File(PATH,BG_NAME);
+                if(file.exists())
+                {
+                    bgUser= BitmapFactory.decodeFile(file.getAbsolutePath());
+                }
             }
+            imageView.setImageBitmap(bgUser);
         }
         else
         {

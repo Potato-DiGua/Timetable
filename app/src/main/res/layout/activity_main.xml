@@ -175,7 +175,7 @@
                 android:id="@+id/fl_timetable"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/timetable_height"
-                android:layout_weight="7">
+                android:layout_weight="1">
                 <ImageView
                     android:id="@+id/iv_bg_main"
                     android:layout_width="match_parent"

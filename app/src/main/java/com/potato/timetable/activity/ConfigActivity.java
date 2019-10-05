@@ -288,19 +288,22 @@ public class ConfigActivity extends AppCompatActivity{
                     DisplayMetrics dm = getResources().getDisplayMetrics();
                     if ((float) height / width == (float) dm.heightPixels / dm.widthPixels) {//如果图片比例与屏幕比例相同，直接复制图片
                         FileUtils.fileCopy(path, sPath + File.separator + BG_NAME);
-                        mBgId = 0;//当为0时,读取自定义背景
-                        Utils.setBackGround(mBgImageView, mBgId);
+                        showUserSelectBg();
                     } else {
                         startPhotoCrop(imgUri, height);
                     }
                 }
             } else if (requestCode == REQUEST_CODE_PHOTO_CUT) {
                 //预览图片改变效果,设置不会保存到本地
-                mBgId = 0;
-                Utils.setBackGround(mBgImageView, mBgId);
+                showUserSelectBg();
             }
         }
-
+    }
+    public void showUserSelectBg()
+    {
+        mBgId = 0;//当为0时,读取自定义背景
+        Utils.refreshBg();
+        Utils.setBackGround(mBgImageView, mBgId);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.potato.timetable.activity;
 
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -42,6 +43,7 @@ import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.Utils;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -67,10 +69,8 @@ public class MainActivity extends AppCompatActivity {
 
     private OptionsPickerView mOptionsPv;
 
-    private static int sHeaderClassNumWidth;
 
 
-    private int choice;
 
     private static final Map<String, Integer> mMap = new HashMap<String, Integer>() {{
         put("单周", 1);
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
     }};//判断是否为本周
     public static float VALUE_1DP;//1dp的值
-    private static int sDisplayWidth;//屏幕宽度
+
     private static final int CELL_HEIGHT = 70;
     private static float sCellWidthPx;//课程视图的宽度(px)
 
@@ -92,21 +92,30 @@ public class MainActivity extends AppCompatActivity {
 
             "android.permission.WRITE_EXTERNAL_STORAGE"};
 
-    private Handler mHandler = new Handler() {
+    private MyHandler mHandler = new MyHandler(this);
+
+    private static class MyHandler extends Handler{
+        private final WeakReference<MainActivity> mActivity;
+        public MyHandler(MainActivity activityCompat)
+        {
+            mActivity=new WeakReference<>(activityCompat);
+        }
+
         @Override
         public void handleMessage(@NonNull Message msg) {
+            final MainActivity mainActivity=mActivity.get();
             int what = msg.what;
             if (what == MSG_UPDATE) {
                 String str = msg.obj.toString();
                 if (str.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "当前版本已经是最新版", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mainActivity, "当前版本已经是最新版", Toast.LENGTH_SHORT).show();
                 } else {
-                    showUpdateDialog(str);
+                    mainActivity.showUpdateDialog(str);
                 }
 
             }
         }
-    };
+    }
     private static int MSG_UPDATE = 1;
 
 
@@ -129,22 +138,26 @@ public class MainActivity extends AppCompatActivity {
         };
         mWeekOfTermTextView = findViewById(R.id.tv_week_of_term);
         mAddImgBtn = findViewById(R.id.img_btn_add);
+        mBgImageView = findViewById(R.id.iv_bg_main);
+        mFrameLayout = findViewById(R.id.fl_timetable);
+
+
 
         Config.readFormSharedPreferences(this);//读取当前周信息
 
+        Utils.setPATH(getExternalFilesDir(null).getAbsolutePath() + File.separator + "pictures");
 
-        mBgImageView = findViewById(R.id.iv_bg_main);
 
-        Utils.setBackGround(mBgImageView);
+        int headerClassNumWidth = findViewById(R.id.ll_header_class_num).getLayoutParams().width;
 
-        sHeaderClassNumWidth = findViewById(R.id.ll_header_class_num).getLayoutParams().width;
         //计算1dp的数值方便接下来设置元素尺寸,提高效率
         VALUE_1DP = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1,
                 getResources().getDisplayMetrics());
-        //Log.d("1dp",String.valueOf(VALUE_1DP));
+
         //获取屏幕宽度，用于设置课程视图的宽度
-        sDisplayWidth = getResources().getDisplayMetrics().widthPixels;
-        sCellWidthPx = (sDisplayWidth - sHeaderClassNumWidth) / 7.0f;
+        int displayWidth = getResources().getDisplayMetrics().widthPixels;
+        //课程视图宽度
+        sCellWidthPx = (displayWidth - headerClassNumWidth) / 7.0f;
 
         int week = getWeekOfDay();
 
@@ -161,13 +174,13 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
 
-        mFrameLayout = findViewById(R.id.fl_timetable);
+
         initFrameLayout();
 
         initTimetable();
         initAddBtn();
 
-        Utils.setPATH(getExternalFilesDir(null).getAbsolutePath() + File.separator + "pictures");
+        Utils.setBackGround(mBgImageView);
 
     }
 

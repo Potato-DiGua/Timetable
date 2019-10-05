@@ -30,6 +30,7 @@ import com.potato.timetable.util.ExcelUtils;
 import com.potato.timetable.util.Utils;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,43 +45,50 @@ public class LoginActivity extends AppCompatActivity {
     private String mRandomCodeImgPath;
     private Button mLoginBtn;
     private ProgressBar mProgressBar;
-    private OptionsPickerView mOptionsPv;
 
-    private Handler mHandler=new Handler(){
+    private MyHandler mHandler=new MyHandler(this);
+
+    private static class MyHandler extends Handler{
+        private final WeakReference<LoginActivity> mActivity;
+        public MyHandler(LoginActivity activityCompat)
+        {
+            mActivity=new WeakReference<>(activityCompat);
+        }
+
         @Override
         public void handleMessage(@NonNull Message msg) {
-            int what=msg.what;
+            final LoginActivity loginActivity=mActivity.get();
+            int what = msg.what;
             switch (what)
             {
                 case MSG_RANDOM_CODE:
-                    Bitmap bitmap= BitmapFactory.decodeFile(mRandomCodeImgPath);
-                    mRandomCodeIv.setImageBitmap(bitmap);
+                    Bitmap bitmap= BitmapFactory.decodeFile(loginActivity.mRandomCodeImgPath);
+                    loginActivity.mRandomCodeIv.setImageBitmap(bitmap);
                     break;
                 case MSG_LOGIN_SUCCESS:
-                    setLoading(false);
-                    showSelectDialog(msg.obj.toString());
+                    loginActivity.setLoading(false);
+                    loginActivity.showSelectDialog(msg.obj.toString());
                     break;
                 case MSG_LOGIN_FAILED:
-                    setLoading(false);
-                    setRandomCodeImg();
-                    Toast.makeText(LoginActivity.this,"账号密码验证码错误",Toast.LENGTH_SHORT).show();
+                    loginActivity.setLoading(false);
+                    loginActivity.setRandomCodeImg();
+                    Toast.makeText(loginActivity,"账号密码验证码错误",Toast.LENGTH_SHORT).show();
                     break;
                 case MSG_GET_COURSES_SUCCESS:
-                    setUpdateResult();
-                    Toast.makeText(LoginActivity.this,"导入成功",Toast.LENGTH_SHORT).show();
-                    setLoading(false);
-                    LoginActivity.this.finish();
+                    loginActivity.setUpdateResult();
+                    Toast.makeText(loginActivity,"导入成功",Toast.LENGTH_SHORT).show();
+                    loginActivity.setLoading(false);
+                    loginActivity.finish();
                     break;
                 case MSG_GET_COURSES_FAILED:
-                    Toast.makeText(LoginActivity.this,"导入失败",Toast.LENGTH_SHORT).show();
-                    setLoading(false);
+                    Toast.makeText(loginActivity,"导入失败",Toast.LENGTH_SHORT).show();
+                    loginActivity.setLoading(false);
                     break;
-                    default:
-                        break;
+                default:
+                    break;
             }
-
         }
-    };
+    }
 
 
     private static final int MSG_RANDOM_CODE=1;
@@ -186,7 +194,7 @@ public class LoginActivity extends AppCompatActivity {
             if(!s.isEmpty())
                 items.add(s);
         }
-        mOptionsPv = new OptionsPickerBuilder(this, new OnOptionsSelectListener() {
+        OptionsPickerView mOptionsPv = new OptionsPickerBuilder(this, new OnOptionsSelectListener() {
             @Override
             public void onOptionsSelect(int options1, int options2, int options3, View v) {
                 setLoading(true);
