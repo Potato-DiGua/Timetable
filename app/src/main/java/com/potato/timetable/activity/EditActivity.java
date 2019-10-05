@@ -32,15 +32,13 @@ import com.potato.timetable.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class EditActivity extends AppCompatActivity {
 
     public static final String EXTRA_UPDATE_TIMETABLE = "update_timetable";
-    private List<String> weekItems;
-    private List<String> startItems;
-    private List<String> endItems;
+    private static List<String> sWeekItems;
+    private List<String> sStartItems;
+    private List<String> sEndItems;
 
     private TextView mClassNumTextView;
     private EditText mNameEditText;
@@ -52,19 +50,18 @@ public class EditActivity extends AppCompatActivity {
 
     private Course mCourse;
 
-    private static final String[] WEEK_ARRAY = new String[]{
-            "周一", "周二", "周三", "周四", "周五", "周六", "周日"};
-
-    public static final String KEY_COURSE_INDEX = "course_index";
+    public static final String EXTRA_COURSE_INDEX = "course_index";
+    public static final String EXTRA_Day_OF_WEEK ="day_of_week";
+    public static final String EXTRA_CLASS_START="class_start";
 
     /**
      * 保存在MainActivity.WeekOfTerm中的索引值
      */
     private int mIndex;
 
-    private int mClassStart = 0;
-    private int mClassEnd = 0;
-    private int mDayOfWeek = 0;
+    private int mClassStart;
+    private int mClassEnd;
+    private int mDayOfWeek;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,9 +73,18 @@ public class EditActivity extends AppCompatActivity {
         mWeekOfTermEditText = findViewById(R.id.et_week_of_term);
         mTeacherEditText = findViewById(R.id.et_teacher);
         mSpinner = findViewById(R.id.spinner_week_options);
+        setData();
 
         setActionBar();
-        mIndex = getIntent().getIntExtra(KEY_COURSE_INDEX, -1);
+
+        Intent intent=getIntent();
+        if(intent!=null)
+        {
+            mIndex = intent.getIntExtra(EXTRA_COURSE_INDEX, -1);
+            mDayOfWeek=intent.getIntExtra(EXTRA_Day_OF_WEEK,0);
+            mClassStart=intent.getIntExtra(EXTRA_CLASS_START,0);
+        }
+
 
         if (mIndex != -1) {
             try {
@@ -91,10 +97,25 @@ public class EditActivity extends AppCompatActivity {
             }
             setDefaultValue();
         } else {
+            if(mDayOfWeek!=0)
+            {
+                mClassEnd=mClassStart+1;
+                mClassNumTextView.setText(
+                        String.format(getString(R.string.schedule_section),
+                                sWeekItems.get(mDayOfWeek-1), mClassStart, mClassEnd));
+            }else
+            {
+                mDayOfWeek=1;
+                mClassStart=1;
+                mClassEnd=1;
+            }
+
             mCourse = new Course();
         }
 
-        setData();
+
+
+
         setCardViewAlpha();
         ImageView imageView = findViewById(R.id.iv_bg_edit);
 
@@ -107,11 +128,9 @@ public class EditActivity extends AppCompatActivity {
                 hideInput();//关闭软键盘防止挡住选择控件
                 int start = mCourse.getClassStart();
                 if (start == -1)
-                    initOptionsPicker(0, 0, 1);
+                    initOptionsPicker();
                 else
-                    initOptionsPicker(mCourse.getDayOfWeek() - 1,
-                            start - 1,
-                            start - 2 + mCourse.getClassLength());
+                    initOptionsPicker();
             }
         });
 
@@ -365,7 +384,7 @@ public class EditActivity extends AppCompatActivity {
 
         int class_start = mCourse.getClassStart();
         int class_end = class_start + mCourse.getClassLength() - 1;
-        String week = WEEK_ARRAY[mCourse.getDayOfWeek() - 1];
+        String week = sWeekItems.get(mCourse.getDayOfWeek() - 1);
 
         mClassNumTextView.setText(
                 String.format(getString(R.string.schedule_section), week, class_start, class_end));
@@ -448,24 +467,24 @@ public class EditActivity extends AppCompatActivity {
      * 初始化节数选择对话框的星期，开始节数，节数节数列表
      */
     private void setData() {
-        weekItems = new ArrayList<>();
+        sWeekItems = new ArrayList<>();
 
-        weekItems.add("周一");
-        weekItems.add("周二");
-        weekItems.add("周三");
-        weekItems.add("周四");
-        weekItems.add("周五");
-        weekItems.add("周六");
-        weekItems.add("周日");
+        sWeekItems.add("周一");
+        sWeekItems.add("周二");
+        sWeekItems.add("周三");
+        sWeekItems.add("周四");
+        sWeekItems.add("周五");
+        sWeekItems.add("周六");
+        sWeekItems.add("周日");
 
-        startItems = new ArrayList<>();
-        endItems = new ArrayList<>();
+        sStartItems = new ArrayList<>();
+        sEndItems = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("到");
         for (int i = 1; i <= 12; i++) {
             stringBuilder.append(i);
-            startItems.add(String.valueOf(i));
-            endItems.add(stringBuilder.toString());
+            sStartItems.add(String.valueOf(i));
+            sEndItems.add(stringBuilder.toString());
             stringBuilder.delete(1, stringBuilder.length());
 
         }
@@ -474,16 +493,13 @@ public class EditActivity extends AppCompatActivity {
     /**
      * 初始化选择对话框
      *
-     * @param options1
-     * @param options2
-     * @param options3
      */
 
-    private void initOptionsPicker(int options1, int options2, int options3) {
+    private void initOptionsPicker() {
 
-        mClassStart = options1 + 1;
-        mClassEnd = options2 + 1;
-        mDayOfWeek = options3 + 1;
+        int options1= mDayOfWeek-1;
+        int options2 =mClassStart-1;
+        int options3= mClassEnd-1;
 
         final String str = "%s %d-%d节";
         pvOptions = new OptionsPickerBuilder(this, new OnOptionsSelectListener() {
@@ -491,7 +507,7 @@ public class EditActivity extends AppCompatActivity {
             @Override
             public void onOptionsSelect(int options1, int options2, int options3, View v) {
                 //返回的分别是三个级别的选中位置
-                String str = weekItems.get(options1) + " " + (options2 + 1) + "-" + (options3 + 1) + "节";
+                String str = sWeekItems.get(options1) + " " + (options2 + 1) + "-" + (options3 + 1) + "节";
                 mClassNumTextView.setText(str);
                 //保存节数信息
                 mDayOfWeek = options1 + 1;
@@ -503,7 +519,7 @@ public class EditActivity extends AppCompatActivity {
                 .setOptionsSelectChangeListener(new OnOptionsSelectChangeListener() {
                     @Override
                     public void onOptionsSelectChanged(int options1, int options2, int options3) {
-                        String str = weekItems.get(options1) + " " + (options2 + 1) + "-" + (options3 + 1) + "节";
+                        String str = sWeekItems.get(options1) + " " + (options2 + 1) + "-" + (options3 + 1) + "节";
 
                         pvOptions.setTitleText(str);
                         if (options3 < options2) {
@@ -513,7 +529,7 @@ public class EditActivity extends AppCompatActivity {
                 })
                 .build();
         if (pvOptions != null) {
-            pvOptions.setNPicker(weekItems, startItems, endItems);
+            pvOptions.setNPicker(sWeekItems, sStartItems, sEndItems);
             pvOptions.setSelectOptions(options1, options2, options3);
             pvOptions.setTitleText("选择上课节数");
             pvOptions.show();

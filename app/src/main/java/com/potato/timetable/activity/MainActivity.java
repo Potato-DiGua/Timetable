@@ -1,6 +1,7 @@
 package com.potato.timetable.activity;
 
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,8 +14,10 @@ import android.text.Html;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,7 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
     private FrameLayout mFrameLayout;
     private TextView mWeekOfTermTextView;
-    private ImageView mbgImageView;
+    private ImageView mBgImageView;
+    private ImageButton mAddImgBtn;
 
     public static List<Course> sCourseList;
 
@@ -60,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_CONFIG = 3;
     private static final int REQUEST_CODE_LOGIN = 4;
 
-    private static final int CELL_HEIGHT = 70;
+
     private OptionsPickerView mOptionsPv;
 
     private static int sHeaderClassNumWidth;
@@ -75,7 +79,11 @@ public class MainActivity extends AppCompatActivity {
 
     }};//判断是否为本周
     public static float VALUE_1DP;//1dp的值
-    private static int DISPLAY_WIDTH;//屏幕宽度
+    private static int sDisplayWidth;//屏幕宽度
+    private static final int CELL_HEIGHT = 70;
+    private static float sCellWidthPx;//课程视图的宽度(px)
+
+
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
 
     private static final String[] PERMISSIONS_STORAGE = {
@@ -120,13 +128,14 @@ public class MainActivity extends AppCompatActivity {
 
         };
         mWeekOfTermTextView = findViewById(R.id.tv_week_of_term);
+        mAddImgBtn = findViewById(R.id.img_btn_add);
 
         Config.readFormSharedPreferences(this);//读取当前周信息
 
 
-        mbgImageView = findViewById(R.id.iv_bg_main);
+        mBgImageView = findViewById(R.id.iv_bg_main);
 
-        Utils.setBackGround(mbgImageView);
+        Utils.setBackGround(mBgImageView);
 
         sHeaderClassNumWidth = findViewById(R.id.ll_header_class_num).getLayoutParams().width;
         //计算1dp的数值方便接下来设置元素尺寸,提高效率
@@ -134,8 +143,8 @@ public class MainActivity extends AppCompatActivity {
                 getResources().getDisplayMetrics());
         //Log.d("1dp",String.valueOf(VALUE_1DP));
         //获取屏幕宽度，用于设置课程视图的宽度
-        DISPLAY_WIDTH = getResources().getDisplayMetrics().widthPixels;
-
+        sDisplayWidth = getResources().getDisplayMetrics().widthPixels;
+        sCellWidthPx = (sDisplayWidth - sHeaderClassNumWidth) / 7.0f;
 
         int week = getWeekOfDay();
 
@@ -153,20 +162,71 @@ public class MainActivity extends AppCompatActivity {
 
 
         mFrameLayout = findViewById(R.id.fl_timetable);
+        initFrameLayout();
 
         initTimetable();
+        initAddBtn();
 
         Utils.setPATH(getExternalFilesDir(null).getAbsolutePath() + File.separator + "pictures");
 
     }
 
+    @SuppressLint("ClickableViewAccessibility")
+    private void initFrameLayout()
+    {
+
+        mFrameLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                int event=motionEvent.getAction();
+                if(event==MotionEvent.ACTION_DOWN)
+                {
+                    if(mAddImgBtn.getVisibility()==View.VISIBLE)
+                    {
+                        mAddImgBtn.setVisibility(View.GONE);
+                    }
+                    else
+                    {
+                        int x=(int)motionEvent.getX();
+                        int y=(int)motionEvent.getY();
+                        x=x-x%(int) sCellWidthPx;
+                        y=y-y%(int)(CELL_HEIGHT*VALUE_1DP);
+                        setAddImgBtn(x,y);
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    private void initAddBtn() {
+        final FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mAddImgBtn.getLayoutParams();
+        layoutParams.width = (int) (sCellWidthPx);
+        mAddImgBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, EditActivity.class);
+                int dayOfWeek=layoutParams.leftMargin/(int) sCellWidthPx;
+                int classStart=layoutParams.topMargin/(int) (CELL_HEIGHT*VALUE_1DP);
+                intent.putExtra(EditActivity.EXTRA_Day_OF_WEEK,dayOfWeek+1);
+                intent.putExtra(EditActivity.EXTRA_CLASS_START,classStart+1);
+
+                startActivityForResult(intent, REQUEST_CODE_COURSE_EDIT);
+            }
+        });
+    }
+    private void setAddImgBtn(int left,int top)
+    {
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mAddImgBtn.getLayoutParams();
+        layoutParams.leftMargin = left;
+        layoutParams.topMargin=top;
+        mAddImgBtn.setVisibility(View.VISIBLE);
+    }
 
     /**
-     *
      * @return 今天是周几
      */
-    private int getWeekOfDay()
-    {
+    private int getWeekOfDay() {
         //周日为一个星期的第一天，数值为1-7
         Date date = new Date();
         Calendar calendar = Calendar.getInstance();
@@ -204,10 +264,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
+
+        Intent intent;
+
         switch (id) {
             case R.id.menu_config://菜单设置
-                Intent intent2 = new Intent(this, ConfigActivity.class);
-                startActivityForResult(intent2, REQUEST_CODE_CONFIG);
+                intent = new Intent(this, ConfigActivity.class);
+                startActivityForResult(intent, REQUEST_CODE_CONFIG);
                 break;
 
             case R.id.menu_set_week://菜单设置当前周
@@ -215,18 +278,18 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.menu_import://菜单登录教务系统
-                Intent intent3=new Intent(this,LoginActivity.class);
-                startActivityForResult(intent3,REQUEST_CODE_LOGIN);
+                intent = new Intent(this, LoginActivity.class);
+                startActivityForResult(intent, REQUEST_CODE_LOGIN);
                 break;
             case R.id.menu_append://菜单导入Excel
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("*Excel/xls");
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 startActivityForResult(intent, REQUEST_CODE_FILE_CHOOSE);
                 break;
             case R.id.menu_append_class://菜单添加课程
-                Intent intent1 = new Intent(this, EditActivity.class);
-                startActivityForResult(intent1, REQUEST_CODE_COURSE_EDIT);
+                intent = new Intent(this, EditActivity.class);
+                startActivityForResult(intent, REQUEST_CODE_COURSE_EDIT);
                 break;
 
             case R.id.menu_update://菜单检查更新
@@ -240,6 +303,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 更新对话框
+     *
      * @param url
      */
     private void showUpdateDialog(final String url) {
@@ -380,6 +444,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * 清空课程TextView
+     */
+
+    private void clearTimetable() {
+        int count = mFrameLayout.getChildCount();
+        for (int i = count - 1; i > 1; i--)
+            mFrameLayout.removeViewAt(i);
+    }
+
+    /**
      * 更新课程表视图
      */
     private void updateTimetable() {
@@ -438,14 +512,8 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+        clearTimetable();
 
-        //清空除背景ImageView以外的所有子对象
-        int count = mFrameLayout.getChildCount();
-        for (int i = count - 1; i > 0; i--)
-            mFrameLayout.removeViewAt(i);
-
-
-        float width = (DISPLAY_WIDTH - sHeaderClassNumWidth) / 7.0f;
 
         //int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CELL_HEIGHT, getResources().getDisplayMetrics());
         int height = (int) (CELL_HEIGHT * VALUE_1DP);
@@ -471,7 +539,7 @@ public class MainActivity extends AppCompatActivity {
             int week = course.getDayOfWeek() - 1;
             int class_start = course.getClassStart() - 1;
 
-            View view = initTextView(class_num, (int) (week * width), class_start * height);
+            View view = initTextView(class_num, (int) (week * sCellWidthPx), class_start * height);
 
             TextView textView = view.findViewById(R.id.grid_item_text_view);
 
@@ -503,7 +571,6 @@ public class MainActivity extends AppCompatActivity {
 
             textView.setBackground(myGrad);
 
-            textView.getLayoutParams().width = (int) (width - 6 * VALUE_1DP);
 
             mFrameLayout.addView(view);
 
@@ -514,6 +581,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 设置课程视图的监听
+     *
      * @param textView
      * @param index
      */
@@ -533,20 +601,23 @@ public class MainActivity extends AppCompatActivity {
      * 初始化课程视图
      *
      * @param class_num 课程节数
-     * @param left 左边距
-     * @param top 上边距
+     * @param left      左边距
+     * @param top       上边距
      * @return 课程视图
      */
     private View initTextView(int class_num, final int left, final int top) {
 
         View view = getLayoutInflater().inflate(R.layout.item_timetable, mFrameLayout, false);
 
+
         TextView textView = view.findViewById(R.id.grid_item_text_view);
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) textView.getLayoutParams();
+        layoutParams.width = (int) (sCellWidthPx - 6 * VALUE_1DP);
+
         if (class_num != 2) {
-            textView.getLayoutParams().height = (int) (VALUE_1DP * (CELL_HEIGHT * class_num - 6));//设置课程视图高度
+            layoutParams.height = (int) (VALUE_1DP * (CELL_HEIGHT * class_num - 6));//设置课程视图高度
         }
 
-        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) textView.getLayoutParams();
         layoutParams.topMargin = (int) (top + 3 * VALUE_1DP);
         layoutParams.leftMargin = (int) (left + 3 * VALUE_1DP);
 
@@ -554,12 +625,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *
      * @param course 课程
      * @return 是否为本周应该上的课程
      */
-    private boolean courseIsThisWeek(Course course)
-    {
+    private boolean courseIsThisWeek(Course course) {
         String class_week = course.getWeekOfTerm();
         if (class_week == null)
             return false;
@@ -591,8 +660,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode != RESULT_OK)
             return;
-        switch (requestCode)
-        {
+        switch (requestCode) {
             case REQUEST_CODE_FILE_CHOOSE:
                 Uri uri = data.getData();
 
@@ -620,20 +688,20 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 boolean update_bg = data.getBooleanExtra(ConfigActivity.EXTRA_UPDATE_BG, false);
                 if (update_bg)
-                    Utils.setBackGround(mbgImageView);
+                    Utils.setBackGround(mBgImageView);
                 break;
 
             case REQUEST_CODE_LOGIN:
-                if(data==null)
+                if (data == null)
                     return;
-                boolean update_login=data.getBooleanExtra(LoginActivity.EXTRA_UPDATE_TIMETABLE,false);
-                if(update_login)
+                boolean update_login = data.getBooleanExtra(LoginActivity.EXTRA_UPDATE_TIMETABLE, false);
+                if (update_login)
                     updateTimetable();
-                    FileUtils.saveToJson(sCourseList,this);
-                    break;
+                FileUtils.saveToJson(sCourseList, this);
+                break;
 
-                    default:
-                        break;
+            default:
+                break;
 
         }
     }

@@ -181,6 +181,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop" />
+                <ImageButton
+                    android:id="@+id/img_btn_add"
+                    android:layout_width="50dp"
+                    android:layout_height="@dimen/cell_height"
+                    android:scaleType="centerInside"
+                    android:visibility="gone"
+                    android:src="@mipmap/content_new"/>
+
             </FrameLayout>
 
         </LinearLayout>

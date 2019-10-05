@@ -48,7 +48,7 @@ public class CourseDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent=new Intent(CourseDetailsActivity.this,EditActivity.class);
-                intent.putExtra(EditActivity.KEY_COURSE_INDEX, mIndex);
+                intent.putExtra(EditActivity.EXTRA_COURSE_INDEX, mIndex);
                 startActivityForResult(intent,EDIT_ID);
             }
         });
