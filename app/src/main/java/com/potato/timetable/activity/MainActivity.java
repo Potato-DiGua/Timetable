@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 int event=motionEvent.getAction();
-                if(event==MotionEvent.ACTION_DOWN)
+                if(event==MotionEvent.ACTION_UP)
                 {
                     if(mAddImgBtn.getVisibility()==View.VISIBLE)
                     {
@@ -208,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
                         setAddImgBtn(x,y);
                     }
                 }
-                return false;
+                return true;
             }
         });
     }
@@ -222,9 +222,9 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, EditActivity.class);
                 int dayOfWeek=layoutParams.leftMargin/(int) sCellWidthPx;
                 int classStart=layoutParams.topMargin/(int) (CELL_HEIGHT*VALUE_1DP);
+                mAddImgBtn.setVisibility(View.INVISIBLE);
                 intent.putExtra(EditActivity.EXTRA_Day_OF_WEEK,dayOfWeek+1);
                 intent.putExtra(EditActivity.EXTRA_CLASS_START,classStart+1);
-
                 startActivityForResult(intent, REQUEST_CODE_COURSE_EDIT);
             }
         });
