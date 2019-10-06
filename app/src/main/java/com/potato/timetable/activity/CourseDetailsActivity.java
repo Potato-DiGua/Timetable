@@ -56,7 +56,8 @@ public class CourseDetailsActivity extends AppCompatActivity {
         ImageView imageView=findViewById(R.id.iv_bg);
         setCardViewAlpha();
 
-        Utils.setBackGround(imageView);
+
+        Utils.setBackGround(this,imageView);
 
     }
 
@@ -65,9 +66,8 @@ public class CourseDetailsActivity extends AppCompatActivity {
      */
     private void setCardViewAlpha()
     {
-        float alpha= Config.getCardViewAlpha();
         CardView cardView=findViewById(R.id.cv_course_details);
-        cardView.setAlpha(alpha);
+        Utils.setCardViewAlpha(cardView);
     }
 
     /**

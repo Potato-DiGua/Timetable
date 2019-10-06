@@ -126,14 +126,14 @@ public class MainActivity extends AppCompatActivity {
 
         getWritePermission();//得到读写权限用于保存课表信息
 
-        TextView[] weekArrayTextView = new TextView[]{//储存周几表头
-                findViewById(R.id.tv_sun),
-                findViewById(R.id.tv_mon),
-                findViewById(R.id.tv_tues),
-                findViewById(R.id.tv_wed),
-                findViewById(R.id.tv_thur),
-                findViewById(R.id.tv_fri),
-                findViewById(R.id.tv_sat)
+        int[] weekTextView = new int[]{//储存周几表头
+                R.id.tv_sun,
+                R.id.tv_mon,
+                R.id.tv_tues,
+                R.id.tv_wed,
+                R.id.tv_thur,
+                R.id.tv_fri,
+                R.id.tv_sat
 
         };
         mWeekOfTermTextView = findViewById(R.id.tv_week_of_term);
@@ -166,7 +166,8 @@ public class MainActivity extends AppCompatActivity {
         updateCurrentWeek(week);
 
 
-        weekArrayTextView[week - 1].setBackground(getDrawable(R.color.colorLightBlue));
+        TextView weekTv=findViewById(weekTextView[week-1]);
+        weekTv.setBackground(getDrawable(R.color.day_of_week_color));
 
 
         //设置标题为自定义toolbar
@@ -180,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
         initTimetable();
         initAddBtn();
 
-        Utils.setBackGround(mBgImageView);
+        Utils.setBackGround(this,mBgImageView);
 
     }
 
@@ -537,11 +538,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         int[] color = new int[]{
-                ContextCompat.getColor(this, R.color.colorOrange),
-                ContextCompat.getColor(this, R.color.colorTomato),
-                ContextCompat.getColor(this, R.color.colorGreen),
-                ContextCompat.getColor(this, R.color.colorCyan),
-                ContextCompat.getColor(this, R.color.colorPurple),
+                ContextCompat.getColor(this, R.color.item_orange),
+                ContextCompat.getColor(this, R.color.item_tomato),
+                ContextCompat.getColor(this, R.color.item_green),
+                ContextCompat.getColor(this, R.color.item_cyan),
+                ContextCompat.getColor(this, R.color.item_purple),
         };
 
         //Log.d("size", size + "");
@@ -574,7 +575,7 @@ public class MainActivity extends AppCompatActivity {
                 myGrad.setColor(color[i % 5]);
                 textView.setText(stringBuilder.toString());
             } else {
-                myGrad.setColor(getResources().getColor(R.color.colorGray));
+                myGrad.setColor(getResources().getColor(R.color.item_gray));
                 stringBuilder.insert(0, "<small>[非本周]</small>\n");
                 String str = stringBuilder.toString();
                 str = str.replaceAll("\n", "<br />");
@@ -622,10 +623,10 @@ public class MainActivity extends AppCompatActivity {
 
         View view = getLayoutInflater().inflate(R.layout.item_timetable, mFrameLayout, false);
 
-
         TextView textView = view.findViewById(R.id.grid_item_text_view);
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) textView.getLayoutParams();
         layoutParams.width = (int) (sCellWidthPx - 6 * VALUE_1DP);
+
 
         if (class_num != 2) {
             layoutParams.height = (int) (VALUE_1DP * (CELL_HEIGHT * class_num - 6));//设置课程视图高度
@@ -701,7 +702,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 boolean update_bg = data.getBooleanExtra(ConfigActivity.EXTRA_UPDATE_BG, false);
                 if (update_bg)
-                    Utils.setBackGround(mBgImageView);
+                    Utils.setBackGround(this,mBgImageView);
                 break;
 
             case REQUEST_CODE_LOGIN:
@@ -715,7 +716,6 @@ public class MainActivity extends AppCompatActivity {
 
             default:
                 break;
-
         }
     }
 }

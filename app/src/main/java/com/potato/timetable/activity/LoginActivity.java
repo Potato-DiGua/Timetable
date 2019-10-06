@@ -27,6 +27,7 @@ import com.potato.timetable.CsuCollege;
 import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
 import com.potato.timetable.util.ExcelUtils;
+import com.potato.timetable.util.HttpUtils;
 import com.potato.timetable.util.Utils;
 
 import java.io.File;
@@ -61,9 +62,12 @@ public class LoginActivity extends AppCompatActivity {
             int what = msg.what;
             switch (what)
             {
-                case MSG_RANDOM_CODE:
+                case MSG_RANDOM_CODE_SUCCESS:
                     Bitmap bitmap= BitmapFactory.decodeFile(loginActivity.mRandomCodeImgPath);
                     loginActivity.mRandomCodeIv.setImageBitmap(bitmap);
+                    break;
+                case MSG_RANDOM_CODE_FAILED:
+                    loginActivity.mRandomCodeIv.setImageResource(R.mipmap.error);
                     break;
                 case MSG_LOGIN_SUCCESS:
                     loginActivity.setLoading(false);
@@ -84,6 +88,9 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(loginActivity,"导入失败",Toast.LENGTH_SHORT).show();
                     loginActivity.setLoading(false);
                     break;
+                case MSG_NETWORK_UNCONNECTED:
+                    Toast.makeText(loginActivity,"网络连接不可用",Toast.LENGTH_SHORT).show();
+                    break;
                 default:
                     break;
             }
@@ -91,11 +98,13 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-    private static final int MSG_RANDOM_CODE=1;
+    private static final int MSG_RANDOM_CODE_SUCCESS=1;
+    private static final int MSG_RANDOM_CODE_FAILED=6;
     private static final int MSG_LOGIN_SUCCESS=2;
     private static final int MSG_LOGIN_FAILED=3;
     private static final int MSG_GET_COURSES_SUCCESS=4;
     private static final int MSG_GET_COURSES_FAILED=5;
+    private static final int MSG_NETWORK_UNCONNECTED=7;
 
     public static final String EXTRA_UPDATE_TIMETABLE="update_timetable";
 
@@ -107,12 +116,33 @@ public class LoginActivity extends AppCompatActivity {
         init();
         setActionBar();
         ImageView bgIv=findViewById(R.id.iv_bg);
-        Utils.setBackGround(bgIv);
+        Utils.setBackGround(this,bgIv);
         File file =getExternalCacheDir();
         mRandomCodeImgPath=file.getAbsolutePath()+File.separator+"randomcode.jpg";
+
         setRandomCodeImg();
+        judgeConnected();
     }
 
+    private void judgeConnected()
+    {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (!HttpUtils.isNetworkConnected())
+                {
+                    Message msg=new Message();
+                    msg.what=MSG_NETWORK_UNCONNECTED;
+                    mHandler.sendMessageDelayed(msg,1000);
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
     /**
      * 初始化
      */
@@ -124,12 +154,10 @@ public class LoginActivity extends AppCompatActivity {
         mAccountEt=findViewById(R.id.et_account);
         mPwEt=findViewById(R.id.et_password);
         mRandomCodeEt=findViewById(R.id.et_random_code);
-
         mLoginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 hideInput();
-
                 String account=mAccountEt.getText().toString();
                 String pw=mPwEt.getText().toString();
                 String randomCode=mRandomCodeEt.getText().toString();
@@ -146,7 +174,6 @@ public class LoginActivity extends AppCompatActivity {
 
             }
         });
-
         mRandomCodeIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -299,6 +326,19 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    private void downloadRandomCodeImg()
+    {
+        Message msg=new Message();
+        if(mCsuCollege.downloadRandomCodeImg(mRandomCodeImgPath))
+        {
+            msg.what=MSG_RANDOM_CODE_SUCCESS;
+        }
+        else
+        {
+            msg.what=MSG_RANDOM_CODE_FAILED;
+        }
+        mHandler.sendMessage(msg);
+    }
     /**
      * 从登录页面下载并加载验证码
      */
@@ -311,24 +351,18 @@ public class LoginActivity extends AppCompatActivity {
                 {
                     if(mCsuCollege.getCookie())
                     {
-                        if(mCsuCollege.downloadRandomCodeImg(mRandomCodeImgPath))
-                        {
-                            Message msg=new Message();
-                            msg.what=MSG_RANDOM_CODE;
-                            mHandler.sendMessage(msg);
-
-                        }
+                        downloadRandomCodeImg();
+                    }
+                    else
+                    {
+                        Message msg=new Message();
+                        msg.what=MSG_RANDOM_CODE_FAILED;
+                        mHandler.sendMessage(msg);
                     }
                 }
                 else
                 {
-                    if(mCsuCollege.downloadRandomCodeImg(mRandomCodeImgPath))
-                    {
-                        Message msg=new Message();
-                        msg.what=MSG_RANDOM_CODE;
-                        mHandler.sendMessage(msg);
-
-                    }
+                    downloadRandomCodeImg();
                 }
 
 

@@ -119,7 +119,7 @@ public class EditActivity extends AppCompatActivity {
         setCardViewAlpha();
         ImageView imageView = findViewById(R.id.iv_bg_edit);
 
-        Utils.setBackGround(imageView);
+        Utils.setBackGround(this,imageView);
 
         LinearLayout linearLayout = findViewById(R.id.class_num_layout);
         linearLayout.setOnClickListener(new View.OnClickListener() {
@@ -140,11 +140,10 @@ public class EditActivity extends AppCompatActivity {
      * 设置CardView透明度
      */
     private void setCardViewAlpha() {
-        float alpha = Config.getCardViewAlpha();
         CardView cardView = findViewById(R.id.cv_edit_1);
-        cardView.setAlpha(alpha);
+        Utils.setCardViewAlpha(cardView);
         cardView = findViewById(R.id.cv_edit_2);
-        cardView.setAlpha(alpha);
+        Utils.setCardViewAlpha(cardView);
     }
 
     /**

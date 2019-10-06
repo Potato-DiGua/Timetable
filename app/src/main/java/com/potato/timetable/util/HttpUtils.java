@@ -1,6 +1,10 @@
 package com.potato.timetable.util;
 
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -14,22 +18,42 @@ import java.net.URL;
 import java.util.List;
 
 public class HttpUtils {
-    public static String sendGet(String strUrl) {
-        return sendGet(strUrl, "UTF-8",null);
+
+    public static boolean isNetworkConnected() {
+        try {
+            //代表ping 3 次 超时时间为10秒
+            Process p = Runtime.getRuntime().exec("ping -c 3 -w 10 www.baidu.com");//ping3次
+
+            int status = p.waitFor();
+
+            if (status == 0) {
+                //代表成功
+                return true;
+            } else {
+                //代表失败
+                return false;
+            }
+        } catch (Exception e) {
+           e.printStackTrace();
+           return false;
+        }
     }
-    public static String sendGet(String strUrl,String cookie)
-    {
-        return sendGet(strUrl, "UTF-8",cookie);
+
+    public static String sendGet(String strUrl) {
+        return sendGet(strUrl, "UTF-8", null);
+    }
+
+    public static String sendGet(String strUrl, String cookie) {
+        return sendGet(strUrl, "UTF-8", cookie);
     }
 
     /**
-     *
-     * @param strUrl String 网址
+     * @param strUrl      String 网址
      * @param charsetName String 设置网页编码
-     * @param cookie String 设置cookie
+     * @param cookie      String 设置cookie
      * @return 返回html源码
      */
-    public static String sendGet(String strUrl, String charsetName,String cookie) {
+    public static String sendGet(String strUrl, String charsetName, String cookie) {
         BufferedReader bis = null;
         try {
             URL url = new URL(strUrl);
@@ -38,8 +62,8 @@ public class HttpUtils {
             connection.setRequestMethod("GET");
             // 设置通用的请求属性
 
-            if(cookie!=null&&!cookie.isEmpty())
-                connection.setRequestProperty("Cookie",cookie);
+            if (cookie != null && !cookie.isEmpty())
+                connection.setRequestProperty("Cookie", cookie);
             connection.setRequestProperty("accept", "*/*");
             connection.setRequestProperty("connection", "Keep-Alive");
             connection.setRequestProperty("user-agent",
@@ -47,6 +71,7 @@ public class HttpUtils {
 
             //设置连接超时为5秒
             connection.setConnectTimeout(5000);
+
             if (connection.getResponseCode() == 200) {
                 bis = new BufferedReader(
                         new InputStreamReader(connection.getInputStream(), charsetName));
@@ -75,11 +100,11 @@ public class HttpUtils {
 
     /**
      * 获取cookie
+     *
      * @param strUrl 网址
      * @return 返回cookie
      */
-    public static String getCookie(String strUrl)
-    {
+    public static String getCookie(String strUrl) {
         try {
             URL url = new URL(strUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -90,12 +115,12 @@ public class HttpUtils {
                     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
 
             connection.setRequestMethod("GET");
-            List<String> list=connection.getHeaderFields().get("Set-Cookie");
-            if(list!=null)
-            {
-                StringBuilder stringBuilder=new StringBuilder();
-                for(String str:list)
-                {
+            connection.setConnectTimeout(5000);
+
+            List<String> list = connection.getHeaderFields().get("Set-Cookie");
+            if (list != null) {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (String str : list) {
                     stringBuilder.append(str);
                 }
                 return stringBuilder.toString();
@@ -105,28 +130,26 @@ public class HttpUtils {
         }
         return "";
     }
-    public static String sendPost(String strUrl,String data)
-    {
-        return sendPost(strUrl,"",data);
+
+    public static String sendPost(String strUrl, String data) {
+        return sendPost(strUrl, "", data);
     }
 
     /**
-     *
      * @param strUrl 网址
      * @param cookie cookie
-     * @param data post数据
+     * @param data   post数据
      * @return 返回响应
      */
-    public static String sendPost(String strUrl, String cookie,String data) {
+    public static String sendPost(String strUrl, String cookie, String data) {
         BufferedReader br = null;
         try {
             URL url = new URL(strUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
 
-            if(cookie!=null&&!cookie.isEmpty())
-            {
-                connection.setRequestProperty("Cookie",cookie);
+            if (cookie != null && !cookie.isEmpty()) {
+                connection.setRequestProperty("Cookie", cookie);
             }
             // 设置通用的请求属性
             connection.setRequestProperty("accept", "*/*");
@@ -137,8 +160,8 @@ public class HttpUtils {
 
             connection.setDoInput(true);
             connection.setDoOutput(true);
-            if(data!=null&&!data.isEmpty())
-            {
+            connection.setConnectTimeout(5000);
+            if (data != null && !data.isEmpty()) {
                 OutputStream os = connection.getOutputStream();
                 os.write(data.getBytes());
             }
@@ -172,19 +195,17 @@ public class HttpUtils {
         return "";
     }
 
-    public static boolean download(String strUrl, String path)
-    {
-        return download(strUrl,"",path);
+    public static boolean download(String strUrl, String path) {
+        return download(strUrl, "", path);
     }
 
     /**
-     *
      * @param strUrl String 网址
      * @param cookie String cookie
-     * @param path String 文件路径
+     * @param path   String 文件路径
      * @return boolean 是否下载成功
      */
-    public static boolean download(String strUrl,String cookie, String path) {
+    public static boolean download(String strUrl, String cookie, String path) {
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
         try {
@@ -192,9 +213,8 @@ public class HttpUtils {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
             // 设置通用的请求属性
-            if(cookie!=null&&!cookie.isEmpty())
-            {
-                connection.setRequestProperty("Cookie",cookie);
+            if (cookie != null && !cookie.isEmpty()) {
+                connection.setRequestProperty("Cookie", cookie);
             }
             connection.setRequestProperty("accept", "*/*");
             connection.setRequestProperty("connection", "Keep-Alive");
@@ -202,6 +222,9 @@ public class HttpUtils {
                     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
 
             connection.setRequestMethod("GET");
+
+            connection.setConnectTimeout(5000);
+
             File file = new File(path);
             if (!file.getParentFile().exists()) {
                 if (file.getParentFile().mkdirs())
@@ -220,10 +243,9 @@ public class HttpUtils {
 
             } else
                 return false;
-
-
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         } finally {
             try {
                 if (bis != null)
@@ -234,7 +256,5 @@ public class HttpUtils {
                 e.printStackTrace();
             }
         }
-        return false;
-
     }
 }

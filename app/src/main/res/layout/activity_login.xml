@@ -70,6 +70,7 @@
                     android:id="@+id/iv_random_code"
                     android:layout_width="62dp"
                     android:layout_height="22dp"
+                    android:background="@drawable/border_black"
                     android:scaleType="fitCenter"/>
 
             </LinearLayout>
@@ -88,11 +89,11 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-
     <ProgressBar
         android:id="@+id/loading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone" />
+
 </FrameLayout>

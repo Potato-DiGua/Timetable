@@ -6,8 +6,9 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-import android.util.Log;
 import android.widget.ImageView;
+
+import androidx.cardview.widget.CardView;
 
 import com.google.gson.Gson;
 import com.potato.timetable.bean.Version;
@@ -17,69 +18,64 @@ import java.io.File;
 /**
  * 工具类：
  * 设置背景
- *
+ * <p>
  * 获取更新
  */
 public class Utils {
 
     private static String PATH;
-    private static final String BG_NAME="bg.jpg";
-    private static final String UPDATE_URL=
+    private static final String BG_NAME = "bg.jpg";
+    private static final String UPDATE_URL =
             "https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/app/release/version.json";
 
-    private static final String BASE_URL="https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/app/release/";
-    private static Bitmap bgUser=null;
+    private static final String BASE_URL = "https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/app/release/";
+    private static Bitmap bgBitmap = null;
+
     public static void setPATH(String PATH) {
         Utils.PATH = PATH;
     }
 
-    public static void setBackGround(ImageView imageView)
-    {
-        setBackGround(imageView, Config.getBgId());
+    public static void setBackGround(Context context,ImageView imageView) {
+        setBackGround(context,imageView, Config.getBgId());
+    }
 
-    }
-    public static void refreshBg()
-    {
-        File file=new File(PATH,BG_NAME);
-        if(file.exists())
-        {
-            bgUser= BitmapFactory.decodeFile(file.getAbsolutePath());
-        }
-    }
-    public static void setBackGround(ImageView imageView, int id)
-    {
+    public static void refreshBg(Context context,int id) {
+
         if(id==0)
         {
-            if(bgUser==null)
-            {
-                File file=new File(PATH,BG_NAME);
-                if(file.exists())
-                {
-                    bgUser= BitmapFactory.decodeFile(file.getAbsolutePath());
-                }
+            File file = new File(PATH, BG_NAME);
+            if (file.exists()) {
+                bgBitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
             }
-            imageView.setImageBitmap(bgUser);
         }
         else
         {
-            imageView.setImageResource(id);
+            bgBitmap=BitmapFactory.decodeResource(context.getResources(),id);
         }
+
+
     }
-    public static long getLocalVersionCode(Context context)
-    {
+
+    public static void setBackGround(Context context,ImageView imageView, int id) {
+
+        if (bgBitmap == null) {
+            refreshBg(context,id);
+        }
+        imageView.setImageBitmap(bgBitmap);
+
+    }
+
+    public static long getLocalVersionCode(Context context) {
         long localVersion = 0;
         try {
             PackageInfo packageInfo = context.getApplicationContext()
                     .getPackageManager()
                     .getPackageInfo(context.getPackageName(), 0);
 
-            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.P)
-            {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 localVersion = packageInfo.getLongVersionCode();
-            }
-            else
-            {
-                localVersion=packageInfo.versionCode;
+            } else {
+                localVersion = packageInfo.versionCode;
             }
             //Log.d("TAG", "当前版本号：" + localVersion);
         } catch (PackageManager.NameNotFoundException e) {
@@ -87,20 +83,21 @@ public class Utils {
         }
         return localVersion;
     }
-    public static String checkUpdate(long versionCode)
+
+    public static String checkUpdate(long versionCode) {
+        Version version = new Gson().fromJson(HttpUtils.sendGet(UPDATE_URL), Version.class);
+        //Log.d("update","最新版本号"+version.getVersionCode());
+
+        if (version.getVersionCode() > versionCode) {
+            return BASE_URL + version.getReleaseName();
+        } else {
+            //Log.d("update","最新版");
+            return "";
+        }
+
+    }
+    public static void setCardViewAlpha(CardView cardView)
     {
-            Version version=new Gson().fromJson(HttpUtils.sendGet(UPDATE_URL),Version.class);
-            //Log.d("update","最新版本号"+version.getVersionCode());
-
-            if(version.getVersionCode()>versionCode)
-            {
-                return BASE_URL+version.getReleaseName();
-            }
-            else
-            {
-                //Log.d("update","最新版");
-                return "";
-            }
-
+        cardView.setAlpha(Config.getCardViewAlpha());
     }
 }

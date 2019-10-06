@@ -18,4 +18,18 @@
     <color name="text_view_color">#0C0B0B</color>
     <color name="background_color_white">#EEEEEE</color>
     <color name="bg_color_gray">#D0D0D0</color>
+
+    <color name="item_orange">#ccffc450</color>
+    <color name="item_tomato">#ccff9393</color>
+    <color name="item_green">#cc59f0a3</color>
+    <color name="item_cyan">#cc76eaea</color>
+    <color name="item_purple">#ccd58dfb</color>
+    <color name="item_gray">#ccD3D3D3</color>
+
+    <color name="header_text_color">#0C0B0B</color>
+
+    <color name="header_week_color">#CCD3D3D3</color>
+    <color name="header_class_color">#CCD0D0D0</color>
+
+    <color name="day_of_week_color">#CC87CEFA</color>
 </resources>

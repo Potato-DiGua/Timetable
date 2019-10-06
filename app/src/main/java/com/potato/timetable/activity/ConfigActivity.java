@@ -15,15 +15,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.SeekBar;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,8 +37,6 @@ import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.Utils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ConfigActivity extends AppCompatActivity{
 
@@ -99,7 +92,6 @@ public class ConfigActivity extends AppCompatActivity{
                 mAlpha = value / 100.0f;
                 mCardView.setAlpha(mAlpha);
             }
-
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
 
@@ -111,7 +103,7 @@ public class ConfigActivity extends AppCompatActivity{
             }
         });
 
-        Utils.setBackGround(mBgImageView);
+        Utils.setBackGround(this,mBgImageView);
     }
     private void initGridView()
     {
@@ -120,18 +112,17 @@ public class ConfigActivity extends AppCompatActivity{
         bgBtnAdapter.bgIdList.add(R.drawable.camera_logo);
         bgBtnAdapter.bgIdList.add(R.drawable.bg_x);
         bgBtnAdapter.bgIdList.add(R.drawable.bg_gradient);
-        bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_rem);
         bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_1);
         bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_2);
+        bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_3);
 
         final int[] bgId=new int[]{0,
                 R.color.background_color_white,
-                R.drawable.bg_gradient,
-                R.drawable.bg_rem,
+                R.drawable.bg_4,
                 R.drawable.bg_1,
-                R.drawable.bg_2
+                R.drawable.bg_2,
+                R.drawable.bg_3
         };
-
         gridView.setAdapter(bgBtnAdapter);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -172,10 +163,8 @@ public class ConfigActivity extends AppCompatActivity{
         alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
                 if (mBgId != id) {
-                    mBgId = id;
-                    mBgImageView.setImageResource(mBgId);
+                    showUserSelectBg(id);
                 }
 
             }
@@ -267,7 +256,15 @@ public class ConfigActivity extends AppCompatActivity{
         Config.setCardViewAlpha(mAlpha);
         Config.setBgId(mBgId);
         Config.saveSharedPreferences(this);
-        //通知MainActivity更新背景图片
+
+        setUpdateResult();
+    }
+
+    /**
+     * 通知MainActivity更新背景图片
+     */
+    private void setUpdateResult()
+    {
         Intent intent = new Intent();
         intent.putExtra(EXTRA_UPDATE_BG, true);
         setResult(RESULT_OK, intent);
@@ -282,28 +279,39 @@ public class ConfigActivity extends AppCompatActivity{
                 if (data != null) {
                     Uri imgUri = data.getData();
                     String path = FileUtils.getPath(this, imgUri);
-                    Bitmap bitmap = BitmapFactory.decodeFile(path);
-                    int height = bitmap.getHeight();
-                    int width = bitmap.getWidth();
+                    BitmapFactory.Options options=new BitmapFactory.Options();
+                    options.inJustDecodeBounds=true;
+                    BitmapFactory.decodeFile(path,options);
+                    int height = options.outHeight;
+                    int width = options.outWidth;
+
                     DisplayMetrics dm = getResources().getDisplayMetrics();
-                    if ((float) height / width == (float) dm.heightPixels / dm.widthPixels) {//如果图片比例与屏幕比例相同，直接复制图片
-                        FileUtils.fileCopy(path, sPath + File.separator + BG_NAME);
-                        showUserSelectBg();
-                    } else {
-                        startPhotoCrop(imgUri, height);
+                    float ratio=(float) dm.heightPixels/dm.widthPixels;
+                    if(height>dm.heightPixels||width>dm.widthPixels)
+                    {
+                        startPhotoCrop(imgUri,dm.heightPixels,dm.widthPixels);
                     }
+                    else if ((float) height / width == ratio) {//如果图片比例与屏幕比例相同，直接复制图片
+                        FileUtils.fileCopy(path, sPath + File.separator + BG_NAME);
+                        showUserSelectBg(0);
+                    } else {
+                        startPhotoCrop(imgUri, height,Math.round(height/ratio));
+                    }
+
                 }
             } else if (requestCode == REQUEST_CODE_PHOTO_CUT) {
                 //预览图片改变效果,设置不会保存到本地
-                showUserSelectBg();
+                showUserSelectBg(0);
             }
         }
     }
-    public void showUserSelectBg()
+    public void showUserSelectBg(int id)
     {
-        mBgId = 0;//当为0时,读取自定义背景
-        Utils.refreshBg();
-        Utils.setBackGround(mBgImageView, mBgId);
+        mBgId = id;//当为0时,读取自定义背景
+        Utils.refreshBg(this,id);
+        Utils.setBackGround(this,mBgImageView, mBgId);
+        if(id==0)
+            setUpdateResult();
     }
 
     @Override
@@ -351,7 +359,7 @@ public class ConfigActivity extends AppCompatActivity{
      * @param uri 图片uri
      * @param height 图片高度,用于设置裁剪后的高度
      */
-    public void startPhotoCrop(Uri uri, int height) {
+    public void startPhotoCrop(Uri uri, int height,int width) {
         DisplayMetrics dm = getResources().getDisplayMetrics();
 
         Intent intent = new Intent("com.android.camera.action.CROP");
@@ -373,7 +381,7 @@ public class ConfigActivity extends AppCompatActivity{
 
         // outputX,outputY 是剪裁图片的宽高
 
-        intent.putExtra("outputX", Math.round(height / 16.0f * 9.0f));
+        intent.putExtra("outputX", width);
 
         intent.putExtra("outputY", height);
 

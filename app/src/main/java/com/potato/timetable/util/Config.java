@@ -8,7 +8,7 @@ import com.potato.timetable.R;
 public class Config {
     private static int currentWeek = 1;//表示当前周数
     private static boolean flagCurrentWeek = false;//利用该flag,进行周一的周数更新
-    private static int bgId = R.drawable.bg_rem;//保存图片id,当等于零的时候，使用自定义图片,
+    private static int bgId = R.color.background_color_white;//保存图片id,当等于零的时候，使用自定义图片,
     private static float cardViewAlpha = 1.0f;//卡片布局的透明度 值为0.0-1.0
 
     private static final String KEY_WEEK_OF_TERM = "current_week";
