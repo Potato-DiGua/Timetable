@@ -8,6 +8,10 @@
 * 支持教务系统导入（中南大学）
 * 可设置背景和透明度
 
+<p>
+<a href="/Potato-DiGua/Timetable/raw/master/app/release/LightTimetable-v1.0.1-20191006.apk">下载</a>
+</p>
+
 ---
 ### 界面
 <p>
@@ -22,9 +26,9 @@ Excel导入（因为使用jxl包所以**只支持xls文件**）<br>
 <p>
 <img src="ReadmeResourse/Excel_example.png" height="70%" width="70%">
 </p>
-<br>
+<p>
 <a href="https://raw.githubusercontent.com/Potato-DiGua/ClassTimetables/master/ReadmeResourse/Example.xls">下载示例Excel</a>
-<br>
+</p>
 **单元格格式:**
 第一行为课程名<br>
 第二行为教师<br>
