@@ -112,16 +112,16 @@ public class ConfigActivity extends AppCompatActivity{
         bgBtnAdapter.bgIdList.add(R.drawable.camera_logo);
         bgBtnAdapter.bgIdList.add(R.drawable.bg_x);
         bgBtnAdapter.bgIdList.add(R.drawable.bg_gradient);
-        bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_1);
         bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_2);
         bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_3);
+        bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_4);
 
         final int[] bgId=new int[]{0,
                 R.color.background_color_white,
-                R.drawable.bg_4,
                 R.drawable.bg_1,
                 R.drawable.bg_2,
-                R.drawable.bg_3
+                R.drawable.bg_3,
+                R.drawable.bg_4
         };
         gridView.setAdapter(bgBtnAdapter);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

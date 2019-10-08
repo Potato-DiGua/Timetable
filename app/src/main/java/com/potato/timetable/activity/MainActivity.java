@@ -172,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
 
         //设置标题为自定义toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("");
         setSupportActionBar(toolbar);
 
 
