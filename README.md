@@ -9,7 +9,7 @@
 * 可设置背景和透明度
 
 <p>
-<a href="/Potato-DiGua/Timetable/raw/master/app/release/LightTimetable-v1.0.1-20191006.apk">下载</a>
+<a href="/Potato-DiGua/Timetable/raw/master/app/release/LightTimetable-v1.0.1-20191008.apk">下载</a>
 </p>
 
 ---
