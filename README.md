@@ -15,7 +15,7 @@
 ---
 ### 界面
 <p>
-<img src="ReadmeResourse/gui.png" height="30%" width="30%">
+<img src="https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/ReadmeResourse/gui.png" height="30%" width="30%">
 </p>
 
 ---
@@ -27,7 +27,7 @@ Excel导入（因为使用jxl包所以**只支持xls文件**）<br>
 <img src="ReadmeResourse/Excel_example.png" height="70%" width="70%">
 </p>
 <p>
-<a href="https://raw.githubusercontent.com/Potato-DiGua/ClassTimetables/master/ReadmeResourse/Example.xls">下载示例Excel</a>
+<a href="https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/ReadmeResourse/Excel_example.png">下载示例Excel</a>
 </p>
 
 **单元格格式:**
