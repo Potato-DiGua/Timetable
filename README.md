@@ -24,10 +24,10 @@ Excel导入（因为使用jxl包所以**只支持xls文件**）<br>
 不支持冲突课程，如果冲突，会显示最后的课程<br>
 **Excel格式示例**
 <p>
-<img src="ReadmeResourse/Excel_example.png" height="70%" width="70%">
+<img src="https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/ReadmeResourse/Excel_example.png" height="70%" width="70%">
 </p>
 <p>
-<a href="https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/ReadmeResourse/Excel_example.png">下载示例Excel</a>
+<a href="https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/ReadmeResourse/Example.xls">下载示例Excel</a>
 </p>
 
 **单元格格式:**
