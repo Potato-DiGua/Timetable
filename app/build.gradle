@@ -60,6 +60,7 @@ dependencies {
     implementation 'net.sourceforge.jexcelapi:jxl:2.6.12'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'org.jsoup:jsoup:1.7.3'
+    implementation 'com.squareup.okhttp3:okhttp:4.4.0'
 
 
 }
