@@ -2,7 +2,6 @@ package com.potato.timetable.activity;
 
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -35,11 +34,12 @@ import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
 import com.bigkoo.pickerview.listener.OnOptionsSelectChangeListener;
 import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
 import com.bigkoo.pickerview.view.OptionsPickerView;
-import com.potato.timetable.bean.Course;
 import com.potato.timetable.R;
+import com.potato.timetable.bean.Course;
 import com.potato.timetable.util.Config;
 import com.potato.timetable.util.ExcelUtils;
 import com.potato.timetable.util.FileUtils;
+import com.potato.timetable.util.OkHttpUtils;
 import com.potato.timetable.util.Utils;
 
 import java.io.File;
@@ -125,6 +125,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         getWritePermission();//得到读写权限用于保存课表信息
+
+        OkHttpUtils.init(this);//初始化okhttp
 
         int[] weekTextView = new int[]{//储存周几表头
                 R.id.tv_sun,

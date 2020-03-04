@@ -1,6 +1,4 @@
-package com.potato.timetable;
-
-import android.util.Log;
+package com.potato.timetable.colleges;
 
 import com.potato.timetable.util.HttpUtils;
 
@@ -23,6 +21,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 
+/**
+ * 弃用
+ */
+@Deprecated
 public class CsuCollege {
     public static final String COLLEGE_NAME ="中南大学";
     public String mCookie;
