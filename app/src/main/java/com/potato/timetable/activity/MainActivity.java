@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.Html;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -47,9 +48,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton mAddImgBtn;
 
     public static List<Course> sCourseList;
+    private List<TextView> mClassTableList=new ArrayList<>();
 
     private static final int REQUEST_CODE_COURSE_DETAILS = 0;
     private static final int REQUEST_CODE_COURSE_EDIT = 1;
@@ -66,18 +67,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_CONFIG = 3;
     private static final int REQUEST_CODE_LOGIN = 4;
 
-
     private OptionsPickerView mOptionsPv;
 
-
-
-
-    private static final Map<String, Integer> mMap = new HashMap<String, Integer>() {{
-        put("单周", 1);
-        put("双周", 0);
-        put("周", 2);
-
-    }};//判断是否为本周
     public static float VALUE_1DP;//1dp的值
 
     private static final int CELL_HEIGHT = 70;
@@ -94,16 +85,16 @@ public class MainActivity extends AppCompatActivity {
 
     private MyHandler mHandler = new MyHandler(this);
 
-    private static class MyHandler extends Handler{
+    private static class MyHandler extends Handler {
         private final WeakReference<MainActivity> mActivity;
-        public MyHandler(MainActivity activityCompat)
-        {
-            mActivity=new WeakReference<>(activityCompat);
+
+        public MyHandler(MainActivity activityCompat) {
+            mActivity = new WeakReference<>(activityCompat);
         }
 
         @Override
         public void handleMessage(@NonNull Message msg) {
-            final MainActivity mainActivity=mActivity.get();
+            final MainActivity mainActivity = mActivity.get();
             int what = msg.what;
             if (what == MSG_UPDATE) {
                 String str = msg.obj.toString();
@@ -116,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
     private static int MSG_UPDATE = 1;
 
 
@@ -144,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
         mFrameLayout = findViewById(R.id.fl_timetable);
 
 
-
         Config.readFormSharedPreferences(this);//读取当前周信息
 
         Utils.setPATH(getExternalFilesDir(null).getAbsolutePath() + File.separator + "pictures");
@@ -168,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
         updateCurrentWeek(week);
 
 
-        TextView weekTv=findViewById(weekTextView[week-1]);
+        TextView weekTv = findViewById(weekTextView[week - 1]);
         weekTv.setBackground(getDrawable(R.color.day_of_week_color));
 
 
@@ -178,37 +169,31 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
 
-
         initFrameLayout();
 
         initTimetable();
         initAddBtn();
 
-        Utils.setBackGround(this,mBgImageView);
+        Utils.setBackGround(this, mBgImageView);
 
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private void initFrameLayout()
-    {
+    private void initFrameLayout() {
 
         mFrameLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                int event=motionEvent.getAction();
-                if(event==MotionEvent.ACTION_UP)
-                {
-                    if(mAddImgBtn.getVisibility()==View.VISIBLE)
-                    {
+                int event = motionEvent.getAction();
+                if (event == MotionEvent.ACTION_UP) {
+                    if (mAddImgBtn.getVisibility() == View.VISIBLE) {
                         mAddImgBtn.setVisibility(View.GONE);
-                    }
-                    else
-                    {
-                        int x=(int)motionEvent.getX();
-                        int y=(int)motionEvent.getY();
-                        x=x-x%(int) sCellWidthPx;
-                        y=y-y%(int)(CELL_HEIGHT*VALUE_1DP);
-                        setAddImgBtn(x,y);
+                    } else {
+                        int x = (int) motionEvent.getX();
+                        int y = (int) motionEvent.getY();
+                        x = x - x % (int) sCellWidthPx;
+                        y = y - y % (int) (CELL_HEIGHT * VALUE_1DP);
+                        setAddImgBtn(x, y);
                     }
                 }
                 return true;
@@ -223,28 +208,30 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, EditActivity.class);
-                int dayOfWeek=layoutParams.leftMargin/(int) sCellWidthPx;
-                int classStart=layoutParams.topMargin/(int) (CELL_HEIGHT*VALUE_1DP);
+                int dayOfWeek = layoutParams.leftMargin / (int) sCellWidthPx;
+                int classStart = layoutParams.topMargin / (int) (CELL_HEIGHT * VALUE_1DP);
                 mAddImgBtn.setVisibility(View.INVISIBLE);
-                intent.putExtra(EditActivity.EXTRA_Day_OF_WEEK,dayOfWeek+1);
-                intent.putExtra(EditActivity.EXTRA_CLASS_START,classStart+1);
+                intent.putExtra(EditActivity.EXTRA_Day_OF_WEEK, dayOfWeek + 1);
+                intent.putExtra(EditActivity.EXTRA_CLASS_START, classStart + 1);
                 startActivityForResult(intent, REQUEST_CODE_COURSE_EDIT);
             }
         });
     }
-    private void setAddImgBtn(int left,int top)
-    {
+
+    private void setAddImgBtn(int left, int top) {
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mAddImgBtn.getLayoutParams();
         layoutParams.leftMargin = left;
-        layoutParams.topMargin=top;
+        layoutParams.topMargin = top;
         mAddImgBtn.setVisibility(View.VISIBLE);
     }
 
     /**
+     * 周日为一个星期的第一天，数值为1-7
+     *
      * @return 今天是周几
      */
     private int getWeekOfDay() {
-        //周日为一个星期的第一天，数值为1-7
+
         Date date = new Date();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -374,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
         final int currentWeek = Config.getCurrentWeek();
         final String str = "当前周为：";
         final List<String> items = new ArrayList<>();
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < Config.getMaxWeekNum(); i++) {
             //items[i] = String.valueOf(i + 1);
             items.add("第" + (i + 1) + "周");
         }
@@ -385,9 +372,12 @@ public class MainActivity extends AppCompatActivity {
                 int week = options1 + 1;
                 if (options1 != currentWeek) {
                     Config.setCurrentWeek(week);
+                    //如果为周一时，设置更新flag为真，防止再次打开周数增加
+                    if (getWeekOfDay() == 2) {
+                        Config.setFlagCurrentWeek(true);
+                    }
                     updateTimetable();
                     Config.saveSharedPreferences(MainActivity.this);
-
                 }
             }
         }).setOptionsSelectChangeListener(new OnOptionsSelectChangeListener() {
@@ -461,24 +451,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 清空课程TextView
+     * 选择需要显示的课程
+     * @return
      */
-
-    private void clearTimetable() {
-        int count = mFrameLayout.getChildCount();
-        for (int i = count - 1; i > 1; i--)
-            mFrameLayout.removeViewAt(i);
-    }
-
-    /**
-     * 更新课程表视图
-     */
-    private void updateTimetable() {
-
-        //设置标题中显示的当前周数
-        mWeekOfTermTextView.setText(String.format(getString(R.string.day_of_week), Config.getCurrentWeek()));
-
-        List<Course> courseList = new ArrayList<>();
+    private List<Course> selectNeedToShowCourse()
+    {
+        LinkedList<Course> courseList = new LinkedList<>();
 
         boolean[] flag = new boolean[12];//-1表示节次没有课程,其他代表占用课程的在mCourseList中的索引
 
@@ -509,7 +487,7 @@ public class MainActivity extends AppCompatActivity {
                     if (!courseIsThisWeek(course)) {
                         break;
                     } else {
-                        courseList.remove(courseList.size() - 1);
+                        courseList.removeLast();//删除最后一个元素
 
                         courseList.add(course);
                         for (int j = 0; j < class_num; j++) {
@@ -525,22 +503,25 @@ public class MainActivity extends AppCompatActivity {
                     flag[class_start + j - 1] = true;
                 }
             }
-
-
         }
+        return courseList;
+    }
+    /**
+     * 更新课程表视图
+     */
+    private void updateTimetable() {
+        //设置标题中显示的当前周数
+        mWeekOfTermTextView.setText(String.format(getString(R.string.day_of_week), Config.getCurrentWeek()));
 
-        clearTimetable();
-
+        List<Course> courseList=selectNeedToShowCourse();
+        //clearTimetable();
 
         //int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CELL_HEIGHT, getResources().getDisplayMetrics());
         int height = (int) (CELL_HEIGHT * VALUE_1DP);
 
-        size = courseList.size();
-
+        int size = courseList.size();
         StringBuilder stringBuilder = new StringBuilder();
-
-
-        int[] color = new int[]{
+        int[] color = new int[]{//课程表循环颜色
                 ContextCompat.getColor(this, R.color.item_orange),
                 ContextCompat.getColor(this, R.color.item_tomato),
                 ContextCompat.getColor(this, R.color.item_green),
@@ -549,16 +530,27 @@ public class MainActivity extends AppCompatActivity {
         };
 
         //Log.d("size", size + "");
-        for (int i = 0; i < size; i++) {
+        int mClassTableListSize=mClassTableList.size();
 
+        for (int i = 0; i < size; i++) {
             Course course = courseList.get(i);
             int class_num = course.getClassLength();
             int week = course.getDayOfWeek() - 1;
             int class_start = course.getClassStart() - 1;
 
-            View view = initTextView(class_num, (int) (week * sCellWidthPx), class_start * height);
+            //View view = initTextView(class_num, (int) (week * sCellWidthPx), class_start * height);
 
-            TextView textView = view.findViewById(R.id.grid_item_text_view);
+            TextView textView;
+            //复用课程格，提高性能
+            if(i<mClassTableListSize)
+            {
+                textView=mClassTableList.get(i);
+            }else {//已有课程格数量不足新建
+                textView = new TextView(this);
+                mClassTableList.add(textView);
+                mFrameLayout.addView(textView);
+            }
+            setTextView(textView,class_num, (int) (week * sCellWidthPx), class_start * height);
 
             setTableClickListener(textView, sCourseList.indexOf(course));
 
@@ -583,18 +575,19 @@ public class MainActivity extends AppCompatActivity {
                 String str = stringBuilder.toString();
                 str = str.replaceAll("\n", "<br />");
                 textView.setText(Html.fromHtml(str));
-
             }
-
             textView.setBackground(myGrad);
-
-
-            mFrameLayout.addView(view);
 
             stringBuilder.delete(0, stringBuilder.length());
         }
 
+        //删除多余的课程格
+        for(int i=size,len=mClassTableList.size();i<len;i++)
+        {
+            mFrameLayout.removeView(mClassTableList.get(i));
+        }
     }
+
 
     /**
      * 设置课程视图的监听
@@ -615,30 +608,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 初始化课程视图
+     * 设置课程格
      *
-     * @param class_num 课程节数
-     * @param left      左边距
-     * @param top       上边距
-     * @return 课程视图
+     * @param textView
+     * @param class_num 节数
+     * @param left 左外边距
+     * @param top 上外边距
      */
-    private View initTextView(int class_num, final int left, final int top) {
+    private void setTextView(TextView textView,int class_num, final int left, final int top) {
 
-        View view = getLayoutInflater().inflate(R.layout.item_timetable, mFrameLayout, false);
+        //View view = getLayoutInflater().inflate(R.layout.item_timetable, mFrameLayout, false);
 
-        TextView textView = view.findViewById(R.id.grid_item_text_view);
-        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) textView.getLayoutParams();
-        layoutParams.width = (int) (sCellWidthPx - 6 * VALUE_1DP);
+        //TextView textView =new TextView(this);
+        // view.findViewById(R.id.grid_item_text_view);
 
-
-        if (class_num != 2) {
-            layoutParams.height = (int) (VALUE_1DP * (CELL_HEIGHT * class_num - 6));//设置课程视图高度
-        }
-
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                        (int) (sCellWidthPx - 6 * VALUE_1DP),
+                        (int) (VALUE_1DP * (CELL_HEIGHT * class_num - 6)));
+                //(FrameLayout.LayoutParams) textView.getLayoutParams();
+//        layoutParams.width = (int) (sCellWidthPx - 6 * VALUE_1DP);
+//        if (class_num != 2) {
+//            layoutParams.height = (int) (VALUE_1DP * (CELL_HEIGHT * class_num - 6));//设置课程视图高度
+//        }
         layoutParams.topMargin = (int) (top + 3 * VALUE_1DP);
         layoutParams.leftMargin = (int) (left + 3 * VALUE_1DP);
 
-        return view;
+        //设置对齐方式
+        textView.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);
+        //设置文本颜色为白色
+        textView.setTextColor(getResources().getColor(R.color.colorWhite));
+
+        textView.setLayoutParams(layoutParams);
+        //return view;
     }
 
     /**
@@ -646,6 +647,7 @@ public class MainActivity extends AppCompatActivity {
      * @return 是否为本周应该上的课程
      */
     private boolean courseIsThisWeek(Course course) {
+        /*
         String class_week = course.getWeekOfTerm();
         if (class_week == null)
             return false;
@@ -669,7 +671,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
-        return false;
+        return false;*/
+        int currentWeek = Config.getCurrentWeek();
+        return (course.getWeekOfTerm() >> (Config.getMaxWeekNum() - currentWeek) & 0x01) == 1;
     }
 
     @Override
@@ -705,7 +709,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 boolean update_bg = data.getBooleanExtra(ConfigActivity.EXTRA_UPDATE_BG, false);
                 if (update_bg)
-                    Utils.setBackGround(this,mBgImageView);
+                    Utils.setBackGround(this, mBgImageView);
                 break;
 
             case REQUEST_CODE_LOGIN:

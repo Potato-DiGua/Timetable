@@ -1,6 +1,8 @@
 package com.potato.timetable.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,9 +47,11 @@ public class LoginActivity extends AppCompatActivity {
 
     private Handler mHandler = new Handler();
 
-    private boolean judgeFlag=true;//判断网络是否可用的循环退出标志，方便结束线程
+    private boolean judgeFlag = true;//判断网络是否可用的循环退出标志，方便结束线程
 
     public static final String EXTRA_UPDATE_TIMETABLE = "update_timetable";
+    private static final String KEY_ACCOUNT = "account";
+    private static final String KEY_PWD = "pwd";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,16 +64,29 @@ public class LoginActivity extends AppCompatActivity {
         Utils.setBackGround(this, bgIv);
 
         setRandomCodeImg();
-
         judgeConnected();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if(college.isLogin())
+                {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            showSelectDialog(college.getTermOptions());
+                        }
+                    });
+                }
+
+            }
+        }).start();
     }
 
     private void judgeConnected() {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while (judgeFlag)
-                {
+                while (judgeFlag) {
                     if (!HttpUtils.isNetworkConnected()) {
                         mHandler.post(new Runnable() {
                             @Override
@@ -101,6 +118,7 @@ public class LoginActivity extends AppCompatActivity {
         mProgressBar = findViewById(R.id.loading);
         mAccountEt = findViewById(R.id.et_account);
         mPwEt = findViewById(R.id.et_password);
+
         mRandomCodeEt = findViewById(R.id.et_random_code);
         mLoginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,12 +137,28 @@ public class LoginActivity extends AppCompatActivity {
 
             }
         });
+
         mRandomCodeIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 setRandomCodeImg();
             }
         });
+        readAccountFromLocal();
+    }
+
+    private void saveAccountToLocal(String account, String pwd) {
+        SharedPreferences sharedPreferences = getSharedPreferences("account", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(KEY_ACCOUNT, account);
+        editor.putString(KEY_PWD, pwd);
+        editor.apply();
+    }
+
+    private void readAccountFromLocal() {
+        SharedPreferences sharedPreferences = getSharedPreferences("account", Context.MODE_PRIVATE);
+        mAccountEt.setText(sharedPreferences.getString(KEY_ACCOUNT, ""));
+        mPwEt.setText(sharedPreferences.getString(KEY_PWD, ""));
     }
 
     private void setActionBar() {
@@ -157,9 +191,8 @@ public class LoginActivity extends AppCompatActivity {
      * @param termOptions 学期选项
      */
     private void showSelectDialog(String[] termOptions) {
-        if(termOptions==null||termOptions.length==0)
-        {
-            Toast.makeText(this,"无法获取学期选项",Toast.LENGTH_SHORT).show();
+        if (termOptions == null || termOptions.length == 0) {
+            Toast.makeText(this, "无法获取学期选项", Toast.LENGTH_SHORT).show();
             return;
         }
         final List<String> items = new ArrayList<>();
@@ -203,7 +236,7 @@ public class LoginActivity extends AppCompatActivity {
                         if (success) {
                             MainActivity.sCourseList = list;
                             setUpdateResult();
-                            judgeFlag=false;
+                            judgeFlag = false;
                             finish();
                         }
                     }
@@ -243,7 +276,6 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * 登录
-     *
      * @param account
      * @param pw
      * @param randomCode String 验证码
@@ -260,6 +292,7 @@ public class LoginActivity extends AppCompatActivity {
                     public void run() {
                         setLoading(false);
                         if (isLogin) {
+                            saveAccountToLocal(mAccountEt.getText().toString(),mPwEt.getText().toString());
                             showSelectDialog(termOptions);
                         } else {
                             Toast.makeText(
@@ -284,18 +317,17 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void run() {
                 final Bitmap bitmap = college.getRandomCodeImg(getExternalCacheDir().getAbsolutePath(), "randomcode.jpg");
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if(bitmap==null)
-                            {
-                                mRandomCodeIv.setImageDrawable(getDrawable(R.drawable.ic_error_red_24dp));
-                            }else {
-                                mRandomCodeIv.setImageBitmap(bitmap);
-                            }
-
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (bitmap == null) {
+                            mRandomCodeIv.setImageDrawable(getDrawable(R.drawable.ic_error_red_24dp));
+                        } else {
+                            mRandomCodeIv.setImageBitmap(bitmap);
                         }
-                    });
+
+                    }
+                });
             }
         }).start();
 

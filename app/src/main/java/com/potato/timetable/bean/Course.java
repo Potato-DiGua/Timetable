@@ -8,10 +8,10 @@ public class Course implements Cloneable{
     private String teacher;//教授名字
     private int classLength =0;//课程时长
     private int classStart =-1;//课程开始节数
-    private String weekOptions ="周";//单周，双周，周
     private String classRoom;//上课地点
-    private String weekOfTerm;//开始上课的周
+    private int weekOfTerm;//开始上课的周,用二进制后25位表示是否为本周
     private int dayOfWeek =0;//在周几上课 值1-7
+
     public int getClassStart() {
         return classStart;
     }
@@ -20,11 +20,11 @@ public class Course implements Cloneable{
         this.classStart = classStart;
     }
 
-    public String getWeekOfTerm() {
+    public int getWeekOfTerm() {
         return weekOfTerm;
     }
 
-    public void setWeekOfTerm(String weekOfTerm) {
+    public void setWeekOfTerm(int weekOfTerm) {
         this.weekOfTerm = weekOfTerm;
     }
 
@@ -70,14 +70,6 @@ public class Course implements Cloneable{
 
     public void setTeacher(String teacher) {
         this.teacher = teacher;
-    }
-
-    public String getWeekOptions() {
-        return weekOptions;
-    }
-
-    public void setWeekOptions(String weekOptions) {
-        this.weekOptions = weekOptions;
     }
     @NonNull
     @Override

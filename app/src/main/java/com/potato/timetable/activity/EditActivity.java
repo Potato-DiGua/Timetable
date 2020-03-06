@@ -26,7 +26,6 @@ import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
 import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
-import com.potato.timetable.util.Config;
 import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.Utils;
 
@@ -206,8 +205,9 @@ public class EditActivity extends AppCompatActivity {
         mCourse.setClassStart(mClassStart);
         mCourse.setDayOfWeek(mDayOfWeek);
         mCourse.setClassLength(mClassEnd - mClassStart + 1);
-        mCourse.setWeekOfTerm(weekOfTerm);
-        mCourse.setWeekOptions(mSpinner.getSelectedItem().toString());
+        //TODO:保存编辑后的课程表
+        //mCourse.setWeekOfTerm(weekOfTerm);
+
         mCourse.setTeacher(teacher);
         return true;
     }
@@ -369,16 +369,12 @@ public class EditActivity extends AppCompatActivity {
     private void setDefaultValue() {
         mTeacherEditText.setText(mCourse.getTeacher());
         mNameEditText.setText(mCourse.getName());
-        String string = mCourse.getWeekOptions();
+        int weekOption=Utils.getWeekOptionFromWeekOfTerm(mCourse.getWeekOfTerm());
 
-        if (string.equals("周"))
-            mSpinner.setSelection(0);
-        else if (string.equals("单周"))
-            mSpinner.setSelection(1);
-        else
-            mSpinner.setSelection(2);
+        mSpinner.setSelection(weekOption);
 
-        mWeekOfTermEditText.setText(mCourse.getWeekOfTerm());
+        mWeekOfTermEditText.setText(Utils.getStringFromWeekOfTerm(mCourse.getWeekOfTerm()));
+
         mClassRoomEditText.setText(mCourse.getClassRoom());
 
         int class_start = mCourse.getClassStart();

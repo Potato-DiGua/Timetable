@@ -9,12 +9,14 @@ import java.util.List;
 public interface College {
     /**
      * 获取学校名字
+     *
      * @return
      */
     String getCollegeName();
 
     /**
      * 登录
+     *
      * @param account
      * @param pw
      * @param RandomCode 可为NULL，根据实际情况填写
@@ -24,25 +26,26 @@ public interface College {
 
     /**
      * 获取课程
+     *
      * @param term 课程学期
      * @return
      */
     List<Course> getCourses(String term);
 
-
     /**
      * 获取验证码的BitMap
-     * @param path 验证码路径
+     *
+     * @param path 验证码图片保存路径
      * @param name 验证码文件名
      * @return
      */
-    Bitmap getRandomCodeImg(String path,String name);
+    Bitmap getRandomCodeImg(String path, String name);
 
     /**
      * 获取课程学期选项
+     *
      * @return
      */
     String[] getTermOptions();
-
-
+    boolean isLogin();
 }

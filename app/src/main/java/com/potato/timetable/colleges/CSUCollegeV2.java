@@ -30,7 +30,7 @@ public class CSUCollegeV2 implements College {
     private static final String SESS_URL = BASE_URL + "/Logon.do?method=logon&flag=sess";
     private static final String LOGIN_URL = BASE_URL + "/Logon.do?method=logon";
     private static final String RANDOM_CODE_URL = BASE_URL + "/verifycode.servlet";
-
+    private static final String INDEX_URL = BASE_URL + "/jsxsd/framework/xsMain.jsp";
     private static final String TIMETABLE_EXCEL_URL = BASE_URL + "/jsxsd/xskb/xskb_print.do?xnxq01id=%s&zc=";
     private String[] termOptions;
     private Context mContext;
@@ -64,19 +64,38 @@ public class CSUCollegeV2 implements College {
             if (!TextUtils.isEmpty(result)) {
                 Document doc = Jsoup.parse(result);
                 if (doc.title().equals("学生个人中心")) {
-                    Element e=doc.select("select[id=xnxq01id]").first();
-                    Elements es=e.children();
-                    termOptions=new String[es.size()];
-                    int i=0;
-                    for(Element element:es)
-                    {
-                        termOptions[i++]=element.text();
+                    Element e = doc.select("select[id=xnxq01id]").first();
+                    Elements es = e.children();
+                    termOptions = new String[es.size()];
+                    int i = 0;
+                    for (Element element : es) {
+                        termOptions[i++] = element.text();
                     }
                     return true;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isLogin() {
+
+        String result = OkHttpUtils.toString(OkHttpUtils.downloadRaw(INDEX_URL));
+        if (!TextUtils.isEmpty(result)) {
+            Document doc = Jsoup.parse(result);
+            if (doc.title().equals("学生个人中心")) {
+                Element e = doc.select("select[id=xnxq01id]").first();
+                Elements es = e.children();
+                termOptions = new String[es.size()];
+                int i = 0;
+                for (Element element : es) {
+                    termOptions[i++] = element.text();
+                }
+                return true;
+            }
         }
         return false;
     }
@@ -109,10 +128,9 @@ public class CSUCollegeV2 implements College {
     @Override
     public Bitmap getRandomCodeImg(String path, String name) {
 
-        if(OkHttpUtils.downloadToLocal(RANDOM_CODE_URL, path, name))
-        {
+        if (OkHttpUtils.downloadToLocal(RANDOM_CODE_URL, path, name)) {
             return BitmapFactory.decodeFile(path + File.separator + name);
-        }else {
+        } else {
             return null;
         }
     }
@@ -131,10 +149,9 @@ public class CSUCollegeV2 implements College {
 
         String path = mContext.getFilesDir().getAbsolutePath();
         String name = "timetable.xls";
-        Log.d("excel",path+"/"+name);
+        Log.d("excel", path + "/" + name);
 
-        if(OkHttpUtils.downloadToLocal(request, path, name))
-        {
+        if (OkHttpUtils.downloadToLocal(request, path, name)) {
             File file = new File(path, name);
             if (file.exists()) {
                 List<Course> list = ExcelUtils.handleExcel(file.getAbsolutePath(), 4, 2);
@@ -148,7 +165,6 @@ public class CSUCollegeV2 implements College {
 
     @Override
     public String[] getTermOptions() {
-
         return termOptions;
     }
 }
