@@ -3,7 +3,7 @@ package com.potato.timetable.bean;
 
 import androidx.annotation.NonNull;
 
-public class Course implements Cloneable{
+public class Course implements Cloneable,Comparable<Course>{
     private String name;//课程名
     private String teacher;//教授名字
     private int classLength =0;//课程时长
@@ -75,5 +75,16 @@ public class Course implements Cloneable{
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
+    }
+
+    @Override
+    public int compareTo(Course course) {
+        int i=this.getDayOfWeek()-course.getDayOfWeek();//首先比较星期
+        if(i==0)//星期相同比较开始上课的时间
+        {
+            return this.getClassStart()-course.getClassStart();
+        }else {
+            return i;
+        }
     }
 }

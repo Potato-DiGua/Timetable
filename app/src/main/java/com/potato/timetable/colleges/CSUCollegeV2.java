@@ -126,10 +126,11 @@ public class CSUCollegeV2 implements College {
 
 
     @Override
-    public Bitmap getRandomCodeImg(String path, String name) {
+    public Bitmap getRandomCodeImg(String dirPath) {
 
-        if (OkHttpUtils.downloadToLocal(RANDOM_CODE_URL, path, name)) {
-            return BitmapFactory.decodeFile(path + File.separator + name);
+        String name="random.jpg";
+        if (OkHttpUtils.downloadToLocal(RANDOM_CODE_URL, dirPath, name)) {
+            return BitmapFactory.decodeFile(dirPath + File.separator + name);
         } else {
             return null;
         }

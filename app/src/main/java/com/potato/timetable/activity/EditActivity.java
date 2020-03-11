@@ -83,8 +83,6 @@ public class EditActivity extends AppCompatActivity {
             mDayOfWeek=intent.getIntExtra(EXTRA_Day_OF_WEEK,0);
             mClassStart=intent.getIntExtra(EXTRA_CLASS_START,0);
         }
-
-
         if (mIndex != -1) {
             try {
                 mCourse = (Course) MainActivity.sCourseList.get(mIndex).clone();
@@ -111,10 +109,6 @@ public class EditActivity extends AppCompatActivity {
 
             mCourse = new Course();
         }
-
-
-
-
         setCardViewAlpha();
         ImageView imageView = findViewById(R.id.iv_bg_edit);
 
@@ -489,7 +483,6 @@ public class EditActivity extends AppCompatActivity {
      * 初始化选择对话框
      *
      */
-
     private void initOptionsPicker() {
 
         int options1= mDayOfWeek-1;

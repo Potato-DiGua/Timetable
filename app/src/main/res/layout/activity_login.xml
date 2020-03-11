@@ -23,6 +23,18 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="10dp">
+
+            <TextView
+                android:layout_marginTop="30dp"
+                android:id="@+id/tv_college_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorBlack"
+                android:textSize="35sp"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:text="TextView" />
+
             <EditText
                 android:id="@+id/et_account"
                 android:layout_width="match_parent"

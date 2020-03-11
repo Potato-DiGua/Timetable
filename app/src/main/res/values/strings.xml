@@ -35,19 +35,6 @@
     <string name="classLength">节数</string>
     <string name="teacher">老师</string>
 
-    <string name="class1">1</string>
-    <string name="class2">2</string>
-    <string name="class3">3</string>
-    <string name="class4">4</string>
-    <string name="class5">5</string>
-    <string name="class6">6</string>
-    <string name="class7">7</string>
-    <string name="class8">8</string>
-    <string name="class9">9</string>
-    <string name="class10">10</string>
-    <string name="class11">11</string>
-    <string name="class12">12</string>
-
     <string name="mon">周一</string>
     <string name="tues">周二</string>
     <string name="wed">周三</string>
@@ -70,7 +57,7 @@
     <string name="week_of_term_example">示例:1,7,9,11&#8211;17,19(英文标点)</string>
 
 
-<!--    LoginActivity-->
+    <!--    LoginActivity-->
     <string name="prompt_id">学号</string>
     <string name="prompt_password">密码</string>
     <string name="action_sign_in">登录</string>

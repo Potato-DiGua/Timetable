@@ -3,7 +3,8 @@
     <dimen name="cell_height">70dp</dimen>
     <dimen name="timetable_height">840dp</dimen>
 
-    <dimen name="table_header_class_width">25dp</dimen>
+    <dimen name="table_header_class_width">35dp</dimen>
+
     <dimen name="edit_text_size">18sp</dimen>
     <dimen name="course_name">20sp</dimen>
     <dimen name="course_details_text_size">16sp</dimen>

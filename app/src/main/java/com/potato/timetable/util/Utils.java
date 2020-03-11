@@ -156,8 +156,10 @@ public class Utils {
             return SINGLE_WEEK;
         }else if(hasDoubleWeek){
             return DOUBLE_WEEK;
+        }else {
+            return -1;
         }
-        return -1;
+
     }
 
     /**
@@ -166,6 +168,8 @@ public class Utils {
      * @return
      */
     public static String getStringFromWeekOfTerm(int weekOfTerm) {
+        if(weekOfTerm==0)
+            return "";
         StringBuilder stringBuilder = new StringBuilder();
 
         int weekOptions= getWeekOptionFromWeekOfTerm(weekOfTerm);

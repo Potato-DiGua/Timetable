@@ -11,6 +11,7 @@ public class Config {
     private static int bgId = R.color.background_color_white;//保存图片id,当等于零的时候，使用自定义图片,
     private static float cardViewAlpha = 1.0f;//卡片布局的透明度 值为0.0-1.0
     private static int MAX_WEEK_NUM = 25;//最大周数
+    private static int MAX_CLASS_NUM=12;
 
 
     private static final String KEY_WEEK_OF_TERM = "current_week";
@@ -32,6 +33,10 @@ public class Config {
 
     public static int getMaxWeekNum() {
         return MAX_WEEK_NUM;
+    }
+
+    public static int getMaxClassNum() {
+        return MAX_CLASS_NUM;
     }
 
     public static int getBgId() {

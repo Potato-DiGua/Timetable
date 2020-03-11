@@ -35,11 +35,10 @@ public interface College {
     /**
      * 获取验证码的BitMap
      *
-     * @param path 验证码图片保存路径
-     * @param name 验证码文件名
+     * @param dirPath 验证码图片保存路径
      * @return
      */
-    Bitmap getRandomCodeImg(String path, String name);
+    Bitmap getRandomCodeImg(String dirPath);
 
     /**
      * 获取课程学期选项

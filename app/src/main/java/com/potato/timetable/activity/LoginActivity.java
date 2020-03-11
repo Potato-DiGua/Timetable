@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,16 +28,18 @@ import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
 import com.potato.timetable.colleges.CSUCollegeV2;
 import com.potato.timetable.colleges.CsuCollege;
+import com.potato.timetable.colleges.ShmtuCollege;
 import com.potato.timetable.colleges.base.College;
 import com.potato.timetable.util.HttpUtils;
 import com.potato.timetable.util.Utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private College college = new CSUCollegeV2(this);
+    private College college = new ShmtuCollege(this);
 
     private EditText mAccountEt;
     private EditText mPwEt;
@@ -113,6 +116,8 @@ public class LoginActivity extends AppCompatActivity {
      * 初始化
      */
     private void init() {
+        TextView collegeName=findViewById(R.id.tv_college_name);
+        collegeName.setText(college.getCollegeName());
         mRandomCodeIv = findViewById(R.id.iv_random_code);
         mLoginBtn = findViewById(R.id.btn_login);
         mProgressBar = findViewById(R.id.loading);
@@ -157,8 +162,11 @@ public class LoginActivity extends AppCompatActivity {
 
     private void readAccountFromLocal() {
         SharedPreferences sharedPreferences = getSharedPreferences("account", Context.MODE_PRIVATE);
-        mAccountEt.setText(sharedPreferences.getString(KEY_ACCOUNT, ""));
-        mPwEt.setText(sharedPreferences.getString(KEY_PWD, ""));
+        //mAccountEt.setText(sharedPreferences.getString(KEY_ACCOUNT, ""));
+        //mPwEt.setText(sharedPreferences.getString(KEY_PWD, ""));
+        //TODO:删除
+        mAccountEt.setText("201610320038");
+        mPwEt.setText("jiubanbuqi...");
     }
 
     private void setActionBar() {
@@ -227,6 +235,10 @@ public class LoginActivity extends AppCompatActivity {
             public void run() {
                 final List<Course> list = college.getCourses(term);
                 final boolean success = (list != null && list.size() != 0);
+                if(success)
+                {
+                    Collections.sort(list);//按星期和上课时间排序
+                }
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -316,7 +328,7 @@ public class LoginActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final Bitmap bitmap = college.getRandomCodeImg(getExternalCacheDir().getAbsolutePath(), "randomcode.jpg");
+                final Bitmap bitmap = college.getRandomCodeImg(getExternalCacheDir().getAbsolutePath());
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
