@@ -44,6 +44,7 @@ public class ShmtuCollege implements College {
     private static final String RANDOM_IMG_URL = BASE_URL + "/cas/captcha";
     private Map<String, String> termMap = new HashMap<>();
     private Context mContext;
+    private boolean isLogin = false;
 
     public ShmtuCollege(Context mContext) {
         this.mContext = mContext;
@@ -56,16 +57,17 @@ public class ShmtuCollege implements College {
 
     @Override
     public boolean login(String account, String pw, String RandomCode) {
+        if(isLogin())
+            return true;
         String result = OkHttpUtils.toString(OkHttpUtils.downloadRaw(LOGIN_URL));
         Document doc = Jsoup.parse(result);
         Element e = doc.getElementById("fm1");
-
-        String loginUrl = Uri.parse(LOGIN_URL)
-                .buildUpon()
-                .appendQueryParameter("service", "https://portal.shmtu.edu.cn/node")
-                .build().toString();
-        Log.d("url", loginUrl);
-        String execution = e.child(5).attr("value");
+        String execution="";
+        if(e!=null&&e.children().size()>6){
+            execution = e.child(5).attr("value");
+            if(TextUtils.isEmpty(execution))
+                return false;
+        }
 
         FormBody formBody = new FormBody.Builder()
                 .add("username", account)//账号
@@ -81,6 +83,7 @@ public class ShmtuCollege implements College {
                 .addHeader("Accept-Language", "zh-CN,zh;q=0.9")
                 .post(formBody)
                 .build();
+
         result = OkHttpUtils.toString(OkHttpUtils.downloadRaw(request));
         doc = Jsoup.parse(result);
         Elements elements = doc.getElementsByClass("alert-success");
@@ -90,6 +93,7 @@ public class ShmtuCollege implements College {
                 if (div.child(0).text().equals("登录成功")) {
                     String url = "https://portal.shmtu.edu.cn/";
                     redirect(new Request.Builder().url(url).build());
+                    isLogin = true;
                     return true;
                 }
             }
@@ -97,7 +101,7 @@ public class ShmtuCollege implements College {
         return false;
     }
 
-    private String redirect(Request request) {
+    private void redirect(Request request) {
         try {
             Response response = OkHttpUtils.getOkHttpClient()
                     .newCall(request)
@@ -110,11 +114,9 @@ public class ShmtuCollege implements College {
                         .newCall(new Request.Builder().url(location).build())
                         .execute();
             }
-            return response.body().toString();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return "";
     }
 
     @Override
@@ -146,17 +148,16 @@ public class ShmtuCollege implements College {
 
         boolean flag = false;//用于标记是否新建课程
         for (String s : info.split(";")) {
-            Log.d("courses",s);
+            Log.d("courses", s);
             if (s.startsWith("activity")) {
                 Course course = new Course();
-                s = s.replaceAll("\"", "");
-                String[] courseInfo = s.split(",");
+                String[] courseInfo = s.split("\",\"");
                 course.setTeacher(courseInfo[1]);
                 course.setName(courseInfo[3].substring(0, courseInfo[3].indexOf('(')));
                 course.setClassRoom(courseInfo[5]);
                 course.setWeekOfTerm(Integer.parseInt(courseInfo[6].substring(0, Config.getMaxWeekNum()), 2));//二进制转十进制
                 flag = true;
-                Log.d("courses",course.getTeacher()+courseInfo[6]);
+                Log.d("courses", course.getTeacher() + courseInfo[6]);
                 courseList.add(course);
             } else if (s.startsWith("index")) {
                 Course course = courseList.get(courseList.size() - 1);
@@ -167,21 +168,21 @@ public class ShmtuCollege implements College {
                         if (!TextUtils.isEmpty(str)) {
                             course.setDayOfWeek(Integer.parseInt(str) + 1);
                         }
+                        str = m.group(2);
                         if (!TextUtils.isEmpty(str)) {
                             int classStart = Integer.parseInt(str) + 1;
                             course.setClassStart(classStart >= 7 ? classStart - 2 : classStart);
                         }
                         course.setClassLength(1);
-                        flag=false;
+                        flag = false;
                     }
                 } else {
                     course.setClassLength(course.getClassLength() + 1);
                 }
             }
         }
-        for(Course course:courseList)
-        {
-            Log.d("course",course.getName()+",周"+course.getDayOfWeek()+course.getClassStart()+"-"+course.getClassLength());
+        for (Course course : courseList) {
+            Log.d("course", course.getName() + ",周" + course.getDayOfWeek() + course.getClassStart() + "-" + course.getClassLength());
         }
         return courseList;
     }
@@ -198,6 +199,15 @@ public class ShmtuCollege implements College {
 
     @Override
     public String[] getTermOptions() {
+        if (termMap.size() > 0) {
+            String[] strings = new String[termMap.size()];
+            int i = 0;
+            for (String key : termMap.keySet()) {
+                strings[i++] = key;
+            }
+            return strings;
+        }
+
         redirect(new Request.Builder().url("https://jwxt.shmtu.edu.cn/shmtu/home.action").build());
         String url = "https://jwxt.shmtu.edu.cn/shmtu/dataQuery.action";
         FormBody form = new FormBody.Builder()
@@ -225,6 +235,22 @@ public class ShmtuCollege implements College {
 
     @Override
     public boolean isLogin() {
+        Request request = new Request.Builder()
+                .url(LOGIN_URL)
+                .addHeader("Accept-Language", "zh-CN,zh;q=0.9")
+                .build();
+        String result = OkHttpUtils.toString(OkHttpUtils.downloadRaw(request));
+        Document doc = Jsoup.parse(result);
+        Elements elements = doc.getElementsByClass("alert-success");
+        if (elements.size() > 0) {
+            Element div = elements.first();
+            if (div.children().size() > 0) {
+                if (div.child(0).text().equals("登录成功")) {
+                    isLogin=true;
+                    return true;
+                }
+            }
+        }
         return false;
     }
 }

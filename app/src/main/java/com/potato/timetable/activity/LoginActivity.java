@@ -73,10 +73,11 @@ public class LoginActivity extends AppCompatActivity {
             public void run() {
                 if(college.isLogin())
                 {
+                    final String[] strings=college.getTermOptions();
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            showSelectDialog(college.getTermOptions());
+                            showSelectDialog(strings);
                         }
                     });
                 }
