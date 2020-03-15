@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.util.Log;
 import android.widget.ImageView;
 
 import androidx.cardview.widget.CardView;
@@ -14,6 +15,9 @@ import com.google.gson.Gson;
 import com.potato.timetable.bean.Version;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * 工具类：
@@ -31,9 +35,10 @@ public class Utils {
     private static final String BASE_URL = "https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/app/release/";
     private static Bitmap bgBitmap = null;
 
-    public static final int SINGLE_DOUBLE_WEEK=0;
-    public static final int SINGLE_WEEK=1;
-    public static final int DOUBLE_WEEK=2;
+    public static final int SINGLE_DOUBLE_WEEK = 0;
+    public static final int SINGLE_WEEK = 1;
+    public static final int DOUBLE_WEEK = 2;
+    public static final String[] WEEK_OPTIONS = new String[]{"周", "单周", "双周"};
 
 
     public static void setPATH(String PATH) {
@@ -57,6 +62,24 @@ public class Utils {
         }
         imageView.setImageBitmap(bgBitmap);
 
+    }
+
+    public static String getDate() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmm", Locale.CHINA);
+        return simpleDateFormat.format(new Date());
+    }
+
+    /**
+     * 计算1970年1月4号0时0分0秒(周一)至今有多少周
+     * 用于更新周数，用一年周数的话跨年会产生问题
+     *
+     * @return
+     */
+    public static long getWeekNum() {
+        //System.currentTimeMillis()返回的是1970年1月4号0时0分0秒距今多少毫秒
+        long day = System.currentTimeMillis() / (1000 * 60 * 60 * 24) - 4;//减四为1月4日距今多少天
+        //Log.d("weeknum",String.valueOf(day/7+1));
+        return day / 7 + 1;
     }
 
     /**
@@ -133,6 +156,7 @@ public class Utils {
 
     /**
      * 判断是单周、双周、还是周
+     *
      * @param weekOfTerm
      * @return
      */
@@ -141,38 +165,50 @@ public class Utils {
         int doubleWeek = 0xaaaaaaaa;//二进制:1010,1010,1010,1010,1010,1010,1010,1010
 
         //如果总周数是偶数则互换，保证算法的正确性
-        if (Config.getMaxWeekNum() % 2 == 0){
-            int temp=singleWeek;
-            singleWeek=doubleWeek;
-            doubleWeek=temp;
+        if (Config.getMaxWeekNum() % 2 == 0) {
+            int temp = singleWeek;
+            singleWeek = doubleWeek;
+            doubleWeek = temp;
         }
         //快速判断是否有单周或者双周
         boolean hasSingleWeek = ((singleWeek & weekOfTerm) != 0);
         boolean hasDoubleWeek = ((doubleWeek & weekOfTerm) != 0);
-        if(hasSingleWeek&&hasDoubleWeek)
-        {
+        if (hasSingleWeek && hasDoubleWeek) {
             return SINGLE_DOUBLE_WEEK;
-        }else if(hasSingleWeek){
+        } else if (hasSingleWeek) {
             return SINGLE_WEEK;
-        }else if(hasDoubleWeek){
+        } else if (hasDoubleWeek) {
             return DOUBLE_WEEK;
-        }else {
+        } else {
             return -1;
         }
 
     }
 
     /**
+     *
+     * @param weekOfTerm
+     * @return 获取格式为"1-9,19,20-25 [周]"的周数
+     */
+    public static String getFormatStringFromWeekOfTerm(int weekOfTerm) {
+        return getStringFromWeekOfTerm(weekOfTerm) +
+                " [" +
+                WEEK_OPTIONS[getWeekOptionFromWeekOfTerm(weekOfTerm)] +
+                "]";
+    }
+
+    /**
      * 生成1-18,19,25格式的周数
+     *
      * @param weekOfTerm
      * @return
      */
     public static String getStringFromWeekOfTerm(int weekOfTerm) {
-        if(weekOfTerm==0)
+        if (weekOfTerm == 0)
             return "";
         StringBuilder stringBuilder = new StringBuilder();
 
-        int weekOptions= getWeekOptionFromWeekOfTerm(weekOfTerm);
+        int weekOptions = getWeekOptionFromWeekOfTerm(weekOfTerm);
 
         boolean week[] = new boolean[Config.getMaxWeekNum()];
 
@@ -180,51 +216,60 @@ public class Utils {
             week[i] = ((weekOfTerm & 0x01) == 1);
             weekOfTerm = weekOfTerm >> 1;
         }
-        String weekOptionsStr="";
+        String weekOptionsStr = "";
 
-        int start=0;
-        int space=2;
+        int start = 1;
+        int space = 2;
 
-        switch (weekOptions){
+        switch (weekOptions) {
             case SINGLE_DOUBLE_WEEK:
-                space=1;
+                space = 1;
                 break;
             case SINGLE_WEEK:
                 break;
             case DOUBLE_WEEK:
-                start=1;
+                start = 2;
                 break;
             default:
                 return "error";
 
         }
         int count = 0;
-        for (int i = start; i < Config.getMaxWeekNum(); i+=space) {
-            if (week[i]) {
+        for (int i = start; i <= Config.getMaxWeekNum(); i += space) {
+            if (week[i-1]) {
                 if (count == 0) {
-                    stringBuilder.append(i+1);
+                    stringBuilder.append(i);
                 }
                 count += 1;
             } else {
-                if(count==1) {
+                if (count == 1) {
                     stringBuilder.append(',');
-                }else if(count>1){
+                } else if (count > 1) {
                     stringBuilder.append('-');
-                    stringBuilder.append(i);
+                    stringBuilder.append(i-space);
                     stringBuilder.append(',');
                 }
-                count=0;
+                count = 0;
             }
         }
-        if(count>1)
-        {
+        if (count > 1) {
             stringBuilder.append('-');
-            stringBuilder.append(Config.getMaxWeekNum());
+            int max=Config.getMaxWeekNum();
+            if(start==1&&max%2==0){//单周
+                max--;
+            }else if(start==2&&max%2==1){//双周
+                max--;
+            }
+            stringBuilder.append(max);
         }
-        int len=stringBuilder.length()-1;
-        if(stringBuilder.charAt(len)==',')
+        int len = stringBuilder.length() - 1;
+        if (stringBuilder.charAt(len) == ',')
             stringBuilder.deleteCharAt(len);
 
         return stringBuilder.toString();
+    }
+
+    public static String formatTime(int time) {
+        return time < 10 ? "0" + time : String.valueOf(time);
     }
 }

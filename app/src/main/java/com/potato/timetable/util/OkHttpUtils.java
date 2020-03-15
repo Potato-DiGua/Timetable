@@ -16,12 +16,15 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 public class OkHttpUtils {
     private static final byte[] EMPTY_BYTES = new byte[0];
+    public static final MediaType JSON
+            = MediaType.get("application/json; charset=utf-8");
 
     /**
      * 自动存储保存cookies

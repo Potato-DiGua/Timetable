@@ -66,5 +66,5 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.7.3'
     implementation 'com.squareup.okhttp3:okhttp:4.4.0'
     implementation 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
-    implementation 'com.acker:simplezxing:1.5'
+    implementation 'cn.yipianfengye.android:zxing-library:2.2'
 }

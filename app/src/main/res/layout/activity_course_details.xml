@@ -5,7 +5,7 @@
     android:id="@+id/course_details_bg_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.CourseDetailsActivity">
+    tools:context=".ui.activity.CourseDetailsActivity">
 
     <ImageView
         android:id="@+id/iv_bg"

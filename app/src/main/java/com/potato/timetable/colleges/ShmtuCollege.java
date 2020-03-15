@@ -150,12 +150,14 @@ public class ShmtuCollege implements College {
         for (String s : info.split(";")) {
             Log.d("courses", s);
             if (s.startsWith("activity")) {
+                //需要的解析字符串
+                //activity = new TaskActivity("9905","戴峰","1679(XX210270_001)","微波技术与天线(XX210270_001)","5362","教学3B503","00000000011111111000000000000000000000000000000000000");
                 Course course = new Course();
                 String[] courseInfo = s.split("\",\"");
                 course.setTeacher(courseInfo[1]);
                 course.setName(courseInfo[3].substring(0, courseInfo[3].indexOf('(')));
                 course.setClassRoom(courseInfo[5]);
-                course.setWeekOfTerm(Integer.parseInt(courseInfo[6].substring(0, Config.getMaxWeekNum()), 2));//二进制转十进制
+                course.setWeekOfTerm(Integer.parseInt(courseInfo[6].substring(1, Config.getMaxWeekNum()+1), 2));//二进制转十进制
                 flag = true;
                 Log.d("courses", course.getTeacher() + courseInfo[6]);
                 courseList.add(course);

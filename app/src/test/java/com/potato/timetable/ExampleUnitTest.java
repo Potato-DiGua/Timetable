@@ -3,13 +3,15 @@ package com.potato.timetable;
 import com.potato.timetable.util.ExcelUtils;
 import com.potato.timetable.util.HttpUtils;
 import com.potato.timetable.util.OkHttpUtils;
+import com.potato.timetable.util.ShareUtils;
 import com.potato.timetable.util.Utils;
 
 import org.junit.Test;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 
@@ -22,12 +24,42 @@ public class ExampleUnitTest {
 
     @Test
     public void test() {
-        String s="index=2*unitCount+3;";
-        Matcher m = Pattern.compile("index=(\\d+)\\*unitCount\\+(\\d+);").matcher(s);
-        if(m.find())
-        {
-            System.out.println(m.group(0));
-        }
+        Date date = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY,0);
+        // 时
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        // 分
+        calendar.set(Calendar.MINUTE, 0);
+        // 秒
+        calendar.set(Calendar.SECOND, 0);
+        // 毫秒
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        int dayOfWeek=calendar.get(Calendar.DAY_OF_WEEK);
+        dayOfWeek--;
+        calendar.add(Calendar.DATE,7-dayOfWeek);
+
+        //年
+        int year = calendar.get(Calendar.YEAR);
+        //月
+        int month = calendar.get(Calendar.MONTH) + 1;
+        //日
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        //获取系统时间
+        //小时
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        //分钟
+        int minute = calendar.get(Calendar.MINUTE);
+        //秒
+        int second = calendar.get(Calendar.SECOND);
+
+
+        System.out.println("Calendar获取当前日期"+year+"年"+month+"月"+day+"日"+hour+":"+minute+":"+second);
+        System.out.println(dayOfWeek);
+
+
 
     }
 

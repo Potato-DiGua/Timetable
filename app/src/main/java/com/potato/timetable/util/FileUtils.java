@@ -3,8 +3,10 @@ package com.potato.timetable.util;
 
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.DocumentsContract;
@@ -20,33 +22,38 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
  * 文件工具类
  */
-public class FileUtils {
-    private static final String FILE_NAME = "timetable.json";
+public class FileUtils<T> {
+    public static final String TIMETABLE_FILE_NAME = "timetable.json";
+    public static final String TIME_FILE_NAME = "time.json";
 
     /**
-     * 将课表信息以json格式保存
-     * @param courseList
+     * 将数据以json格式保存
+     *
      * @param context
+     * @param data
+     * @param fileName
      */
-    public static void saveToJson(List<Course> courseList, Context context) {
+    public void saveToJson(Context context, T data, String fileName) {
         BufferedWriter bw = null;
         OutputStream os = null;
         try {
-            os = context.openFileOutput(FILE_NAME, Context.MODE_PRIVATE);
+            os = context.openFileOutput(fileName, Context.MODE_PRIVATE);
             bw = new BufferedWriter(new OutputStreamWriter(os));
 
-            String data = new Gson().toJson(courseList);
-            bw.write(data);
+            String json = new Gson().toJson(data);
+            bw.write(json);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -63,23 +70,25 @@ public class FileUtils {
     }
 
     /**
-     * json反序列化生成Course对象
+     * 从文件中反序列化生成对象
+     *
      * @param context
-     * @return List<Course> 返回课程列表
+     * @param fileName
+     * @return
      */
-    public static List<Course> readFromJson(Context context) {
-        File file = new File(context.getFilesDir().getPath(), FILE_NAME);
+    public T readFromJson(Context context, String fileName, Type type) {
+        File file = new File(context.getFilesDir().getPath(), fileName);
         if (!file.exists())
             return null;
         BufferedReader br = null;
         try {
-            br = new BufferedReader(new InputStreamReader(context.openFileInput(FILE_NAME)));
+            br = new BufferedReader(new InputStreamReader(context.openFileInput(fileName)));
             StringBuilder stringBuilder = new StringBuilder();
             String line;
             while ((line = br.readLine()) != null) {
                 stringBuilder.append(line);
             }
-            return new Gson().fromJson(stringBuilder.toString(),new TypeToken<List<Course>>(){}.getType());
+            return new Gson().fromJson(stringBuilder.toString(), type);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -95,9 +104,49 @@ public class FileUtils {
     }
 
     /**
+     * 保存图片到本地
+     *
+     * @param bitmap
+     */
+    public static void saveBitmap(Context context,Bitmap bitmap,String fileName) {
+        File file=null;
+        try {
+            // 指纹图片存放路径
+            String sdCardDir = Environment.getExternalStorageDirectory() + "/QrCodeimages/";
+            File dirFile = new File(sdCardDir);
+            if (!dirFile.exists()) {              //如果不存在，那就建立这个文件夹
+                dirFile.mkdirs();
+            }
+            file = new File(sdCardDir, fileName + ".jpg");
+            FileOutputStream fos = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // 把文件插入到系统图库
+        try {
+            MediaStore.Images.Media.insertImage(context.getContentResolver(),
+                    file.getAbsolutePath(), fileName, null);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        // 通知图库更新
+        context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                Uri.parse("file://" + file.getAbsolutePath())));
+
+
+    }
+
+    /**
      * 文件复制
+     *
      * @param inpath  String 源文件路径
-     * @param outpath  String 目的文件路径
+     * @param outpath String 目的文件路径
      * @return boolean 是否复制成功
      */
 
@@ -141,12 +190,9 @@ public class FileUtils {
     }
 
 
-
-
-
     /**
      * 从uri获取路径
-     *
+     * <p>
      * Get a file path from a Uri. This will sendGet the the path for Storage Access
      * Framework Documents, as well as the _data field for the MediaStore and
      * other file-based ContentProviders.
@@ -169,8 +215,6 @@ public class FileUtils {
                 if ("primary".equalsIgnoreCase(type)) {
                     return Environment.getExternalStorageDirectory() + "/" + split[1];
                 }
-
-                // TODO handle non-primary volumes
             }
             // DownloadsProvider
             else if (isDownloadsDocument(uri)) {
@@ -248,8 +292,7 @@ public class FileUtils {
                 final int index = cursor.getColumnIndexOrThrow(column);
                 return cursor.getString(index);
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             if (cursor != null)
