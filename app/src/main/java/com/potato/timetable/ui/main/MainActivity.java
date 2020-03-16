@@ -1,4 +1,4 @@
-package com.potato.timetable.ui.activity;
+package com.potato.timetable.ui.main;
 
 
 import android.Manifest;
@@ -46,6 +46,11 @@ import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
 import com.potato.timetable.bean.Send;
 import com.potato.timetable.bean.Time;
+import com.potato.timetable.ui.config.ConfigActivity;
+import com.potato.timetable.ui.coursedetails.CourseDetailsActivity;
+import com.potato.timetable.ui.settime.SetTimeActivity;
+import com.potato.timetable.ui.editcourse.EditActivity;
+import com.potato.timetable.ui.login.LoginActivity;
 import com.potato.timetable.util.CalendarReminderUtils;
 import com.potato.timetable.util.Config;
 import com.potato.timetable.util.ExcelUtils;

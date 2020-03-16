@@ -1,4 +1,4 @@
-package com.potato.timetable.ui.activity;
+package com.potato.timetable.ui.login;
 
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
 import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
@@ -29,6 +30,7 @@ import com.potato.timetable.bean.Course;
 import com.potato.timetable.colleges.CsuCollege;
 import com.potato.timetable.colleges.ShmtuCollege;
 import com.potato.timetable.colleges.base.College;
+import com.potato.timetable.ui.main.MainActivity;
 import com.potato.timetable.util.HttpUtils;
 import com.potato.timetable.util.Utils;
 
@@ -46,6 +48,7 @@ public class LoginActivity extends AppCompatActivity {
     private ImageView mRandomCodeIv;
     private Button mLoginBtn;
     private ProgressBar mProgressBar;
+    private FragmentManager fragmentManager;
 
     private Handler mHandler = new Handler();
 
@@ -60,29 +63,33 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        init();
+//        init();
         setActionBar();
         ImageView bgIv = findViewById(R.id.iv_bg);
         Utils.setBackGround(this, bgIv);
-
-        setRandomCodeImg();
-        judgeConnected();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if(college.isLogin())
-                {
-                    final String[] strings=college.getTermOptions();
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            showSelectDialog(strings);
-                        }
-                    });
-                }
-
-            }
-        }).start();
+        fragmentManager = getSupportFragmentManager();      //初始化管理者
+        LoginFragment loginFragment=new LoginFragment();      //第一页Fragment
+        fragmentManager.beginTransaction()
+                .add(R.id.fragment_container,loginFragment)
+                .commit();
+//
+//        setRandomCodeImg();
+//        judgeConnected();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (college.isLogin()) {
+//                    final String[] strings = college.getTermOptions();
+//                    mHandler.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            showSelectDialog(strings);
+//                        }
+//                    });
+//                }
+//
+//            }
+//        }).start();
     }
 
     private void judgeConnected() {
@@ -116,7 +123,7 @@ public class LoginActivity extends AppCompatActivity {
      * 初始化
      */
     private void init() {
-        TextView collegeName=findViewById(R.id.tv_college_name);
+        TextView collegeName = findViewById(R.id.tv_college_name);
         collegeName.setText(college.getCollegeName());
         mRandomCodeIv = findViewById(R.id.iv_random_code);
         mLoginBtn = findViewById(R.id.btn_login);
@@ -232,8 +239,7 @@ public class LoginActivity extends AppCompatActivity {
             public void run() {
                 final List<Course> list = college.getCourses(term);
                 final boolean success = (list != null && list.size() != 0);
-                if(success)
-                {
+                if (success) {
                     Collections.sort(list);//按星期和上课时间排序
                 }
                 mHandler.post(new Runnable() {
@@ -278,13 +284,14 @@ public class LoginActivity extends AppCompatActivity {
     private void hideInput() {
         InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         View v = getWindow().peekDecorView();
-        if (null != v) {
+        if (null != v && imm != null) {
             imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
         }
     }
 
     /**
      * 登录
+     *
      * @param account
      * @param pw
      * @param randomCode String 验证码
@@ -301,7 +308,7 @@ public class LoginActivity extends AppCompatActivity {
                     public void run() {
                         setLoading(false);
                         if (isLogin) {
-                            saveAccountToLocal(mAccountEt.getText().toString(),mPwEt.getText().toString());
+                            saveAccountToLocal(mAccountEt.getText().toString(), mPwEt.getText().toString());
                             showSelectDialog(termOptions);
                         } else {
                             Toast.makeText(

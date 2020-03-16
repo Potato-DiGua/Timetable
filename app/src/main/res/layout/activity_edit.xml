@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.activity.EditActivity">
+    tools:context=".ui.editcourse.EditActivity">
 
 <!--    使用ImageView显示背景图片可以避免因为ActionBar的存在，导致图片的变形-->
 

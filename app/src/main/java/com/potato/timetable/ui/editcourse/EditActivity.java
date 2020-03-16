@@ -1,14 +1,11 @@
-package com.potato.timetable.ui.activity;
+package com.potato.timetable.ui.editcourse;
 
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -27,7 +24,7 @@ import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
 import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
-import com.potato.timetable.ui.WeekOfTermSelectDialog;
+import com.potato.timetable.ui.main.MainActivity;
 import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.Utils;
 

@@ -15,7 +15,7 @@ public class Config {
     private static int MAX_CLASS_NUM = 12;
 
 
-    private static final String KEY_WEEK_OF_TERM = "current_week";
+    private static final String KEY_WEEK_OF_TERM = "long_current_week";
     private static final String KEY_FLAG_WEEK = "flag_week";
     private static final String KEY_BG_ID = "bg_id";
     private static final String KEY_CARD_VIEW_ALPHA = "card_view_alpha";

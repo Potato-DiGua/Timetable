@@ -1,4 +1,4 @@
-package com.potato.timetable.ui.activity;
+package com.potato.timetable.ui.coursedetails;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -20,6 +20,8 @@ import androidx.cardview.widget.CardView;
 
 import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
+import com.potato.timetable.ui.main.MainActivity;
+import com.potato.timetable.ui.editcourse.EditActivity;
 import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.Utils;
 

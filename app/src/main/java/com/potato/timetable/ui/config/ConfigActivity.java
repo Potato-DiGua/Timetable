@@ -1,4 +1,4 @@
-package com.potato.timetable.ui.activity;
+package com.potato.timetable.ui.config;
 
 import android.Manifest;
 import android.content.DialogInterface;

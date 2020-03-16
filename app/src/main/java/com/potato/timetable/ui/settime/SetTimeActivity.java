@@ -1,4 +1,4 @@
-package com.potato.timetable.ui.activity;
+package com.potato.timetable.ui.settime;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -26,6 +26,7 @@ import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
 import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.potato.timetable.R;
 import com.potato.timetable.bean.Time;
+import com.potato.timetable.ui.main.MainActivity;
 import com.potato.timetable.util.Config;
 import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.Utils;

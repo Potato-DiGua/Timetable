@@ -1,4 +1,4 @@
-package com.potato.timetable.ui;
+package com.potato.timetable.ui.editcourse;
 
 import android.app.Dialog;
 import android.content.Context;

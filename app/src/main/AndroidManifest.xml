@@ -24,13 +24,13 @@
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup"
         tools:targetApi="n">
-        <activity android:name=".ui.activity.SetTimeActivity"></activity>
-        <activity android:name=".ui.activity.LoginActivity" />
-        <activity android:name=".ui.activity.ConfigActivity" />
-        <activity android:name=".ui.activity.EditActivity" />
-        <activity android:name=".ui.activity.CourseDetailsActivity" />
+        <activity android:name=".ui.settime.SetTimeActivity"></activity>
+        <activity android:name=".ui.login.LoginActivity" />
+        <activity android:name=".ui.config.ConfigActivity" />
+        <activity android:name=".ui.editcourse.EditActivity" />
+        <activity android:name=".ui.coursedetails.CourseDetailsActivity" />
         <activity
-            android:name=".ui.activity.MainActivity"
+            android:name=".ui.main.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

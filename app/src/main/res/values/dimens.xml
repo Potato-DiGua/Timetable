@@ -17,4 +17,5 @@
 
     <dimen name="class_num_header_text_size">10sp</dimen>
     <dimen name="timetable_cell_text_size">13sp</dimen>
+    <dimen name="text_margin">16dp</dimen>
 </resources>
