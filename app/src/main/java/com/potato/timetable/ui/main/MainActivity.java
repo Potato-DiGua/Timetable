@@ -206,34 +206,51 @@ public class MainActivity extends AppCompatActivity {
 
         setCalendarEvent();
     }
+
+    /**
+     * 更新日程，在周日进行下一周的日程添加，并删除所有日程
+     */
     private void updateCalendarEvent(){
         CalendarReminderUtils.deleteCalendarEvent(this, CalendarReminderUtils.DESCRIPTION);
         addClassCalendarEvent(getCoursesNeedToTake());
     }
+
+    /**
+     * 设置日程
+     */
     private void setCalendarEvent() {
         if(sTimes==null)
             return;
         //获取权限
         if (CalendarReminderUtils.checkPermission(this)) {
-            Calendar calendar = initCalendar();
-            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
-            calendar.add(Calendar.DATE, -dayOfWeek);
-            final long start = calendar.getTimeInMillis();
-            calendar.add(Calendar.DATE, 7);
-            final long end = calendar.getTimeInMillis();
-            int size= CalendarReminderUtils.findCalendarEvent(
-                    this, CalendarReminderUtils.DESCRIPTION, start, end);
-            List<Course> courseList=getCoursesNeedToTake();
-            if(size!=courseList.size()){
-                //依靠备注清除日程
-                CalendarReminderUtils.deleteCalendarEvent(this, CalendarReminderUtils.DESCRIPTION);
-                addClassCalendarEvent(courseList,start);
+            //检查日历是否有账户，没有则创建，失败返回-1
+            if(CalendarReminderUtils.checkAndAddCalendarAccount(this)==-1){
+                Toast.makeText(this,"日历中没有账户，自动创建失败，请手动创建",Toast.LENGTH_LONG).show();
+            }else {
+                Calendar calendar = initCalendar();
+                int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+                calendar.add(Calendar.DATE, -dayOfWeek);
+                final long start = calendar.getTimeInMillis();
+                calendar.add(Calendar.DATE, 7);
+                final long end = calendar.getTimeInMillis();
+                int size= CalendarReminderUtils.findCalendarEvent(
+                        this, CalendarReminderUtils.DESCRIPTION, start, end);
+                List<Course> courseList=getCoursesNeedToTake();
+                if(size!=courseList.size()){
+                    //依靠备注清除日程
+                    CalendarReminderUtils.deleteCalendarEvent(this, CalendarReminderUtils.DESCRIPTION);
+                    addClassCalendarEvent(courseList,start);
+                }
             }
-
         } else {
             CalendarReminderUtils.fetchPermission(this, REQ_PER_Calendar);
         }
     }
+
+    /**
+     *
+     * @return 本周应该上的课程
+     */
     private List<Course> getCoursesNeedToTake(){
         int currentWeek = Config.getCurrentWeek();
         if (getWeekOfDay() == 1) {//周日插入下周课程的日程
@@ -249,6 +266,11 @@ public class MainActivity extends AppCompatActivity {
         }
         return tempList;
     }
+
+    /**
+     *
+     * @param courses 本周应该上的课程
+     */
     private void addClassCalendarEvent(List<Course> courses) {
         Calendar calendar = initCalendar();
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
@@ -257,11 +279,18 @@ public class MainActivity extends AppCompatActivity {
         addClassCalendarEvent(courses, start);
     }
 
+    /**
+     * 添加一周的课程，周日为第一天
+     *
+     * @param courses 本周应该上的课程
+     * @param start 本周周日的0点0分的时间戳
+     */
     private void addClassCalendarEvent(List<Course> courses, final long start) {
         final int minute = 1000 * 60;
         final int hour = minute * 60;
         final int day = 24 * hour;
-        Log.d("stimes",courses.size()+"");
+        //Log.d("stimes",courses.size()+"");
+        String[] weeks=new String[]{"周日","周一","周二","周三","周四","周五","周六"};
         for (Course course : courses) {
             Log.d("stimes",course.getClassStart()+"");
             String classStart = sTimes[course.getClassStart() - 1].getStart();
@@ -279,7 +308,13 @@ public class MainActivity extends AppCompatActivity {
                         course.getClassRoom(),
                         start + day * course.getDayOfWeek() + hour * startHour + minute * startMinute,
                         hour * (endHour - startHour) + minute * (endMinute - startMinute));
-                CalendarReminderUtils.addCalendarAlarm(this, uri, 10);
+                if(uri==null){
+                    Toast.makeText(this,
+                            weeks[course.getDayOfWeek()-1]+"-"+course.getName()+"日程添加失败",Toast.LENGTH_SHORT).show();
+                }else {
+                    CalendarReminderUtils.addCalendarAlarm(this, uri, 10);
+                }
+
             }
         }
     }
@@ -287,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 初始化Calendar
      *
-     * @return
+     * @return x年x月x日0时0分0秒0毫秒
      */
     private Calendar initCalendar() {
         Date date = new Date();
