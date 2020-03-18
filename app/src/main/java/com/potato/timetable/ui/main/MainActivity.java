@@ -156,8 +156,6 @@ public class MainActivity extends AppCompatActivity {
 
         getWritePermission();//得到读写权限用于保存课表信息
 
-        OkHttpUtils.init(this);//初始化okhttp
-
         int[] weekTextView = new int[]{//储存周几表头
                 R.id.tv_sun,
                 R.id.tv_mon,

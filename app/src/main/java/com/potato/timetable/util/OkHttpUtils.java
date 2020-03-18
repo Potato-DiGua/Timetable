@@ -5,6 +5,7 @@ import android.content.Context;
 import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
+import com.potato.timetable.MyApplication;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -16,6 +17,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.CookieJar;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -28,43 +30,38 @@ public class OkHttpUtils {
 
     /**
      * 自动存储保存cookies
-
-    private static class MyCookieJar implements CookieJar {
-        private Map<String, List<Cookie>> cookieStore = new HashMap<>();
-
-        @NotNull
-        @Override
-        public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
-            List<Cookie> cookies = cookieStore.get(httpUrl.host());
-            return cookies != null ? cookies : new ArrayList<Cookie>();
-        }
-
-        @Override
-        public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) {
-            cookieStore.put(httpUrl.host(), list);
-        }
-    }
-
-    private static MyCookieJar cookieJar = new MyCookieJar();*/
-    private static PersistentCookieJar cookieJar;
-    private static OkHttpClient okHttpClient;
-
-    public static OkHttpClient getOkHttpClient() {
-        return okHttpClient;
-    }
+     * <p>
+     * private static class MyCookieJar implements CookieJar {
+     * private Map<String, List<Cookie>> cookieStore = new HashMap<>();
+     *
+     * @NotNull
+     * @Override public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
+     * List<Cookie> cookies = cookieStore.get(httpUrl.host());
+     * return cookies != null ? cookies : new ArrayList<Cookie>();
+     * }
+     * @Override public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) {
+     * cookieStore.put(httpUrl.host(), list);
+     * }
+     * }
+     * <p>
+     * private static MyCookieJar cookieJar = new MyCookieJar();
+     */
 
     /**
-     * 初始化okhttp，并自动管理cookie
-     * @param context
+     *
+     * 静态内部类单例模式
+     * 需要时加载
+     *
+     * 只有第一次调用getInstance方法时，
+     * 虚拟机才加载 Inner 并初始化okHttpClient，
+     * 只有一个线程可以获得对象的初始化锁，其他线程无法进行初始化，
+     * 保证对象的唯一性。目前此方式是所有单例模式中最推荐的模式。
      */
-    public static void init(Context context)
-    {
-        cookieJar = new PersistentCookieJar(
+    private static class Inner {
+        private static final CookieJar cookieJar = new PersistentCookieJar(
                 new SetCookieCache(),
-                new SharedPrefsCookiePersistor(
-                        context.getApplicationContext()));
-        okHttpClient = new OkHttpClient()
-                .newBuilder()
+                new SharedPrefsCookiePersistor(MyApplication.getApplication()));
+        private static final OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
                 .cookieJar(cookieJar)
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .readTimeout(5, TimeUnit.SECONDS)
@@ -72,6 +69,14 @@ public class OkHttpUtils {
                 .followRedirects(false)
                 .build();
     }
+
+    public static OkHttpClient getOkHttpClient() {
+        return Inner.okHttpClient;
+    }
+    public static CookieJar getCookieJar(){
+        return Inner.cookieJar;
+    }
+
     /**
      * 下载文件到本地
      *
@@ -99,7 +104,7 @@ public class OkHttpUtils {
         BufferedOutputStream bos = null;
         try {
             Response response = getOkHttpClient().newCall(request).execute();
-            if(response.code()==200){
+            if (response.code() == 200) {
                 File file = new File(path);
                 if (!file.exists()) {
                     file.mkdirs();
@@ -114,8 +119,8 @@ public class OkHttpUtils {
 
                 byte[] buffer = new byte[1024];
                 int len;
-                while ((len=bis.read(buffer, 0, 1024)) != -1) {
-                    bos.write(buffer,0,len);
+                while ((len = bis.read(buffer, 0, 1024)) != -1) {
+                    bos.write(buffer, 0, len);
                 }
                 bos.flush();
 
@@ -188,13 +193,13 @@ public class OkHttpUtils {
     public static byte[] downloadRaw(Request request) {
         try {
             Response response = getOkHttpClient().newCall(request).execute();
-            if(response.code()==200){
+            if (response.code() == 200) {
                 InputStream is = response.body().byteStream();
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 byte[] buffer = new byte[1024];
                 int len;
-                while ((len=is.read(buffer, 0, 1024)) != -1) {
-                    bos.write(buffer,0,len);
+                while ((len = is.read(buffer, 0, 1024)) != -1) {
+                    bos.write(buffer, 0, len);
                 }
                 bos.flush();
                 return bos.toByteArray();
