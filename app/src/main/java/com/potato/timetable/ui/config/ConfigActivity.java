@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -32,6 +33,7 @@ import androidx.core.content.ContextCompat;
 
 import com.potato.timetable.BgBtnAdapter;
 import com.potato.timetable.R;
+import com.potato.timetable.util.CalendarReminderUtils;
 import com.potato.timetable.util.Config;
 import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.Utils;
@@ -101,6 +103,11 @@ public class ConfigActivity extends AppCompatActivity{
             public void onStopTrackingTouch(SeekBar seekBar) {
 
             }
+        });
+        Button cleanBtn=findViewById(R.id.btn_delete_calendar_event);
+        cleanBtn.setOnClickListener(view -> {
+            CalendarReminderUtils.deleteCalendarEvent(ConfigActivity.this
+                    ,CalendarReminderUtils.DESCRIPTION);
         });
 
         Utils.setBackGround(this,mBgImageView);

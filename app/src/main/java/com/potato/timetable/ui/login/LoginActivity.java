@@ -175,7 +175,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void setActionBar() {
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle(String.format(getString(R.string.title_activity_login), CsuCollege.COLLEGE_NAME));
+        actionBar.setTitle(String.format(getString(R.string.title_activity_login), college.getCollegeName()));
         actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
