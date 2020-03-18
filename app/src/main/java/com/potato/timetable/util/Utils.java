@@ -133,15 +133,16 @@ public class Utils {
      * @return
      */
     public static String checkUpdate(long versionCode) {
-        Version version = new Gson().fromJson(HttpUtils.sendGet(UPDATE_URL), Version.class);
-        //Log.d("update","最新版本号"+version.getVersionCode());
-
-        if (version.getVersionCode() > versionCode) {
-            return BASE_URL + version.getReleaseName();
-        } else {
-            //Log.d("update","最新版");
-            return "";
+        String json=OkHttpUtils.toString(OkHttpUtils.downloadRaw(UPDATE_URL));
+        if(!json.isEmpty())
+        {
+            Version version = new Gson().fromJson(json, Version.class);
+            //Log.d("update","最新版本号"+version.getVersionCode());
+            if (version.getVersionCode() > versionCode) {
+                return BASE_URL + version.getReleaseName();
+            }
         }
+        return "";
 
     }
 

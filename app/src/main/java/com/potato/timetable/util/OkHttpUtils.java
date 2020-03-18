@@ -98,29 +98,29 @@ public class OkHttpUtils {
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
         try {
-
-
             Response response = getOkHttpClient().newCall(request).execute();
-            File file = new File(path);
-            if (!file.exists()) {
-                file.mkdirs();
-            } else {
-                if (!file.isDirectory())
-                    return false;
+            if(response.code()==200){
+                File file = new File(path);
+                if (!file.exists()) {
+                    file.mkdirs();
+                } else {
+                    if (!file.isDirectory())
+                        return false;
+                }
+
+                bos = new BufferedOutputStream(
+                        new FileOutputStream(path + File.separator + name));
+                bis = new BufferedInputStream(response.body().byteStream());
+
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len=bis.read(buffer, 0, 1024)) != -1) {
+                    bos.write(buffer,0,len);
+                }
+                bos.flush();
+
+                return true;
             }
-
-            bos = new BufferedOutputStream(
-                    new FileOutputStream(path + File.separator + name));
-            bis = new BufferedInputStream(response.body().byteStream());
-
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len=bis.read(buffer, 0, 1024)) != -1) {
-                bos.write(buffer,0,len);
-            }
-            bos.flush();
-
-            return true;
         } catch (IOException | NullPointerException e) {
             e.printStackTrace();
         } finally {
@@ -188,19 +188,20 @@ public class OkHttpUtils {
     public static byte[] downloadRaw(Request request) {
         try {
             Response response = getOkHttpClient().newCall(request).execute();
-            InputStream is = response.body().byteStream();
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len=is.read(buffer, 0, 1024)) != -1) {
-                bos.write(buffer,0,len);
+            if(response.code()==200){
+                InputStream is = response.body().byteStream();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len=is.read(buffer, 0, 1024)) != -1) {
+                    bos.write(buffer,0,len);
+                }
+                bos.flush();
+                return bos.toByteArray();
             }
-            bos.flush();
-            return bos.toByteArray();
-
         } catch (IOException | NullPointerException e) {
             e.printStackTrace();
-            return EMPTY_BYTES;
         }
+        return EMPTY_BYTES;
     }
 }
