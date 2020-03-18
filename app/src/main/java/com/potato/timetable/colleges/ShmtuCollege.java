@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -36,8 +37,10 @@ public class ShmtuCollege implements College {
     private static final String LOGIN_URL = BASE_URL + "/cas/login";
     private static final String RANDOM_IMG_URL = BASE_URL + "/cas/captcha";
     private Map<String, String> termMap = new HashMap<>();
+    private static final String[] EMPTY_STRINGS=new String[0];
     private Context mContext;
     private boolean isLogin = false;
+    private String ids;
 
     public ShmtuCollege(Context mContext) {
         this.mContext = mContext;
@@ -115,30 +118,32 @@ public class ShmtuCollege implements College {
     @Override
     public List<Course> getCourses(String term) {
         String id = termMap.get(term);
-        if (TextUtils.isEmpty(id))
+        if (TextUtils.isEmpty(id)) {
             return null;
+        }
         Log.d("courses", id);
         FormBody form = new FormBody.Builder()
                 .add("ignoreHead", "1")
                 .add("setting.kind", "std")
                 .add("startWeek", "1")
                 .add("semester.id", id)
-                .add("ids", "380336")
+                .add("ids", ids)
                 .build();
         Request request = new Request.Builder()
                 .url("https://jwxt.shmtu.edu.cn/shmtu/courseTableForStd!courseTable.action")
                 .post(form)
                 .build();
         String result = OkHttpUtils.downloadText(request);
+        Log.d("courses",result);
         Document doc = Jsoup.parse(result);
         Element e = doc.getElementsByTag("script").last();
         String script = e.html();
         String info = script.split("var fakeCourses = \\[\\];")[1]
                 .split("function containFakeCourse")[0]
                 .replaceAll("[\\s\\u00A0]", "");//去除&nbsp;和空格
+        Log.d("courses",info);
 
         List<Course> courseList = new ArrayList<>();
-
         boolean flag = false;//用于标记是否新建课程
         for (String s : info.split(";")) {
             Log.d("courses", s);
@@ -176,9 +181,6 @@ public class ShmtuCollege implements College {
                 }
             }
         }
-        for (Course course : courseList) {
-            Log.d("course", course.getName() + ",周" + course.getDayOfWeek() + course.getClassStart() + "-" + course.getClassLength());
-        }
         return courseList;
     }
 
@@ -204,9 +206,38 @@ public class ShmtuCollege implements College {
         }
 
         redirect(new Request.Builder().url("https://jwxt.shmtu.edu.cn/shmtu/home.action").build());
+
+        String result= OkHttpUtils.downloadText("https://jwxt.shmtu.edu.cn/shmtu/courseTableForStd.action");
+        Document doc = Jsoup.parse(result);
+        Elements elements=doc.getElementsByTag("script");
+        int size=elements.size();
+        if(size<2){
+            return EMPTY_STRINGS;
+        }
+        String s1=elements.get(size-1).html();
+        String s2=elements.get(size-2).html();
+        Log.d("find",s1);
+        Log.d("find",s2);
+        String semesterBarId=null;
+        Matcher matcher = Pattern.compile("bg.form.addInput\\(form,\"ids\",\"(\\d+)\"\\)").matcher(s1);
+        if(matcher.find()){
+            ids=matcher.group(1);
+            if(TextUtils.isEmpty(ids))
+                return EMPTY_STRINGS;
+            Log.d("find",ids);
+        }
+        matcher = Pattern.compile("jQuery\\(\"#semesterBar(\\d+)\"\\)").matcher(s2);
+        if(matcher.find()){
+            semesterBarId=matcher.group(1);
+            if(TextUtils.isEmpty(semesterBarId))
+                return EMPTY_STRINGS;
+            Log.d("find",semesterBarId);
+        }
+
+
         String url = "https://jwxt.shmtu.edu.cn/shmtu/dataQuery.action";
         FormBody form = new FormBody.Builder()
-                .add("tagId", "semesterBar1001572775Semester")
+                .add("tagId", "semesterBar"+semesterBarId+"Semester")
                 .add("dataType", "semesterCalendar")
                 .add("value", "215")
                 .add("empty", "false")
@@ -215,11 +246,11 @@ public class ShmtuCollege implements College {
                 .url(url)
                 .post(form)
                 .build();
-        String result = OkHttpUtils.downloadText(request);
-        Matcher matcher = Pattern.compile("\\{id:(\\d+),schoolYear:\"([0-9\\-]+)\",name:\"([12])\"\\}").matcher(result);
+        result = OkHttpUtils.downloadText(request);
+        matcher = Pattern.compile("\\{id:(\\d+),schoolYear:\"([0-9\\-]+)\",name:\"([12])\"\\}").matcher(result);
         List<String> list = new LinkedList<>();
         while (matcher.find()) {
-            Log.d("term", matcher.group(0));
+            //Log.d("term", matcher.group(0));
             String term = matcher.group(2) + "-" + matcher.group(3);
             termMap.put(term, matcher.group(1));
             list.add(term);

@@ -104,7 +104,6 @@ public class LoginFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         college = new ShmtuCollege(getContext());
-
     }
 
     @Override
@@ -279,17 +278,20 @@ public class LoginFragment extends Fragment {
             @Override
             public void run() {
                 final List<Course> list = college.getCourses(term);
-                final boolean success = (list != null && list.size() != 0);
-                if (success) {
+                final boolean success = list != null;
+                if (success&&list.size()>0) {
                     Collections.sort(list);//按星期和上课时间排序
                 }
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         setLoading(false);
-                        String tip = success ? "导入成功" : "导入失败";
-                        Toast.makeText(getActivity(), tip, Toast.LENGTH_SHORT).show();
                         if (success) {
+                            if(list.size()==0){
+                                Toast.makeText(getActivity(), "该学期没有课程", Toast.LENGTH_SHORT).show();
+                            }else {
+                                Toast.makeText(getActivity(), "导入成功", Toast.LENGTH_SHORT).show();
+                            }
                             MainActivity.sCourseList = list;
                             setUpdateResult();
                             judgeFlag = false;
@@ -297,7 +299,8 @@ public class LoginFragment extends Fragment {
                             if (activity != null) {
                                 activity.finish();
                             }
-
+                        }else {
+                            Toast.makeText(getActivity(), "导入失败", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });

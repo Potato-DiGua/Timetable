@@ -212,7 +212,9 @@ public class MainActivity extends AppCompatActivity {
      */
     private void updateCalendarEvent(){
         CalendarReminderUtils.deleteCalendarEvent(this, CalendarReminderUtils.DESCRIPTION);
-        addClassCalendarEvent(getCoursesNeedToTake());
+        if(sTimes!=null){
+            addClassCalendarEvent(getCoursesNeedToTake());
+        }
     }
 
     /**
@@ -286,6 +288,9 @@ public class MainActivity extends AppCompatActivity {
      * @param start 本周周日的0点0分的时间戳
      */
     private void addClassCalendarEvent(List<Course> courses, final long start) {
+        if(sTimes==null){
+            return;
+        }
         final int minute = 1000 * 60;
         final int hour = minute * 60;
         final int day = 24 * hour;

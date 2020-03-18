@@ -63,7 +63,7 @@
     <string name="prompt_password">密码</string>
     <string name="action_sign_in">登录</string>
     <string name="hint_random_code">验证码</string>
-    <string name="title_activity_login">%1$s教务系统登录</string>
+    <string name="title_activity_login">教务系统登录</string>
 
     <string name="hint_start_time">开始时间</string>
     <string name="hint_end_time">结束时间</string>
