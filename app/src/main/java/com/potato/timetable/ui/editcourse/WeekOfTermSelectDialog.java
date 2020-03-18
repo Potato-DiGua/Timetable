@@ -64,7 +64,7 @@ public class WeekOfTermSelectDialog extends Dialog {
         int weekOfTerm = 0;
         for (int i = 0, len = list.size(); i < len; i++) {
             if (list.get(i)) {
-                Log.d("weekofterm",String.valueOf(i));
+                //Log.d("weekofterm",String.valueOf(i));
                 weekOfTerm++;
             }
             if(i!=len-1){//最后不移动

@@ -178,37 +178,12 @@ public class EditActivity extends AppCompatActivity {
     private boolean setCourseFromView() {
         String name = mNameEditText.getText().toString();
         String classroom = mClassRoomEditText.getText().toString();
-        String weekOfTerm = mWeekOfTermTextView.getText().toString();
         String teacher = mTeacherEditText.getText().toString();
-
-        weekOfTerm = weekOfTermTrim(weekOfTerm);
-        mWeekOfTermTextView.setText(weekOfTerm);
-
-        if (name.isEmpty() || classroom.isEmpty() || teacher.isEmpty() || weekOfTerm.isEmpty() ||
+        if (name.isEmpty() || classroom.isEmpty() || teacher.isEmpty() ||
                 mDayOfWeek == 0 || mClassStart == 0 || mClassEnd == 0) {
             Toast.makeText(this, "内容不能为空", Toast.LENGTH_SHORT).show();
             return false;
         }
-
-        int m = checkWeekOfTermFormat(weekOfTerm);
-        switch (m) {
-            case 0:
-                Toast.makeText(this,
-                        "请检查周数是否按照格式填写", Toast.LENGTH_LONG).show();
-                return false;
-            case -1:
-                Toast.makeText(this,
-                        "存在周数在区间[1,25]外", Toast.LENGTH_LONG).show();
-                return false;
-            case -2:
-                Toast.makeText(this,
-                        "周数存在重复", Toast.LENGTH_LONG).show();
-                return false;
-            default:
-                break;
-        }
-
-
         mCourse.setName(name);
         mCourse.setClassRoom(classroom);
         mCourse.setClassStart(mClassStart);
@@ -217,103 +192,6 @@ public class EditActivity extends AppCompatActivity {
 
         mCourse.setTeacher(teacher);
         return true;
-    }
-
-    /**
-     * 去除字符串首尾的 ","
-     *
-     * @param text 需处理的字符串
-     * @return 处理后字符串
-     */
-    private String weekOfTermTrim(String text) {
-        int len = text.length();
-        int i = len - 1;
-        int j = 0;
-        for (; i >= 0; i--) {
-            if (text.charAt(i) != ',') {
-                break;
-            }
-
-        }
-        i++;
-        if (i != 0) {
-            for (; j < i; j++) {
-                if (text.charAt(j) != ',')
-                    break;
-            }
-        }
-        return text.substring(j, i);
-    }
-
-    /**
-     * @param text
-     * @return int
-     * 当值为1时，格式正确
-     * 当值为0时，格式不正确，不详细说明
-     * 当值为-1时，周数值在[1,25]外
-     * 当值为-2时，周数存在覆盖
-     */
-    private int checkWeekOfTermFormat(String text) {
-        String[] strings = text.split(",");
-
-        if (strings.length == 0)
-            return 0;
-        boolean[] flags = new boolean[25];
-
-        for (int i = 0; i < flags.length; i++)
-            flags[i] = false;
-
-        for (String s : strings) {
-            if (s.isEmpty()) {
-                return 0;
-            } else {
-                int index = s.indexOf('-');
-                if (index == -1) {
-                    int v = Integer.parseInt(s);
-                    if (checkNum(v)) {
-                        if (flags[v - 1])
-                            return -2;
-                        else
-                            flags[v - 1] = true;
-                    } else {
-                        return -1;
-                    }
-                } else if (index == 0) {
-                    return 0;
-                } else {
-                    int len = s.length();
-                    if (index == len - 1) {
-                        return 0;
-                    } else {
-                        String s1 = s.substring(0, index);
-                        String s2 = s.substring(index + 1);
-
-                        int a1 = Integer.parseInt(s1);
-                        int a2 = Integer.parseInt(s2);
-
-                        if (checkNum(a1) && checkNum(a2) && a1 < a2) {
-                            for (int i = a1; i <= a2; i++) {
-                                if (flags[i - 1])
-                                    return -2;
-                                else
-                                    flags[i - 1] = true;
-                            }
-                        } else {
-                            return -1;
-                        }
-                    }
-                }
-            }
-        }
-        return 1;
-    }
-
-    /**
-     * @param v 周数
-     * @return 是否在[1, 25]区间内
-     */
-    private boolean checkNum(int v) {
-        return (v > 0 && v <= 25);
     }
 
     /**

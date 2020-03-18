@@ -9,7 +9,7 @@ public class Course implements Cloneable,Comparable<Course>{
     private int classLength =0;//课程时长
     private int classStart =-1;//课程开始节数
     private String classRoom;//上课地点
-    private int weekOfTerm;//开始上课的周,用二进制后25位表示是否为本周
+    private int weekOfTerm=-1;//开始上课的周,用二进制后25位表示是否为本周
     private int dayOfWeek =0;//在周几上课 值1-7
 
     public int getClassStart() {
