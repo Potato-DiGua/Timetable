@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-import android.util.Log;
 import android.widget.ImageView;
 
 import androidx.cardview.widget.CardView;
@@ -133,7 +132,7 @@ public class Utils {
      * @return
      */
     public static String checkUpdate(long versionCode) {
-        String json=OkHttpUtils.toString(OkHttpUtils.downloadRaw(UPDATE_URL));
+        String json=OkHttpUtils.downloadText(UPDATE_URL);
         if(!json.isEmpty())
         {
             Version version = new Gson().fromJson(json, Version.class);

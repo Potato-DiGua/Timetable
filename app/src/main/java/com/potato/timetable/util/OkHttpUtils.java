@@ -1,7 +1,5 @@
 package com.potato.timetable.util;
 
-import android.content.Context;
-
 import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
@@ -143,34 +141,50 @@ public class OkHttpUtils {
         }
         return false;
     }
-
-
     /**
-     * 将字节数组转为字符串，默认utf-8编码
-     *
-     * @param data
+     * 下载文本内容
+     * @param url
      * @return
      */
-    public static String toString(byte[] data) {
-        return toString(data, "UTF-8");
+    public static String downloadText(String url){
+        return downloadText(url, "UTF-8");
     }
-
     /**
-     * 将字节数组转为特定编码的字符串
-     *
-     * @param data
-     * @param charsetName
+     * 下载文本内容
+     * @param request
      * @return
      */
-    public static String toString(byte[] data, String charsetName) {
+    public static String downloadText(Request request){
+        return downloadText(request,"UTF-8");
+    }
+    /**
+     * 下载文本内容
+     * @param url
+     * @return
+     */
+    public static String downloadText(String url, String encoding){
         try {
-            return new String(data, charsetName);
+            return new String(downloadRaw(url),encoding);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             return "";
         }
     }
 
+    /**
+     * 下载文本内容
+     * @param request
+     * @param encoding
+     * @return
+     */
+    public static String downloadText(Request request, String encoding){
+        try {
+            return new String(downloadRaw(request),encoding);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
     /**
      * 下载字节码
      *
@@ -188,7 +202,7 @@ public class OkHttpUtils {
      * 下载字节码
      *
      * @param request
-     * @return
+     * @return 返回下载内容
      */
     public static byte[] downloadRaw(Request request) {
         try {

@@ -1,11 +1,8 @@
 package com.potato.timetable.colleges;
 
-import android.app.DownloadManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.service.autofill.FieldClassification;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -21,18 +18,14 @@ import org.jsoup.select.Elements;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.transform.OutputKeys;
 
 import okhttp3.FormBody;
 import okhttp3.Request;
@@ -59,7 +52,7 @@ public class ShmtuCollege implements College {
     public boolean login(String account, String pw, String RandomCode) {
         if(isLogin())
             return true;
-        String result = OkHttpUtils.toString(OkHttpUtils.downloadRaw(LOGIN_URL));
+        String result = OkHttpUtils.downloadText(LOGIN_URL);
         Document doc = Jsoup.parse(result);
         Element e = doc.getElementById("fm1");
         String execution="";
@@ -84,7 +77,7 @@ public class ShmtuCollege implements College {
                 .post(formBody)
                 .build();
 
-        result = OkHttpUtils.toString(OkHttpUtils.downloadRaw(request));
+        result =OkHttpUtils.downloadText(request);
         doc = Jsoup.parse(result);
         Elements elements = doc.getElementsByClass("alert-success");
         if (elements.size() > 0) {
@@ -136,7 +129,7 @@ public class ShmtuCollege implements College {
                 .url("https://jwxt.shmtu.edu.cn/shmtu/courseTableForStd!courseTable.action")
                 .post(form)
                 .build();
-        String result = OkHttpUtils.toString(OkHttpUtils.downloadRaw(request));
+        String result = OkHttpUtils.downloadText(request);
         Document doc = Jsoup.parse(result);
         Element e = doc.getElementsByTag("script").last();
         String script = e.html();
@@ -222,7 +215,7 @@ public class ShmtuCollege implements College {
                 .url(url)
                 .post(form)
                 .build();
-        String result = OkHttpUtils.toString(OkHttpUtils.downloadRaw(request));
+        String result = OkHttpUtils.downloadText(request);
         Matcher matcher = Pattern.compile("\\{id:(\\d+),schoolYear:\"([0-9\\-]+)\",name:\"([12])\"\\}").matcher(result);
         List<String> list = new LinkedList<>();
         while (matcher.find()) {
@@ -241,7 +234,7 @@ public class ShmtuCollege implements College {
                 .url(LOGIN_URL)
                 .addHeader("Accept-Language", "zh-CN,zh;q=0.9")
                 .build();
-        String result = OkHttpUtils.toString(OkHttpUtils.downloadRaw(request));
+        String result = OkHttpUtils.downloadText(request);
         Document doc = Jsoup.parse(result);
         Elements elements = doc.getElementsByClass("alert-success");
         if (elements.size() > 0) {

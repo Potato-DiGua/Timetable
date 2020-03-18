@@ -60,7 +60,7 @@ public class CSUCollegeV2 implements College {
                 .post(form)
                 .build();
         try {
-            String result = OkHttpUtils.toString(OkHttpUtils.downloadRaw(request));
+            String result = OkHttpUtils.downloadText(request);
             if (!TextUtils.isEmpty(result)) {
                 Document doc = Jsoup.parse(result);
                 if (doc.title().equals("学生个人中心")) {
@@ -83,7 +83,7 @@ public class CSUCollegeV2 implements College {
     @Override
     public boolean isLogin() {
 
-        String result = OkHttpUtils.toString(OkHttpUtils.downloadRaw(INDEX_URL));
+        String result = OkHttpUtils.downloadText(INDEX_URL);
         if (!TextUtils.isEmpty(result)) {
             Document doc = Jsoup.parse(result);
             if (doc.title().equals("学生个人中心")) {
@@ -101,7 +101,7 @@ public class CSUCollegeV2 implements College {
     }
 
     private String encode(String account, String pw) {
-        String result = OkHttpUtils.toString(OkHttpUtils.downloadRaw(SESS_URL));
+        String result =OkHttpUtils.downloadText(SESS_URL);
 
         if (TextUtils.isEmpty(result))
             return "";
