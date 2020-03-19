@@ -14,9 +14,7 @@
 
 ---
 ### 界面
-<p>
-<img src="https://gitee.com/potato-digua/Timetable/raw/master/ReadmeResourse/gui.png" height="30%" width="30%">
-</p>
+[![8shJ2R.md.png](https://s1.ax1x.com/2020/03/19/8shJ2R.md.png)](https://imgchr.com/i/8shJ2R)
 
 ---
 ### 注意事项
