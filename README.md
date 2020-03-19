@@ -14,18 +14,14 @@
 
 ---
 ### 界面
-<p>
-<img src="https://gitee.com/potato-digua/Timetable/raw/master/ReadmeResourse/gui.png" height="30%" width="30%">
-</p>
+[![8shJ2R.md.png](https://s1.ax1x.com/2020/03/19/8shJ2R.md.png)](https://imgchr.com/i/8shJ2R)
 
 ---
 ### 注意事项
 Excel导入（因为使用jxl包所以**只支持xls文件**）<br>
 不支持冲突课程，如果冲突，会显示最后的课程<br>
 **Excel格式示例**
-<p>
-<img src="https://gitee.com/potato-digua/Timetable/raw/master/ReadmeResourse/Excel_example.png" height="70%" width="70%">
-</p>
+[![8shYx1.md.png](https://s1.ax1x.com/2020/03/19/8shYx1.md.png)](https://imgchr.com/i/8shYx1)
 <p>
 <a href="https://https://gitee.com/potato-digua/Timetable/raw/master/ReadmeResourse/Example.xls">下载示例Excel</a>
 </p>
