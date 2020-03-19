@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -21,10 +22,12 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -86,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView mBgImageView;
     private ImageButton mAddImgBtn;
     private LinearLayout headerClassNumLl;
-    private boolean flagUpdateCalendar=false;
+    private boolean flagUpdateCalendar = false;
 
     public static List<Course> sCourseList;
     public static Time[] sTimes;
@@ -210,9 +213,9 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 更新日程，在周日进行下一周的日程添加，并删除所有日程
      */
-    private void updateCalendarEvent(){
+    private void updateCalendarEvent() {
         CalendarReminderUtils.deleteCalendarEvent(this, CalendarReminderUtils.DESCRIPTION);
-        if(sTimes!=null){
+        if (sTimes != null) {
             addClassCalendarEvent(getCoursesNeedToTake());
         }
     }
@@ -221,27 +224,27 @@ public class MainActivity extends AppCompatActivity {
      * 设置日程
      */
     private void setCalendarEvent() {
-        if(sTimes==null)
+        if (sTimes == null)
             return;
         //获取权限
         if (CalendarReminderUtils.checkPermission(this)) {
             //检查日历是否有账户，没有则创建，失败返回-1
-            if(CalendarReminderUtils.checkAndAddCalendarAccount(this)==-1){
-                Toast.makeText(this,"日历中没有账户，自动创建失败，请手动创建",Toast.LENGTH_LONG).show();
-            }else {
+            if (CalendarReminderUtils.checkAndAddCalendarAccount(this) == -1) {
+                Toast.makeText(this, "日历中没有账户，自动创建失败，请手动创建", Toast.LENGTH_LONG).show();
+            } else {
                 Calendar calendar = initCalendar();
                 int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
                 calendar.add(Calendar.DATE, -dayOfWeek);
                 final long start = calendar.getTimeInMillis();
                 calendar.add(Calendar.DATE, 7);
                 final long end = calendar.getTimeInMillis();
-                int size= CalendarReminderUtils.findCalendarEvent(
+                int size = CalendarReminderUtils.findCalendarEvent(
                         this, CalendarReminderUtils.DESCRIPTION, start, end);
-                List<Course> courseList=getCoursesNeedToTake();
-                if(size!=courseList.size()){
+                List<Course> courseList = getCoursesNeedToTake();
+                if (size != courseList.size()) {
                     //依靠备注清除日程
                     CalendarReminderUtils.deleteCalendarEvent(this, CalendarReminderUtils.DESCRIPTION);
-                    addClassCalendarEvent(courseList,start);
+                    addClassCalendarEvent(courseList, start);
                 }
             }
         } else {
@@ -250,10 +253,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *
      * @return 本周应该上的课程
      */
-    private List<Course> getCoursesNeedToTake(){
+    private List<Course> getCoursesNeedToTake() {
         int currentWeek = Config.getCurrentWeek();
         if (getWeekOfDay() == 1) {//周日插入下周课程的日程
             currentWeek++;
@@ -270,7 +272,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *
      * @param courses 本周应该上的课程
      */
     private void addClassCalendarEvent(List<Course> courses) {
@@ -285,19 +286,19 @@ public class MainActivity extends AppCompatActivity {
      * 添加一周的课程，周日为第一天
      *
      * @param courses 本周应该上的课程
-     * @param start 本周周日的0点0分的时间戳
+     * @param start   本周周日的0点0分的时间戳
      */
     private void addClassCalendarEvent(List<Course> courses, final long start) {
-        if(sTimes==null){
+        if (sTimes == null) {
             return;
         }
         final int minute = 1000 * 60;
         final int hour = minute * 60;
         final int day = 24 * hour;
         //Log.d("stimes",courses.size()+"");
-        String[] weeks=new String[]{"周日","周一","周二","周三","周四","周五","周六"};
+        String[] weeks = new String[]{"周日", "周一", "周二", "周三", "周四", "周五", "周六"};
         for (Course course : courses) {
-            Log.d("stimes",course.getClassStart()+"");
+            Log.d("stimes", course.getClassStart() + "");
             String classStart = sTimes[course.getClassStart() - 1].getStart();
             String classEnd = sTimes[course.getClassStart() - 1 + course.getClassLength() - 1].getEnd();
             if (!classStart.isEmpty() && !classEnd.isEmpty()) {
@@ -313,10 +314,10 @@ public class MainActivity extends AppCompatActivity {
                         course.getClassRoom(),
                         start + day * course.getDayOfWeek() + hour * startHour + minute * startMinute,
                         hour * (endHour - startHour) + minute * (endMinute - startMinute));
-                if(uri==null){
+                if (uri == null) {
                     Toast.makeText(this,
-                            weeks[course.getDayOfWeek()-1]+"-"+course.getName()+"日程添加失败",Toast.LENGTH_SHORT).show();
-                }else {
+                            weeks[course.getDayOfWeek() - 1] + "-" + course.getName() + "日程添加失败", Toast.LENGTH_SHORT).show();
+                } else {
                     CalendarReminderUtils.addCalendarAlarm(this, uri, 10);
                 }
 
@@ -376,11 +377,32 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setTableCellDimens(float headerWidth) {
         //获取屏幕宽度，用于设置课程视图的宽度
-        int displayWidth = getResources().getDisplayMetrics().widthPixels;
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        int displayWidth = displayMetrics.widthPixels;
+        int displayHeight = displayMetrics.heightPixels;
+
 
         //课程视图宽度
         sCellWidthPx = (displayWidth - headerWidth) / 7.0f;
         sCellHeightPx = sCellWidthPx;//小格为正方形
+        ScrollView scrollView = findViewById(R.id.scroll_view);
+        ViewTreeObserver vto = scrollView.getViewTreeObserver();
+        vto.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                //屏幕分辨率高度比较大，适配充满屏幕
+                int height=scrollView.getMeasuredHeight()/Config.getMaxClassNum();
+                if(height>sCellHeightPx){
+                    sCellHeightPx=height;
+                }
+                //调用完，删除监听，防止重复调用
+                if(vto.isAlive()){
+                    vto.removeOnPreDrawListener(this);
+                }
+                return true;
+            }
+        });
+
     }
 
 
@@ -393,7 +415,7 @@ public class MainActivity extends AppCompatActivity {
         //设置课程表宽度
         layoutParams.width = (int) sCellWidthPx * 7;
 
-
+        mAddImgBtn.getLayoutParams().height = (int) sCellHeightPx;
         mFrameLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -726,7 +748,7 @@ public class MainActivity extends AppCompatActivity {
             updateTimetable();
         }
 
-        flagUpdateCalendar=false;
+        flagUpdateCalendar = false;
     }
 
     /**
@@ -859,7 +881,7 @@ public class MainActivity extends AppCompatActivity {
         for (int i = Config.getMaxClassNum(); i < mClassNumHeaders.length; i++) {
             headerClassNumLl.removeViewAt(i);
         }
-        flagUpdateCalendar=true;//更新日程
+        flagUpdateCalendar = true;//更新日程
 
     }
 
@@ -937,7 +959,7 @@ public class MainActivity extends AppCompatActivity {
         for (int i = size, len = mClassTableTvList.size(); i < len; i++) {
             mFrameLayout.removeView(mClassTableTvList.get(i));
         }
-        flagUpdateCalendar=true;//更新日程
+        flagUpdateCalendar = true;//更新日程
     }
 
 
@@ -1036,14 +1058,13 @@ public class MainActivity extends AppCompatActivity {
                     //Log.d("path", path);
                     break;
 
-                    //更新课程表
+                //更新课程表
                 case REQUEST_CODE_COURSE_EDIT:
                 case REQUEST_CODE_COURSE_DETAILS:
                     if (data == null)
                         return;
                     boolean update = data.getBooleanExtra(EditActivity.EXTRA_UPDATE_TIMETABLE, false);
-                    if (update)
-                    {
+                    if (update) {
                         updateTimetable();
                     }
                     break;
@@ -1132,7 +1153,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if(flagUpdateCalendar){
+        if (flagUpdateCalendar) {
             updateCalendarEvent();
         }
         super.onDestroy();

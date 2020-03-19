@@ -158,6 +158,7 @@
             </LinearLayout>
 
             <ScrollView
+                android:id="@+id/scroll_view"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1">
@@ -174,8 +175,7 @@
                         android:layout_width="@dimen/table_header_class_width"
                         android:layout_height="@dimen/timetable_height"
                         android:background="@color/header_class_color"
-                        android:orientation="vertical">
-                    </LinearLayout>
+                        android:orientation="vertical"></LinearLayout>
 
                     <FrameLayout
                         android:id="@+id/fl_timetable"
