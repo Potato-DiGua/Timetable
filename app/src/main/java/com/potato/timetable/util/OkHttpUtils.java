@@ -64,7 +64,7 @@ public class OkHttpUtils {
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .readTimeout(5, TimeUnit.SECONDS)
                 .writeTimeout(5, TimeUnit.SECONDS)
-                .followRedirects(false)
+                .followRedirects(true)
                 .build();
     }
 

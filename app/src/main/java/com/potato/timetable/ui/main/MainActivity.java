@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -65,6 +66,7 @@ import com.uuzuche.lib_zxing.activity.CaptureActivity;
 import com.uuzuche.lib_zxing.activity.CodeUtils;
 import com.uuzuche.lib_zxing.activity.ZXingLibrary;
 
+import org.apache.log4j.lf5.util.Resource;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -202,8 +204,6 @@ public class MainActivity extends AppCompatActivity {
         initScanQRCode();
 
         initTimetable();
-
-        initAddBtn();
 
         Utils.setBackGround(this, mBgImageView);
 
@@ -381,28 +381,15 @@ public class MainActivity extends AppCompatActivity {
         int displayWidth = displayMetrics.widthPixels;
         int displayHeight = displayMetrics.heightPixels;
 
+        Resources resources = getResources();
+        int toolbarHeight=resources.getDimensionPixelSize(R.dimen.toolbar_height);
+        int headerWeekHeight=resources.getDimensionPixelSize(R.dimen.header_week_height);
 
         //课程视图宽度
         sCellWidthPx = (displayWidth - headerWidth) / 7.0f;
-        sCellHeightPx = sCellWidthPx;//小格为正方形
-        ScrollView scrollView = findViewById(R.id.scroll_view);
-        ViewTreeObserver vto = scrollView.getViewTreeObserver();
-        vto.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                //屏幕分辨率高度比较大，适配充满屏幕
-                int height=scrollView.getMeasuredHeight()/Config.getMaxClassNum();
-                if(height>sCellHeightPx){
-                    sCellHeightPx=height;
-                }
-                //调用完，删除监听，防止重复调用
-                if(vto.isAlive()){
-                    vto.removeOnPreDrawListener(this);
-                }
-                return true;
-            }
-        });
 
+        sCellHeightPx = Math.max(sCellWidthPx,
+                (displayHeight-toolbarHeight-headerWeekHeight)/(float)Config.getMaxClassNum());
     }
 
 
@@ -424,10 +411,10 @@ public class MainActivity extends AppCompatActivity {
                     if (mAddImgBtn.getVisibility() == View.VISIBLE) {
                         mAddImgBtn.setVisibility(View.GONE);
                     } else {
-                        int x = (int) motionEvent.getX();
-                        int y = (int) motionEvent.getY();
-                        x = x - x % (int) sCellWidthPx;
-                        y = y - y % (int) sCellHeightPx;
+                        int x = (int) (motionEvent.getX()/sCellWidthPx);
+                        int y = (int) (motionEvent.getY()/sCellHeightPx);
+                        x = (int)(x*sCellWidthPx);
+                        y = (int)(y*sCellHeightPx);
                         setAddImgBtn(x, y);
                     }
                 }
@@ -438,7 +425,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void initAddBtn() {
         final FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mAddImgBtn.getLayoutParams();
-        layoutParams.width = (int) (sCellWidthPx);
+        layoutParams.width = (int) sCellWidthPx;
+        layoutParams.height = (int) sCellHeightPx;
         mAddImgBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -749,6 +737,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         flagUpdateCalendar = false;
+
+        initAddBtn();
     }
 
     /**
@@ -868,6 +858,7 @@ public class MainActivity extends AppCompatActivity {
                 textView = mClassNumHeaders[i];
             }
             stringBuilder.append(i + 1);
+            textView.getLayoutParams().height = height;
             if (sTimes != null && i < sTimes.length) {
                 stringBuilder.append('\n');
                 stringBuilder.append(sTimes[i].getStart());

@@ -30,6 +30,7 @@ import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
 import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
+import com.potato.timetable.colleges.CSUCollegeV2;
 import com.potato.timetable.colleges.CsuCollege;
 import com.potato.timetable.colleges.ShmtuCollege;
 import com.potato.timetable.colleges.base.College;
@@ -103,7 +104,7 @@ public class LoginFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        college = new ShmtuCollege(getContext());
+        college = new CSUCollegeV2(getContext());
     }
 
     @Override
