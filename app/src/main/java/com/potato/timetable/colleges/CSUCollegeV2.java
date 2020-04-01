@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.potato.timetable.MyApplication;
 import com.potato.timetable.bean.Course;
 import com.potato.timetable.colleges.base.College;
 import com.potato.timetable.util.ExcelUtils;
@@ -33,11 +34,7 @@ public class CSUCollegeV2 implements College {
     private static final String INDEX_URL = BASE_URL + "/jsxsd/framework/xsMain.jsp";
     private static final String TIMETABLE_EXCEL_URL = BASE_URL + "/jsxsd/xskb/xskb_print.do?xnxq01id=%s&zc=";
     private String[] termOptions;
-    private Context mContext;
 
-    public CSUCollegeV2(Context mContext) {
-        this.mContext = mContext;
-    }
 
     @Override
     public String getCollegeName() {
@@ -148,7 +145,7 @@ public class CSUCollegeV2 implements College {
                 .post(form)
                 .build();
 
-        String path = mContext.getFilesDir().getAbsolutePath();
+        String path = MyApplication.getApplication().getFilesDir().getAbsolutePath();
         String name = "timetable.xls";
         Log.d("excel", path + "/" + name);
 
@@ -156,7 +153,7 @@ public class CSUCollegeV2 implements College {
             File file = new File(path, name);
             if (file.exists()) {
                 List<Course> list = ExcelUtils.handleExcel(file.getAbsolutePath(), 4, 2);
-                //file.delete();
+                file.delete();
                 return list;
             }
         }
@@ -167,5 +164,10 @@ public class CSUCollegeV2 implements College {
     @Override
     public String[] getTermOptions() {
         return termOptions;
+    }
+
+    @Override
+    public boolean getFollowRedirects() {
+        return true;
     }
 }

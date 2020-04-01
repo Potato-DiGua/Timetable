@@ -70,8 +70,6 @@ public class ExcelUtils {
                     if (!str.isEmpty()) {
 
                         String[] strings = str.split("\n\n");
-
-
                         int length = strings.length;
 
                         for (int index = 0; index < length; index++) {
@@ -124,15 +122,8 @@ public class ExcelUtils {
         Course course = new Course();
         course.setName(contents[0]);
         course.setTeacher(contents[1]);
-        int week_start;
-        int week_end;
-
-        //String[] aStr = contents[2].split("\\[");
 
         course.setWeekOfTerm(getWeekOfTermFromString(contents[2]));
-
-        //System.out.println(strs[1]);
-        //course.setWeekOptions(aStr[1].substring(0, aStr[1].length() - 1));
 
         course.setClassRoom(contents[3]);
 
@@ -186,17 +177,5 @@ public class ExcelUtils {
         str = str.trim();//去除首尾空格
         return str;
     }
-
-/*
-    public static void main(String[] args) {
-        System.out.println("test");
-        List<Course> list = new ExcelUtils().handleExcel("C:\\Users\\86543\\Desktop\\specialclass.xls");
-        for (Course course:list) {
-
-            System.out.println(course.getName() + "\n" + course.getWeekOptions() + course.getClassStart());
-            System.out.println("------------------------");
-        }
-
-    }*/
 
 }

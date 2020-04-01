@@ -9,11 +9,12 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 
 import android.os.Handler;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,28 +32,28 @@ import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
 import com.potato.timetable.colleges.CSUCollegeV2;
-import com.potato.timetable.colleges.CsuCollege;
-import com.potato.timetable.colleges.ShmtuCollege;
 import com.potato.timetable.colleges.base.College;
+import com.potato.timetable.colleges.base.CollegeFactory;
 import com.potato.timetable.ui.main.MainActivity;
+import com.potato.timetable.util.Config;
 import com.potato.timetable.util.HttpUtils;
-import com.potato.timetable.util.Utils;
+import com.potato.timetable.util.OkHttpUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import okhttp3.OkHttpClient;
+
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link LoginFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
 public class LoginFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
     private College college;
 
@@ -71,41 +72,18 @@ public class LoginFragment extends Fragment {
     private static final String KEY_ACCOUNT = "account";
     private static final String KEY_PWD = "pwd";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public LoginFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment LoginFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static LoginFragment newInstance(String param1, String param2) {
-        LoginFragment fragment = new LoginFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-        college = new CSUCollegeV2(getContext());
+
+        college = CollegeFactory.createCollege(Config.getCollegeName());
+
+        OkHttpUtils.setFollowRedirects(college.getFollowRedirects());
+        setHasOptionsMenu(true);
+
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -114,6 +92,12 @@ public class LoginFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_login, container, false);
         init(view);
         return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_login,menu);
     }
 
     @Override

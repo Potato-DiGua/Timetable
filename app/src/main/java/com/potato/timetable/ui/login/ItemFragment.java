@@ -2,21 +2,17 @@ package com.potato.timetable.ui.login;
 
 import android.content.Context;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.potato.timetable.R;
-import com.potato.timetable.ui.login.dummy.DummyContent;
-import com.potato.timetable.ui.login.dummy.DummyContent.DummyItem;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.List;
+import com.potato.timetable.R;
 
 /**
  * A fragment representing a list of Items.
@@ -69,10 +65,14 @@ public class ItemFragment extends Fragment {
             RecyclerView recyclerView = (RecyclerView) view;
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
+
+//                DividerItemDecoration decoration=new DividerItemDecoration(context,DividerItemDecoration.VERTICAL);
+//                decoration.setDrawable(getResources().getDrawable(R.drawable.divider_vertical));
+//                recyclerView.addItemDecoration(decoration);
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(mListener));
         }
         return view;
     }
@@ -107,6 +107,6 @@ public class ItemFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(String item);
     }
 }

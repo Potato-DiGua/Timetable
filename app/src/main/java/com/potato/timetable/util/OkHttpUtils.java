@@ -46,10 +46,9 @@ public class OkHttpUtils {
      */
 
     /**
-     *
      * 静态内部类单例模式
      * 需要时加载
-     *
+     * <p>
      * 只有第一次调用getInstance方法时，
      * 虚拟机才加载 Inner 并初始化okHttpClient，
      * 只有一个线程可以获得对象的初始化锁，其他线程无法进行初始化，
@@ -59,7 +58,7 @@ public class OkHttpUtils {
         private static final CookieJar cookieJar = new PersistentCookieJar(
                 new SetCookieCache(),
                 new SharedPrefsCookiePersistor(MyApplication.getApplication()));
-        private static final OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
+        private static OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
                 .cookieJar(cookieJar)
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .readTimeout(5, TimeUnit.SECONDS)
@@ -71,7 +70,20 @@ public class OkHttpUtils {
     public static OkHttpClient getOkHttpClient() {
         return Inner.okHttpClient;
     }
-    public static CookieJar getCookieJar(){
+
+    public static void setFollowRedirects(boolean followRedirects) {
+        if (Inner.okHttpClient.followRedirects() != followRedirects) {
+            Inner.okHttpClient = new OkHttpClient().newBuilder()
+                    .cookieJar(Inner.cookieJar)
+                    .connectTimeout(5, TimeUnit.SECONDS)
+                    .readTimeout(5, TimeUnit.SECONDS)
+                    .writeTimeout(5, TimeUnit.SECONDS)
+                    .followRedirects(followRedirects)
+                    .build();
+        }
+    }
+
+    public static CookieJar getCookieJar() {
         return Inner.cookieJar;
     }
 
@@ -141,30 +153,36 @@ public class OkHttpUtils {
         }
         return false;
     }
+
     /**
      * 下载文本内容
+     *
      * @param url
      * @return
      */
-    public static String downloadText(String url){
+    public static String downloadText(String url) {
         return downloadText(url, "UTF-8");
     }
+
     /**
      * 下载文本内容
+     *
      * @param request
      * @return
      */
-    public static String downloadText(Request request){
-        return downloadText(request,"UTF-8");
+    public static String downloadText(Request request) {
+        return downloadText(request, "UTF-8");
     }
+
     /**
      * 下载文本内容
+     *
      * @param url
      * @return
      */
-    public static String downloadText(String url, String encoding){
+    public static String downloadText(String url, String encoding) {
         try {
-            return new String(downloadRaw(url),encoding);
+            return new String(downloadRaw(url), encoding);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             return "";
@@ -173,18 +191,20 @@ public class OkHttpUtils {
 
     /**
      * 下载文本内容
+     *
      * @param request
      * @param encoding
      * @return
      */
-    public static String downloadText(Request request, String encoding){
+    public static String downloadText(Request request, String encoding) {
         try {
-            return new String(downloadRaw(request),encoding);
+            return new String(downloadRaw(request), encoding);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             return "";
         }
     }
+
     /**
      * 下载字节码
      *

@@ -1,4 +1,4 @@
-package com.potato.timetable;
+package com.potato.timetable.ui.config;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+
+import com.potato.timetable.R;
 
 import java.util.ArrayList;
 import java.util.List;

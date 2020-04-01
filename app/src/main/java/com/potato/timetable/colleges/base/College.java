@@ -2,7 +2,11 @@ package com.potato.timetable.colleges.base;
 
 import android.graphics.Bitmap;
 
+import androidx.annotation.NonNull;
+
 import com.potato.timetable.bean.Course;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -46,5 +50,16 @@ public interface College {
      * @return
      */
     String[] getTermOptions();
+
+    /**
+     * 判断是否已经登陆
+     * @return
+     */
     boolean isLogin();
+
+    /**
+     * 配置okhttp是否自动重定向
+     * @return
+     */
+    boolean getFollowRedirects();
 }

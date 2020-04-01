@@ -10,7 +10,6 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.provider.CalendarContract;
-import android.text.TextUtils;
 
 import androidx.core.app.ActivityCompat;
 
@@ -22,10 +21,10 @@ public class CalendarReminderUtils {
     private static final String CALENDER_EVENT_URL = "content://com.android.calendar/events";
     private static final String CALENDER_REMINDER_URL = "content://com.android.calendar/reminders";
 
-    private static String CALENDARS_NAME = "LightTimetable";
-    private static String CALENDARS_ACCOUNT_NAME = "LightTimetable@test.com";
-    private static String CALENDARS_ACCOUNT_TYPE = "com.android.LightTimetable";
-    private static String CALENDARS_DISPLAY_NAME = "LightTimetable账户";
+    private static final String CALENDARS_NAME = "LightTimetable";
+    private static final String CALENDARS_ACCOUNT_NAME = "LightTimetable@test.com";
+    private static final String CALENDARS_ACCOUNT_TYPE = "com.android.LightTimetable";
+    private static final String CALENDARS_DISPLAY_NAME = "LightTimetable账户";
 
     public static final String DESCRIPTION = "小轻课程表自动创建";
 

@@ -77,6 +77,8 @@
 
     <string name="delete_calendar_event">清除所有日程</string>
 
+    <string name="select_college">选择学校</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

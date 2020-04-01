@@ -23,12 +23,10 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -66,7 +64,6 @@ import com.uuzuche.lib_zxing.activity.CaptureActivity;
 import com.uuzuche.lib_zxing.activity.CodeUtils;
 import com.uuzuche.lib_zxing.activity.ZXingLibrary;
 
-import org.apache.log4j.lf5.util.Resource;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -108,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_SCAN = 5;
     private static final int REQUEST_CODE_SET_TIME = 6;
 
-    private static final int REQ_PER_Calendar = 0x11;//日历权限申请
+    private static final int REQ_PER_CALENDAR = 0x11;//日历权限申请
 
     private OptionsPickerView mOptionsPv;
 
@@ -248,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         } else {
-            CalendarReminderUtils.fetchPermission(this, REQ_PER_Calendar);
+            CalendarReminderUtils.fetchPermission(this, REQ_PER_CALENDAR);
         }
     }
 
@@ -382,14 +379,14 @@ public class MainActivity extends AppCompatActivity {
         int displayHeight = displayMetrics.heightPixels;
 
         Resources resources = getResources();
-        int toolbarHeight=resources.getDimensionPixelSize(R.dimen.toolbar_height);
-        int headerWeekHeight=resources.getDimensionPixelSize(R.dimen.header_week_height);
+        int toolbarHeight = resources.getDimensionPixelSize(R.dimen.toolbar_height);
+        int headerWeekHeight = resources.getDimensionPixelSize(R.dimen.header_week_height);
 
         //课程视图宽度
         sCellWidthPx = (displayWidth - headerWidth) / 7.0f;
 
         sCellHeightPx = Math.max(sCellWidthPx,
-                (displayHeight-toolbarHeight-headerWeekHeight)/(float)Config.getMaxClassNum());
+                (displayHeight - toolbarHeight - headerWeekHeight) / (float) Config.getMaxClassNum());
     }
 
 
@@ -411,10 +408,10 @@ public class MainActivity extends AppCompatActivity {
                     if (mAddImgBtn.getVisibility() == View.VISIBLE) {
                         mAddImgBtn.setVisibility(View.GONE);
                     } else {
-                        int x = (int) (motionEvent.getX()/sCellWidthPx);
-                        int y = (int) (motionEvent.getY()/sCellHeightPx);
-                        x = (int)(x*sCellWidthPx);
-                        y = (int)(y*sCellHeightPx);
+                        int x = (int) (motionEvent.getX() / sCellWidthPx);
+                        int y = (int) (motionEvent.getY() / sCellHeightPx);
+                        x = (int) (x * sCellWidthPx);
+                        y = (int) (y * sCellHeightPx);
                         setAddImgBtn(x, y);
                     }
                 }
@@ -759,7 +756,7 @@ public class MainActivity extends AppCompatActivity {
         {
 
             Course course = sCourseList.get(index);
-            if (!isNotThisWeekCourseNeedToShow(course.getWeekOfTerm())) {
+            if (!isThisWeekCourseNeedToShow(course.getWeekOfTerm())) {
                 continue;
             }
 
@@ -806,21 +803,25 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param weekOfTerm 二进制储存在第几周上课
      */
-    private boolean isNotThisWeekCourseNeedToShow(int weekOfTerm) {
-        int off = Config.getMaxWeekNum() - Config.getCurrentWeek();
+    private boolean isThisWeekCourseNeedToShow(int weekOfTerm) {
+        int offset = Config.getMaxWeekNum() - Config.getCurrentWeek();
         //判断是否未到上课时间
-        if ((1 << off) > weekOfTerm) {
-            Log.d("course", "未开始" + Integer.toBinaryString(weekOfTerm));
+        if ((1 << offset) > weekOfTerm) {
+            //Log.d("course", "未开始" + Integer.toBinaryString(weekOfTerm));
             return false;
         }
-        //判断课程是否已结束
-        for (int i = off; i >= 0; i--) {
+
+        /*for (int i = offset; i >= 0; i--) {
             if (((1 << i) & weekOfTerm) > 0) {
                 return true;
             }
-        }
-        Log.d("course", weekOfTerm + "结束" + Integer.toBinaryString(weekOfTerm));
-        return false;
+        }*/
+        //判断课程是否已结束
+
+
+        //(1 << (offset + 1) - 1
+        // 快速给前offset位赋值1
+        return (((1 << (offset + 1) - 1) & weekOfTerm) > 0);
     }
 
     private void updateClassNumHeader() {
@@ -1023,7 +1024,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQ_PER_Calendar) {
+        if (requestCode == REQ_PER_CALENDAR) {
             for (int r : grantResults) {
                 if (r != PackageManager.PERMISSION_DENIED)
                     finish();

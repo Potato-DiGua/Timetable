@@ -13,12 +13,14 @@ public class Config {
     private static float cardViewAlpha = 1.0f;//卡片布局的透明度 值为0.0-1.0
     private static int MAX_WEEK_NUM = 25;//最大周数
     private static int MAX_CLASS_NUM = 12;
+    private static String collegeName;
 
 
     private static final String KEY_WEEK_OF_TERM = "long_current_week";
     private static final String KEY_FLAG_WEEK = "flag_week";
     private static final String KEY_BG_ID = "bg_id";
     private static final String KEY_CARD_VIEW_ALPHA = "card_view_alpha";
+    private static final String KEY_COLLEGE_NAME="college_name";
 
     public static float getCardViewAlpha() {
         return cardViewAlpha;
@@ -68,6 +70,14 @@ public class Config {
         Config.flagCurrentWeek = flagCurrentWeek;
     }
 
+    public static String getCollegeName() {
+        return collegeName;
+    }
+
+    public static void setCollegeName(String collegeName) {
+        Config.collegeName = collegeName;
+    }
+
     /**
      * 保存用户设置
      *
@@ -86,6 +96,25 @@ public class Config {
         editor.putFloat(KEY_CARD_VIEW_ALPHA, cardViewAlpha);
         editor.apply();
 
+    }
+
+    /**
+     * 保存
+     * @param context
+     */
+    public static void saveSelectCollege(final Context context){
+        SharedPreferences sharedPreferences =
+                context.getSharedPreferences("data", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(KEY_COLLEGE_NAME, collegeName);
+        editor.apply();
+    }
+
+    public static void readSelectCollege(Context context) {
+        //读取当前周
+        SharedPreferences sharedPreferences = context.getSharedPreferences("data", Context.MODE_PRIVATE);
+
+        collegeName = sharedPreferences.getString(KEY_COLLEGE_NAME,"");
     }
 
     /**

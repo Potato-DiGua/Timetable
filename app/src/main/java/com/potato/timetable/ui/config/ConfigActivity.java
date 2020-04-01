@@ -31,7 +31,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
-import com.potato.timetable.BgBtnAdapter;
 import com.potato.timetable.R;
 import com.potato.timetable.util.CalendarReminderUtils;
 import com.potato.timetable.util.Config;
@@ -415,6 +414,7 @@ public class ConfigActivity extends AppCompatActivity{
         intent.putExtra("noFaceDetection", true);
 
         startActivityForResult(intent, REQUEST_CODE_PHOTO_CUT);
+        
 
     }
 }

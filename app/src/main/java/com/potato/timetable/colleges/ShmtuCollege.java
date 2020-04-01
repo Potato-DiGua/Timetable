@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,14 +38,16 @@ public class ShmtuCollege implements College {
     private static final String LOGIN_URL = BASE_URL + "/cas/login";
     private static final String RANDOM_IMG_URL = BASE_URL + "/cas/captcha";
     private Map<String, String> termMap = new HashMap<>();
-    private static final String[] EMPTY_STRINGS=new String[0];
-    private Context mContext;
+    private static final String[] EMPTY_STRINGS = new String[0];
     private boolean isLogin = false;
     private String ids;
-
-    public ShmtuCollege(Context mContext) {
-        this.mContext = mContext;
-    }
+    private static OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
+            .cookieJar(OkHttpUtils.getCookieJar())
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(5, TimeUnit.SECONDS)
+            .writeTimeout(5, TimeUnit.SECONDS)
+            .followRedirects(true)
+            .build();
 
     @Override
     public String getCollegeName() {
@@ -53,15 +56,15 @@ public class ShmtuCollege implements College {
 
     @Override
     public boolean login(String account, String pw, String RandomCode) {
-        if(isLogin())
+        if (isLogin())
             return true;
         String result = OkHttpUtils.downloadText(LOGIN_URL);
         Document doc = Jsoup.parse(result);
         Element e = doc.getElementById("fm1");
-        String execution="";
-        if(e!=null&&e.children().size()>6){
+        String execution = "";
+        if (e != null && e.children().size() > 6) {
             execution = e.child(5).attr("value");
-            if(TextUtils.isEmpty(execution))
+            if (TextUtils.isEmpty(execution))
                 return false;
         }
 
@@ -80,7 +83,7 @@ public class ShmtuCollege implements College {
                 .post(formBody)
                 .build();
 
-        result =OkHttpUtils.downloadText(request);
+        result = OkHttpUtils.downloadText(request);
         doc = Jsoup.parse(result);
         Elements elements = doc.getElementsByClass("alert-success");
         if (elements.size() > 0) {
@@ -134,14 +137,14 @@ public class ShmtuCollege implements College {
                 .post(form)
                 .build();
         String result = OkHttpUtils.downloadText(request);
-        Log.d("courses",result);
+        Log.d("courses", result);
         Document doc = Jsoup.parse(result);
         Element e = doc.getElementsByTag("script").last();
         String script = e.html();
         String info = script.split("var fakeCourses = \\[\\];")[1]
                 .split("function containFakeCourse")[0]
                 .replaceAll("[\\s\\u00A0]", "");//去除&nbsp;和空格
-        Log.d("courses",info);
+        Log.d("courses", info);
 
         List<Course> courseList = new ArrayList<>();
         boolean flag = false;//用于标记是否新建课程
@@ -155,7 +158,7 @@ public class ShmtuCollege implements College {
                 course.setTeacher(courseInfo[1]);
                 course.setName(courseInfo[3].substring(0, courseInfo[3].indexOf('(')));
                 course.setClassRoom(courseInfo[5]);
-                course.setWeekOfTerm(Integer.parseInt(courseInfo[6].substring(1, Config.getMaxWeekNum()+1), 2));//二进制转十进制
+                course.setWeekOfTerm(Integer.parseInt(courseInfo[6].substring(1, Config.getMaxWeekNum() + 1), 2));//二进制转十进制
                 flag = true;
                 Log.d("courses", course.getTeacher() + courseInfo[6]);
                 courseList.add(course);
@@ -207,37 +210,37 @@ public class ShmtuCollege implements College {
 
         redirect(new Request.Builder().url("https://jwxt.shmtu.edu.cn/shmtu/home.action").build());
 
-        String result= OkHttpUtils.downloadText("https://jwxt.shmtu.edu.cn/shmtu/courseTableForStd.action");
+        String result = OkHttpUtils.downloadText("https://jwxt.shmtu.edu.cn/shmtu/courseTableForStd.action");
         Document doc = Jsoup.parse(result);
-        Elements elements=doc.getElementsByTag("script");
-        int size=elements.size();
-        if(size<2){
+        Elements elements = doc.getElementsByTag("script");
+        int size = elements.size();
+        if (size < 2) {
             return EMPTY_STRINGS;
         }
-        String s1=elements.get(size-1).html();
-        String s2=elements.get(size-2).html();
-        Log.d("find",s1);
-        Log.d("find",s2);
-        String semesterBarId=null;
+        String s1 = elements.get(size - 1).html();
+        String s2 = elements.get(size - 2).html();
+        Log.d("find", s1);
+        Log.d("find", s2);
+        String semesterBarId = null;
         Matcher matcher = Pattern.compile("bg.form.addInput\\(form,\"ids\",\"(\\d+)\"\\)").matcher(s1);
-        if(matcher.find()){
-            ids=matcher.group(1);
-            if(TextUtils.isEmpty(ids))
+        if (matcher.find()) {
+            ids = matcher.group(1);
+            if (TextUtils.isEmpty(ids))
                 return EMPTY_STRINGS;
-            Log.d("find",ids);
+            Log.d("find", ids);
         }
         matcher = Pattern.compile("jQuery\\(\"#semesterBar(\\d+)\"\\)").matcher(s2);
-        if(matcher.find()){
-            semesterBarId=matcher.group(1);
-            if(TextUtils.isEmpty(semesterBarId))
+        if (matcher.find()) {
+            semesterBarId = matcher.group(1);
+            if (TextUtils.isEmpty(semesterBarId))
                 return EMPTY_STRINGS;
-            Log.d("find",semesterBarId);
+            Log.d("find", semesterBarId);
         }
 
 
         String url = "https://jwxt.shmtu.edu.cn/shmtu/dataQuery.action";
         FormBody form = new FormBody.Builder()
-                .add("tagId", "semesterBar"+semesterBarId+"Semester")
+                .add("tagId", "semesterBar" + semesterBarId + "Semester")
                 .add("dataType", "semesterCalendar")
                 .add("value", "215")
                 .add("empty", "false")
@@ -272,11 +275,16 @@ public class ShmtuCollege implements College {
             Element div = elements.first();
             if (div.children().size() > 0) {
                 if (div.child(0).text().equals("登录成功")) {
-                    isLogin=true;
+                    isLogin = true;
                     return true;
                 }
             }
         }
+        return false;
+    }
+
+    @Override
+    public boolean getFollowRedirects() {
         return false;
     }
 }

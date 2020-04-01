@@ -1,19 +1,12 @@
 package com.potato.timetable.ui.login;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,47 +15,61 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
-import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
-import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
-import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.potato.timetable.R;
-import com.potato.timetable.bean.Course;
-import com.potato.timetable.colleges.CsuCollege;
-import com.potato.timetable.colleges.ShmtuCollege;
-import com.potato.timetable.colleges.base.College;
-import com.potato.timetable.ui.main.MainActivity;
+import com.potato.timetable.colleges.base.CollegeFactory;
+import com.potato.timetable.util.Config;
 import com.potato.timetable.util.HttpUtils;
 import com.potato.timetable.util.Utils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-public class LoginActivity extends AppCompatActivity {
-    private FragmentManager fragmentManager;
+public class LoginActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener {
 
     private Handler mHandler = new Handler();
+    private FragmentManager fragmentManager;
+    private LoginFragment loginFragment=null;
+    private ItemFragment itemFragment=null;
 
     private boolean judgeFlag = true;//判断网络是否可用的循环退出标志，方便结束线程
 
     public static final String EXTRA_UPDATE_TIMETABLE = "update_timetable";
-    private static final String KEY_ACCOUNT = "account";
-    private static final String KEY_PWD = "pwd";
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-//        init();
+        init();
+
+        fragmentManager = getSupportFragmentManager();//初始化管理者
+        String name = Config.getCollegeName();
+        if (!name.isEmpty() && CollegeFactory.getCollegeNameList().contains(name)) {
+            fragmentManager.beginTransaction()
+                    .add(R.id.fragment_container, getLoginFragment())
+                    .commit();
+
+        } else {
+            //选择学校
+            fragmentManager.beginTransaction()
+                    .add(R.id.fragment_container, getItemFragment())
+                    .commit();
+        }
+    }
+
+    public LoginFragment getLoginFragment() {
+        return loginFragment==null?new LoginFragment():loginFragment;
+    }
+
+    public ItemFragment getItemFragment() {
+        return itemFragment==null?ItemFragment.newInstance(1):itemFragment;
+    }
+
+    private void init() {
         setActionBar();
         ImageView bgIv = findViewById(R.id.iv_bg);
         Utils.setBackGround(this, bgIv);
-        fragmentManager = getSupportFragmentManager();      //初始化管理者
-        LoginFragment loginFragment=new LoginFragment();      //第一页Fragment
-        fragmentManager.beginTransaction()
-                .add(R.id.fragment_container,loginFragment)
-                .commit();
+
+        Config.readSelectCollege(this);
+
     }
 
     private void judgeConnected() {
@@ -77,7 +84,7 @@ public class LoginActivity extends AppCompatActivity {
                                 Toast.makeText(
                                         LoginActivity.this,
                                         "当前网络不可用，请检查网络设置！",
-                                        Toast.LENGTH_SHORT);
+                                        Toast.LENGTH_SHORT).show();
                             }
                         });
                         try {
@@ -94,7 +101,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void setActionBar() {
         ActionBar actionBar = getSupportActionBar();
-        if(actionBar!=null){
+        if (actionBar != null) {
             actionBar.setTitle(R.string.title_activity_login);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
@@ -105,6 +112,10 @@ public class LoginActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == android.R.id.home) {
             finish();
+        }else if(id==R.id.menu_select_college){
+            fragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, getItemFragment())
+                    .commit();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -127,5 +138,14 @@ public class LoginActivity extends AppCompatActivity {
         if (null != v && imm != null) {
             imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
         }
+    }
+
+    @Override
+    public void onListFragmentInteraction(String item) {
+        Config.setCollegeName(item);
+        Config.saveSelectCollege(this);
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, getLoginFragment())
+                .commit();
     }
 }
