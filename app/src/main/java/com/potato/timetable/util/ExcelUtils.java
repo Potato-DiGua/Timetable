@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import jxl.Cell;
 import jxl.Range;
@@ -54,15 +55,20 @@ public class ExcelUtils {
 
             startCol -= 2;
             startRow -= 2;
+
+            if(startCol+7>rs.getColumns()||startRow+rowCount>rs.getRows()){
+                return courseList;
+            }
+
             for (int i = 1; i <= 7; i++) {
                 for (int j = 1; j <= rowCount; j++) {
                     Cell cell = rs.getCell(startCol + i, startRow + j);
                     String str = handleCell(cell.getContents());
 
                     int row_length = 1;
-                    for (int n = 0; n < ranges.length; n++) {
-                        if (ranges[n].getTopLeft() == cell) {
-                            row_length = ranges[n].getBottomRight().getRow() - cell.getRow() + 1;
+                    for (Range range:ranges) {
+                        if (range.getTopLeft() == cell) {
+                            row_length = range.getBottomRight().getRow() - cell.getRow() + 1;
                             break;
                         }
                     }
@@ -72,8 +78,8 @@ public class ExcelUtils {
                         String[] strings = str.split("\n\n");
                         int length = strings.length;
 
-                        for (int index = 0; index < length; index++) {
-                            Course course = getCourseFromString(strings[index]);
+                        for (String s:strings) {
+                            Course course = getCourseFromString(s);
                             if (course == null)
                                 continue;
                             course.setDayOfWeek(i);
@@ -131,7 +137,7 @@ public class ExcelUtils {
 
     }
 
-    public static int getWeekOfTermFromString(String str) {
+    private static int getWeekOfTermFromString(String str) {
         //Log.d("excel",str);
         String[] s1=str.split("\\[");
         String[] s11=s1[0].split(",");
