@@ -1,6 +1,6 @@
 package com.potato.timetable.colleges.base;
 
-import com.potato.timetable.colleges.CSUCollegeV2;
+import com.potato.timetable.colleges.CSUCollege;
 import com.potato.timetable.colleges.ShmtuCollege;
 
 import java.util.ArrayList;
@@ -10,9 +10,9 @@ import java.util.List;
 public class CollegeFactory {
     private static List<String> collegeNameList = new ArrayList<>();
     static {
-        collegeNameList.add("中南大学");
-        collegeNameList.add("上海海事大学");
-        sortCollegeNameList();
+        collegeNameList.add(CSUCollege.NAME);
+        collegeNameList.add(ShmtuCollege.NAME);
+        sortCollegeNameList();//升序排序
     }
 
     public static List<String> getCollegeNameList() {
@@ -26,9 +26,9 @@ public class CollegeFactory {
         if (collegeName == null) {
             return null;
         }
-        else if (collegeName.equals("中南大学")) {
-            return new CSUCollegeV2();
-        } else if (collegeName.equals("上海海事大学")) {
+        else if (collegeName.equals(CSUCollege.NAME)) {
+            return new CSUCollege();
+        } else if (collegeName.equals(ShmtuCollege.NAME)) {
             return new ShmtuCollege();
         }
         else {

@@ -73,8 +73,6 @@
                     android:digits="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     android:hint="@string/hint_random_code"
                     android:inputType="text"
-
-                    android:maxLength="4"
                     android:selectAllOnFocus="true" />
 
                 <ImageView

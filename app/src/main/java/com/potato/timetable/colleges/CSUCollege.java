@@ -1,6 +1,5 @@
 package com.potato.timetable.colleges;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
@@ -24,8 +23,8 @@ import okhttp3.FormBody;
 import okhttp3.Request;
 
 
-public class CSUCollegeV2 implements College {
-    private static final String COLLEGE_NAME = "中南大学";
+public class CSUCollege implements College {
+    public static final String NAME = "中南大学";
 
     private static final String BASE_URL = "http://csujwc.its.csu.edu.cn";
     private static final String SESS_URL = BASE_URL + "/Logon.do?method=logon&flag=sess";
@@ -38,7 +37,7 @@ public class CSUCollegeV2 implements College {
 
     @Override
     public String getCollegeName() {
-        return COLLEGE_NAME;
+        return NAME;
     }
 
     @Override
@@ -169,5 +168,10 @@ public class CSUCollegeV2 implements College {
     @Override
     public boolean getFollowRedirects() {
         return true;
+    }
+
+    @Override
+    public int getRandomCodeMaxLength() {
+        return 4;
     }
 }

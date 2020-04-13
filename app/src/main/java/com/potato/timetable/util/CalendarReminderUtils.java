@@ -110,8 +110,7 @@ public class CalendarReminderUtils {
                 .build();
 
         Uri result = context.getContentResolver().insert(calendarUri, value);
-        long id = result == null ? -1 : ContentUris.parseId(result);
-        return id;
+        return result == null ? -1 : ContentUris.parseId(result);
     }
 
     /**

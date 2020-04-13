@@ -1,6 +1,5 @@
 package com.potato.timetable.colleges;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
@@ -34,6 +33,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class ShmtuCollege implements College {
+    public static final String NAME="上海海事大学";
     private static final String BASE_URL = "https://cas.shmtu.edu.cn";
     private static final String LOGIN_URL = BASE_URL + "/cas/login";
     private static final String RANDOM_IMG_URL = BASE_URL + "/cas/captcha";
@@ -51,7 +51,7 @@ public class ShmtuCollege implements College {
 
     @Override
     public String getCollegeName() {
-        return "上海海事大学";
+        return NAME;
     }
 
     @Override
@@ -286,5 +286,10 @@ public class ShmtuCollege implements College {
     @Override
     public boolean getFollowRedirects() {
         return false;
+    }
+
+    @Override
+    public int getRandomCodeMaxLength() {
+        return 4;
     }
 }

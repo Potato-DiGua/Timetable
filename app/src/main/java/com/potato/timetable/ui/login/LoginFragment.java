@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.os.Handler;
+import android.text.InputFilter;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,7 +32,6 @@ import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
 import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
-import com.potato.timetable.colleges.CSUCollegeV2;
 import com.potato.timetable.colleges.base.College;
 import com.potato.timetable.colleges.base.CollegeFactory;
 import com.potato.timetable.ui.main.MainActivity;
@@ -43,8 +43,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
-import okhttp3.OkHttpClient;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -162,6 +160,7 @@ public class LoginFragment extends Fragment {
         mPwEt = view.findViewById(R.id.et_password);
 
         mRandomCodeEt = view.findViewById(R.id.et_random_code);
+        mRandomCodeEt.setFilters(new InputFilter[]{new InputFilter.LengthFilter(college.getRandomCodeMaxLength()),});
         mLoginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
