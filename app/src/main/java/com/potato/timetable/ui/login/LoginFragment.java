@@ -70,6 +70,10 @@ public class LoginFragment extends Fragment {
     private static final String KEY_ACCOUNT = "account";
     private static final String KEY_PWD = "pwd";
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

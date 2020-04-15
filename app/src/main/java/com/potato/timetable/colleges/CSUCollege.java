@@ -97,7 +97,7 @@ public class CSUCollege implements College {
     }
 
     private String encode(String account, String pw) {
-        String result =OkHttpUtils.downloadText(SESS_URL);
+        String result = OkHttpUtils.downloadText(SESS_URL);
 
         if (TextUtils.isEmpty(result))
             return "";
@@ -124,7 +124,7 @@ public class CSUCollege implements College {
     @Override
     public Bitmap getRandomCodeImg(String dirPath) {
 
-        String name="random.jpg";
+        String name = "random.jpg";
         if (OkHttpUtils.downloadToLocal(RANDOM_CODE_URL, dirPath, name)) {
             return BitmapFactory.decodeFile(dirPath + File.separator + name);
         } else {
@@ -151,7 +151,17 @@ public class CSUCollege implements College {
         if (OkHttpUtils.downloadToLocal(request, path, name)) {
             File file = new File(path, name);
             if (file.exists()) {
-                List<Course> list = ExcelUtils.handleExcel(file.getAbsolutePath(), 4, 2);
+                List<Course> list = ExcelUtils.handleExcel(file.getAbsolutePath(), 4, 2, new ExcelUtils.HandleResult() {
+                    @Override
+                    public Course handle(String courseStr, int row, int col) {
+                        Course course = ExcelUtils.getCourseFromString(courseStr);
+                        if (course == null)
+                            return null;
+                        course.setDayOfWeek(col == 1 ? 7 : col - 1);
+                        course.setClassStart(row * 2 - 1);
+                        return course;
+                    }
+                });
                 file.delete();
                 return list;
             }

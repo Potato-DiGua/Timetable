@@ -18,6 +18,9 @@ import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
 public class ExcelUtils {
+    public static interface HandleResult {
+        Course handle(String courseStr, int row, int col);
+    }
 
     /**
      * @param path     String
@@ -27,7 +30,7 @@ public class ExcelUtils {
      * <p>
      * 只读取6行7列
      */
-    public static List<Course> handleExcel(String path, int startRow, int startCol) {
+    public static List<Course> handleExcel(String path, int startRow, int startCol, HandleResult handleResult) {
         InputStream inputStream = null;
         List<Course> courseList = new ArrayList<>();
         //Log.d("filePath",path);
@@ -48,17 +51,13 @@ public class ExcelUtils {
 
             Range[] ranges = rs.getMergedCells();
 
-//            for(int i=0;i<ranges.length;i++)
-//            {
-//                System.out.println(ranges[i].getBottomRight().getRow()-ranges[i].getTopLeft().getRow()+1);
-//            }
 
-            startCol -= 2;
-            startRow -= 2;
-
-            if(startCol+7>rs.getColumns()||startRow+rowCount>rs.getRows()){
+            if (startCol + 7 - 1 > rs.getColumns() || startRow + rowCount - 1 > rs.getRows()) {
                 return courseList;
             }
+
+            startCol -= 2;//rs.getCell以零开始
+            startRow -= 2;
 
             for (int i = 1; i <= 7; i++) {
                 for (int j = 1; j <= rowCount; j++) {
@@ -66,7 +65,7 @@ public class ExcelUtils {
                     String str = handleCell(cell.getContents());
 
                     int row_length = 1;
-                    for (Range range:ranges) {
+                    for (Range range : ranges) {
                         if (range.getTopLeft() == cell) {
                             row_length = range.getBottomRight().getRow() - cell.getRow() + 1;
                             break;
@@ -75,20 +74,16 @@ public class ExcelUtils {
 
                     if (!str.isEmpty()) {
 
+                        //一个格子有两个课程,分割处理
                         String[] strings = str.split("\n\n");
-                        int length = strings.length;
 
-                        for (String s:strings) {
-                            Course course = getCourseFromString(s);
-                            if (course == null)
-                                continue;
-                            course.setDayOfWeek(i);
-                            course.setClassLength(weight * row_length);
-                            course.setClassStart(j * 2 - 1);
-                            courseList.add(course);
+                        for (String s : strings) {
+                            Course course = handleResult.handle(s, j, i);
+                            if (course != null) {
+                                course.setClassLength(weight * row_length);
+                                courseList.add(course);
+                            }
                         }
-
-
                     }
                 }
 
@@ -110,6 +105,20 @@ public class ExcelUtils {
 
     }
 
+    public static List<Course> handleExcel(String path, int startRow, int startCol) {
+        return handleExcel(path, startRow, startCol, new HandleResult() {
+            @Override
+            public Course handle(String courseStr, int row, int col) {
+                Course course = getCourseFromString(courseStr);
+                if (course == null)
+                    return null;
+                course.setDayOfWeek(col);
+                course.setClassStart(row * 2 - 1);
+                return course;
+            }
+        });
+    }
+
     public static List<Course> handleExcel(String path) {
         return handleExcel(path, 2, 2);
     }
@@ -120,7 +129,7 @@ public class ExcelUtils {
      * @param str String
      * @return Course
      */
-    private static Course getCourseFromString(String str) {
+    public static Course getCourseFromString(String str) {
 
         String[] contents = str.split("\n");
         if (contents.length < 4)
@@ -139,34 +148,31 @@ public class ExcelUtils {
 
     private static int getWeekOfTermFromString(String str) {
         //Log.d("excel",str);
-        String[] s1=str.split("\\[");
-        String[] s11=s1[0].split(",");
+        String[] s1 = str.split("\\[");
+        String[] s11 = s1[0].split(",");
 
-        int weekOfTerm=0;
-        for(String s:s11)
-        {
-            if(s==null||s.isEmpty())
+        int weekOfTerm = 0;
+        for (String s : s11) {
+            if (s == null || s.isEmpty())
                 continue;
-            if(s.contains("-"))
-            {
-                int space=2;
-                if(s1[1].equals("周]")){
-                    space=1;
+            if (s.contains("-")) {
+                int space = 2;
+                if (s1[1].equals("周]")) {
+                    space = 1;
                 }
-                String[] s2=s.split("-");
-                if(s2.length!=2)
-                {
+                String[] s2 = s.split("-");
+                if (s2.length != 2) {
                     System.out.println("error");
                     return 0;
                 }
-                int p=Integer.parseInt(s2[0]);
-                int q=Integer.parseInt(s2[1]);
+                int p = Integer.parseInt(s2[0]);
+                int q = Integer.parseInt(s2[1]);
 
-                for(int n=p;n<=q;n+=space){
-                    weekOfTerm+=1<<(Config.getMaxWeekNum()-n);
+                for (int n = p; n <= q; n += space) {
+                    weekOfTerm += 1 << (Config.getMaxWeekNum() - n);
                 }
-            }else {
-                weekOfTerm+=1<<(Config.getMaxWeekNum()-Integer.parseInt(s));
+            } else {
+                weekOfTerm += 1 << (Config.getMaxWeekNum() - Integer.parseInt(s));
             }
         }
         return weekOfTerm;
