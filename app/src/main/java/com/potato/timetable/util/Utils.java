@@ -15,6 +15,7 @@ import com.potato.timetable.bean.Version;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -271,5 +272,17 @@ public class Utils {
 
     public static String formatTime(int time) {
         return time < 10 ? "0" + time : String.valueOf(time);
+    }
+    /**
+     * 获取星期
+     *
+     * @return 返回1-7代表周几 周日为1
+     */
+    public static int getWeekOfDay() {
+
+        Date date = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar.get(Calendar.DAY_OF_WEEK);
     }
 }

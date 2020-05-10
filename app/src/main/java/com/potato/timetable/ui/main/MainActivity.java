@@ -160,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
         //设置课程格子高度和宽度
         setTableCellDimens(headerClassNumWidth);
 
-        int week = getWeekOfDay();
+        int week = Utils.getWeekOfDay();
 
         //Log.d("week", "" + week);
         TextView weekTv = findViewById(weekTextView[week - 1]);
@@ -226,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private List<Course> getCoursesNeedToTake() {
         int currentWeek = Config.getCurrentWeek();
-        if (getWeekOfDay() == 1) {//周日插入下周课程的日程
+        if (Utils.getWeekOfDay() == 1) {//周日插入下周课程的日程
             currentWeek++;
         }
         //周日更新下周课程表
@@ -422,18 +422,7 @@ public class MainActivity extends AppCompatActivity {
         mAddImgBtn.setVisibility(View.VISIBLE);
     }
 
-    /**
-     * 获取星期
-     *
-     * @return 返回1-7代表周几 周日为1
-     */
-    private int getWeekOfDay() {
 
-        Date date = new Date();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        return calendar.get(Calendar.DAY_OF_WEEK);
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
