@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -328,7 +329,6 @@ public class LoginFragment extends Fragment {
         }
 
     }
-
     /**
      * 登录
      *
@@ -340,7 +340,6 @@ public class LoginFragment extends Fragment {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                String tip = null;
                 final boolean isLogin = college.login(account, pw, randomCode);
                 final String[] termOptions = college.getTermOptions();
                 mHandler.post(new Runnable() {

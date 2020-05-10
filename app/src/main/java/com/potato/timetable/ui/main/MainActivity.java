@@ -400,6 +400,8 @@ public class MainActivity extends AppCompatActivity {
         layoutParams.width = (int) sCellWidthPx * 7;
 
         mAddImgBtn.getLayoutParams().height = (int) sCellHeightPx;
+
+        mFrameLayout.performClick();
         mFrameLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -424,6 +426,7 @@ public class MainActivity extends AppCompatActivity {
         final FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mAddImgBtn.getLayoutParams();
         layoutParams.width = (int) sCellWidthPx;
         layoutParams.height = (int) sCellHeightPx;
+
         mAddImgBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -434,6 +437,8 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(EditActivity.EXTRA_Day_OF_WEEK, dayOfWeek + 1);
                 intent.putExtra(EditActivity.EXTRA_CLASS_START, classStart + 1);
                 startActivityForResult(intent, REQUEST_CODE_COURSE_EDIT);
+                //点击后隐藏按钮，否则可能会被新建的课程覆盖
+                mAddImgBtn.setVisibility(View.GONE);
             }
         });
     }
@@ -700,8 +705,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private void initTimetable()//根据保存的信息，创建课程表
     {
-
-
+        //初始化设置按钮
+        initAddBtn();
         //设置标题中显示的当前周数
         mWeekOfTermTextView.setText(String.format(getString(R.string.day_of_week), Config.getCurrentWeek()));
         //sCourseList=mMyDBHelper.getCourseList();
@@ -734,8 +739,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         flagUpdateCalendar = false;
-
-        initAddBtn();
     }
 
     /**
