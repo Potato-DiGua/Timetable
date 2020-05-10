@@ -12,7 +12,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -50,9 +49,9 @@ import com.potato.timetable.bean.Send;
 import com.potato.timetable.bean.Time;
 import com.potato.timetable.ui.config.ConfigActivity;
 import com.potato.timetable.ui.coursedetails.CourseDetailsActivity;
-import com.potato.timetable.ui.settime.SetTimeActivity;
 import com.potato.timetable.ui.editcourse.EditActivity;
 import com.potato.timetable.ui.login.LoginActivity;
+import com.potato.timetable.ui.settime.SetTimeActivity;
 import com.potato.timetable.util.CalendarReminderUtils;
 import com.potato.timetable.util.Config;
 import com.potato.timetable.util.ExcelUtils;
@@ -68,7 +67,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -123,33 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
             "android.permission.WRITE_EXTERNAL_STORAGE"};
 
-    private MyHandler mHandler = new MyHandler(this);
-
-    private static class MyHandler extends Handler {
-        private final WeakReference<MainActivity> mActivity;
-
-        public MyHandler(MainActivity activityCompat) {
-            mActivity = new WeakReference<>(activityCompat);
-        }
-
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            final MainActivity mainActivity = mActivity.get();
-            int what = msg.what;
-            if (what == MSG_UPDATE) {
-                String str = msg.obj.toString();
-                if (str.isEmpty()) {
-                    Toast.makeText(mainActivity, "当前版本已经是最新版", Toast.LENGTH_SHORT).show();
-                } else {
-                    mainActivity.showUpdateDialog(str);
-                }
-
-            }
-        }
-    }
-
-    private static int MSG_UPDATE = 1;
-
+    private Handler mHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -295,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
         //Log.d("stimes",courses.size()+"");
         String[] weeks = new String[]{"周日", "周一", "周二", "周三", "周四", "周五", "周六"};
         for (Course course : courses) {
-            Log.d("stimes", course.getClassStart() + "");
+            //Log.d("stimes", course.getClassStart() + "");
             String classStart = sTimes[course.getClassStart() - 1].getStart();
             String classEnd = sTimes[course.getClassStart() - 1 + course.getClassLength() - 1].getEnd();
             if (!classStart.isEmpty() && !classEnd.isEmpty()) {
@@ -626,10 +598,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 final String url = Utils.checkUpdate(versionCode);
-                Message message = new Message();
-                message.what = MSG_UPDATE;
-                message.obj = url;
-                mHandler.sendMessage(message);
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (url.isEmpty()) {
+                            Toast.makeText(MainActivity.this, "当前版本已经是最新版", Toast.LENGTH_SHORT).show();
+                        } else {
+                            showUpdateDialog(url);
+                        }
+                    }
+                });
             }
         }).start();
     }
