@@ -8,6 +8,7 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
 
+        <item name="android:textColorSecondary">@color/colorWhite</item>
     </style>
 
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
@@ -15,6 +16,7 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
 
+        <item name="android:textColorSecondary">@color/colorWhite</item>
     </style>
 
     <!-- 定义dialog的样式-->
