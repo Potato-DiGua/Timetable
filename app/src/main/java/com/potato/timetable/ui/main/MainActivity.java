@@ -423,7 +423,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -791,7 +790,7 @@ public class MainActivity extends AppCompatActivity {
 
         //(1 << (offset + 1) - 1
         // 快速给前offset位赋值1
-        return (((1 << (offset + 1) - 1) & weekOfTerm) > 0);
+        return (((1 << (offset + 1)) - 1) & weekOfTerm) > 0;
     }
 
     private void updateClassNumHeader() {
@@ -856,7 +855,7 @@ public class MainActivity extends AppCompatActivity {
 
         List<Course> courseList = selectNeedToShowCourse();
 
-        int size = courseList.size();
+        int size = courseList.size();//显示课程数
         StringBuilder stringBuilder = new StringBuilder();
         int[] color = new int[]{//课程表循环颜色
                 ContextCompat.getColor(this, R.color.item_orange),
@@ -882,6 +881,7 @@ public class MainActivity extends AppCompatActivity {
             if (i < mClassTableListSize) {
                 textView = mClassTableTvList.get(i);
             } else {//已有课程格数量不足新建
+                Log.d("Main","新建");
                 textView = new TextView(this);
                 mClassTableTvList.add(textView);
                 mFrameLayout.addView(textView);
@@ -921,6 +921,10 @@ public class MainActivity extends AppCompatActivity {
         for (int i = size, len = mClassTableTvList.size(); i < len; i++) {
             mFrameLayout.removeView(mClassTableTvList.get(i));
         }
+        for(int i=mClassTableTvList.size()-1;i>=size;i--){
+            mClassTableTvList.remove(i);
+        }
+
         flagUpdateCalendar = true;//更新日程
     }
 
