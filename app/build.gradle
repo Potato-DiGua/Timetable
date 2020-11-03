@@ -47,21 +47,20 @@ android {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
     }
-//    android.applicationVariants.all {
-//        variant ->
-//            variant.outputs.all {
-//                //在这里修改apk文件名
-//                outputFileName = "LightTimetable-v${variant.versionName}-${buildTime()}.apk"
-//                createReleaseVersion(versionCode, outputFileName)
-//            }
-//    }
+    android.applicationVariants.all {
+        variant ->
+            variant.outputs.all {
+                //在这里修改apk文件名
+                outputFileName = "LightTimetable-v${variant.versionName}-${buildTime()}.apk"
+            }
+    }
 }
 
-//def static buildTime() {
-//    def date = new Date()
-//    def formattedDate = date.format('yyyyMMdd', TimeZone.getTimeZone("GMT+08:00"))
-//    return formattedDate
-//}
+def static buildTime() {
+    def date = new Date()
+    def formattedDate = date.format('yyyyMMdd', TimeZone.getTimeZone("GMT+08:00"))
+    return formattedDate
+}
 //
 //def static createReleaseVersion(int versioncode, String name) {
 //    File file = new File(".\\app\\release", "version.json")
