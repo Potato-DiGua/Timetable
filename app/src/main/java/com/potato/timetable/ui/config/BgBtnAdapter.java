@@ -13,9 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BgBtnAdapter extends BaseAdapter {
-    private LayoutInflater mLayoutInflater;
+    private final LayoutInflater mLayoutInflater;
 
-    public List<Integer> bgIdList=new ArrayList<>();
+    public List<Integer> bgIdList = new ArrayList<>();
+
     public BgBtnAdapter(Context context) {
         mLayoutInflater = LayoutInflater.from(context);
     }
@@ -37,14 +38,11 @@ public class BgBtnAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        if(view==null)
-        {
-            view=mLayoutInflater.inflate(R.layout.item_iv_bg,null);
-            ImageView imageView=view.findViewById(R.id.item_iv);
+        if (view == null) {
+            view = mLayoutInflater.inflate(R.layout.item_iv_bg, viewGroup, false);
+            ImageView imageView = view.findViewById(R.id.item_iv);
             imageView.setImageResource(bgIdList.get(i));
-            return view;
         }
-        else
-            return view;
+        return view;
     }
 }

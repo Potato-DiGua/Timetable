@@ -3,6 +3,7 @@ package com.potato.timetable.ui.login;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -23,10 +24,10 @@ import com.potato.timetable.util.Utils;
 
 public class LoginActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener {
 
-    private Handler mHandler = new Handler();
+    private Handler mHandler = new Handler(Looper.myLooper());
     private FragmentManager fragmentManager;
-    private LoginFragment loginFragment=null;
-    private ItemFragment itemFragment=null;
+    private LoginFragment loginFragment = null;
+    private ItemFragment itemFragment = null;
 
     private boolean judgeFlag = true;//判断网络是否可用的循环退出标志，方便结束线程
 
@@ -56,11 +57,11 @@ public class LoginActivity extends AppCompatActivity implements ItemFragment.OnL
     }
 
     public LoginFragment getLoginFragment() {
-        return loginFragment==null?new LoginFragment():loginFragment;
+        return loginFragment == null ? new LoginFragment() : loginFragment;
     }
 
     public ItemFragment getItemFragment() {
-        return itemFragment==null?ItemFragment.newInstance(1):itemFragment;
+        return itemFragment == null ? ItemFragment.newInstance(1) : itemFragment;
     }
 
     private void init() {
@@ -112,7 +113,7 @@ public class LoginActivity extends AppCompatActivity implements ItemFragment.OnL
         int id = item.getItemId();
         if (id == android.R.id.home) {
             finish();
-        }else if(id==R.id.menu_select_college){
+        } else if (id == R.id.menu_select_college) {
             fragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, getItemFragment())
                     .commit();
