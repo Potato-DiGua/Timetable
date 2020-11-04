@@ -1,11 +1,11 @@
 package com.potato.timetable.ui.login;
 
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.potato.timetable.R;
 import com.potato.timetable.colleges.base.CollegeFactory;

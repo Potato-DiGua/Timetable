@@ -6,6 +6,11 @@ if (keyPropsFile.exists()) {
     keyProps.load(new FileInputStream(keyPropsFile))
 }
 
+def versionProps = new Properties()
+def versionPropsFile = rootProject.file('version.properties')
+if (versionPropsFile.exists()) {
+    versionProps.load(new FileInputStream(versionPropsFile))
+}
 
 android {
     compileSdkVersion 30
@@ -14,8 +19,8 @@ android {
         applicationId "com.potato.timetable"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 18
-        versionName "1.0.3"
+        versionCode versionProps['versionCode'].toInteger()
+        versionName versionProps['versionName']
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     // 签名

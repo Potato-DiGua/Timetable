@@ -5,17 +5,18 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
+import android.util.Log;
 import android.widget.ImageView;
 
 import androidx.cardview.widget.CardView;
 
-import com.google.gson.Gson;
-import com.potato.timetable.bean.Version;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -31,7 +32,7 @@ public class Utils {
     private static String PATH;
     private static final String BG_NAME = "bg.jpg";
     private static final String UPDATE_URL =
-            "https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/app/release/version.json";
+            "https://api.github.com/repos/Potato-DiGua/Timetable/releases/latest";
 
     private static final String BASE_URL = "https://raw.githubusercontent.com/Potato-DiGua/Timetable/master/app/release/";
     private static Bitmap bgBitmap = null;
@@ -103,47 +104,111 @@ public class Utils {
 
 
     /**
-     * 获取app版本号以供更新
+     * 获取app版本名称以供更新
      *
      * @param context
-     * @return
+     * @return app版本名称（1.0.3）
      */
-    public static long getLocalVersionCode(Context context) {
-        long localVersion = 0;
+    public static String getLocalVersionCode(Context context) {
+        String versionName = "";
         try {
             PackageInfo packageInfo = context.getApplicationContext()
                     .getPackageManager()
                     .getPackageInfo(context.getPackageName(), 0);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                localVersion = packageInfo.getLongVersionCode();
-            } else {
-                localVersion = packageInfo.versionCode;
-            }
-            //Log.d("TAG", "当前版本号：" + localVersion);
+            versionName = packageInfo.versionName;
+
+            Log.d("TAG", "当前版本号：" + versionName);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        return localVersion;
+        return versionName;
     }
 
     /**
      * 检查是否有新版本
      *
-     * @param versionCode
-     * @return
+     * @param versionName 版本名称
+     * @return 新版本的下载地址
      */
-    public static String checkUpdate(long versionCode) {
-        String json=OkHttpUtils.downloadText(UPDATE_URL);
-        if(!json.isEmpty())
-        {
-            Version version = new Gson().fromJson(json, Version.class);
-            //Log.d("update","最新版本号"+version.getVersionCode());
-            if (version.getVersionCode() > versionCode) {
-                return BASE_URL + version.getReleaseName();
+    public static String checkUpdate(String versionName) {
+        String json = OkHttpUtils.downloadText(UPDATE_URL);
+        if (!json.isEmpty()) {
+            try {
+                JsonElement jsonElement = new JsonParser().parse(json);
+                if (jsonElement != null) {
+                    jsonElement = jsonElement.getAsJsonObject().get("assets");
+                    if (jsonElement != null) {
+                        JsonArray jsonArray = jsonElement.getAsJsonArray();
+                        if (jsonArray.size() > 0) {
+                            jsonElement = jsonArray.get(0).getAsJsonObject().get("browser_download_url");
+                            if (jsonElement != null) {
+                                String url = jsonElement.getAsString();
+                                String remoteVersionName = getVersionNameFromUrl(url);
+                                Log.d("TAG", "远程仓库版本号：" + remoteVersionName);
+                                if (compareVersionName(remoteVersionName, versionName) > 0) {
+                                    return url;
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (JsonSyntaxException | IllegalArgumentException e) {
+                e.printStackTrace();
             }
         }
         return "";
+
+    }
+
+    /**
+     * 获取版本名称(例如1.0.3)
+     * 从https://github.com/Potato-DiGua/Timetable/releases/download/v1.0.3/LightTimetable-v1.0.3.apk中
+     * 提取 1.0.3
+     *
+     * @param url 网址
+     * @return 版本名称
+     */
+    public static String getVersionNameFromUrl(String url) {
+        if (!url.isEmpty()) {
+            //
+            String anchor = "LightTimetable-v";
+            int index = url.indexOf(anchor);
+            int apkIndex = url.indexOf(".apk");
+            if (index != -1 && apkIndex != -1) {
+                return url.substring(index + anchor.length(), apkIndex);
+            }
+        }
+        return "";
+    }
+
+    /**
+     * 比较版本号
+     *
+     * @param a
+     * @param b
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public static int compareVersionName(String a, String b) throws IllegalArgumentException {
+        String[] strings1 = a.split("\\.");
+        String[] strings2 = b.split("\\.");
+        if (strings1.length == 3 && strings2.length == 3) {
+            try {
+                for (int i = 0; i < 3; i++) {
+                    int compare = Integer.parseInt(strings1[i]) - Integer.parseInt(strings2[2]);
+                    if (compare != 0) {
+                        return compare;
+                    }
+                }
+                return 0;
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("无效的版本名称参数");
+            }
+        } else {
+            throw new IllegalArgumentException("无效的版本名称参数");
+        }
+
 
     }
 
@@ -188,7 +253,6 @@ public class Utils {
     }
 
     /**
-     *
      * @param weekOfTerm
      * @return 获取格式为"1-9,19,20-25 [周]"的周数
      */
@@ -238,7 +302,7 @@ public class Utils {
         }
         int count = 0;
         for (int i = start; i <= Config.getMaxWeekNum(); i += space) {
-            if (week[i-1]) {
+            if (week[i - 1]) {
                 if (count == 0) {
                     stringBuilder.append(i);
                 }
@@ -248,7 +312,7 @@ public class Utils {
                     stringBuilder.append(',');
                 } else if (count > 1) {
                     stringBuilder.append('-');
-                    stringBuilder.append(i-space);
+                    stringBuilder.append(i - space);
                     stringBuilder.append(',');
                 }
                 count = 0;
@@ -256,10 +320,10 @@ public class Utils {
         }
         if (count > 1) {
             stringBuilder.append('-');
-            int max=Config.getMaxWeekNum();
-            if(start==1&&max%2==0){//单周
+            int max = Config.getMaxWeekNum();
+            if (start == 1 && max % 2 == 0) {//单周
                 max--;
-            }else if(start==2&&max%2==1){//双周
+            } else if (start == 2 && max % 2 == 1) {//双周
                 max--;
             }
             stringBuilder.append(max);
@@ -274,6 +338,7 @@ public class Utils {
     public static String formatTime(int time) {
         return time < 10 ? "0" + time : String.valueOf(time);
     }
+
     /**
      * 获取星期
      *

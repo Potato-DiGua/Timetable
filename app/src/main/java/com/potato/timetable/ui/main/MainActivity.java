@@ -3,6 +3,8 @@ package com.potato.timetable.ui.main;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.DownloadManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -559,10 +561,9 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                //Log.d("update",url);
-                Uri uri = Uri.parse(url);
-                Intent intent3 = new Intent(Intent.ACTION_VIEW, uri);
-                startActivity(intent3);
+                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+                dm.enqueue(request);
                 alertDialog.dismiss();
             }
         });
@@ -581,22 +582,16 @@ public class MainActivity extends AppCompatActivity {
      */
     private void checkUpdate() {
 
-        final long versionCode = Utils.getLocalVersionCode(this);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final String url = Utils.checkUpdate(versionCode);
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (url.isEmpty()) {
-                            Toast.makeText(MainActivity.this, "当前版本已经是最新版", Toast.LENGTH_SHORT).show();
-                        } else {
-                            showUpdateDialog(url);
-                        }
-                    }
-                });
-            }
+        final String versionName = Utils.getLocalVersionCode(this);
+        new Thread(() -> {
+            final String url = Utils.checkUpdate(versionName);
+            mHandler.post(() -> {
+                if (url.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "当前版本已经是最新版", Toast.LENGTH_SHORT).show();
+                } else {
+                    showUpdateDialog(url);
+                }
+            });
         }).start();
     }
 

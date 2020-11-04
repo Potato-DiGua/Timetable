@@ -13,8 +13,6 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.potato.timetable.bean.Course;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -29,7 +27,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
-import java.util.List;
 
 /**
  * 文件工具类
