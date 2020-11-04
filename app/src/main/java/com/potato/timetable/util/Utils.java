@@ -196,7 +196,7 @@ public class Utils {
         if (strings1.length == 3 && strings2.length == 3) {
             try {
                 for (int i = 0; i < 3; i++) {
-                    int compare = Integer.parseInt(strings1[i]) - Integer.parseInt(strings2[2]);
+                    int compare = Integer.parseInt(strings1[i]) - Integer.parseInt(strings2[i]);
                     if (compare != 0) {
                         return compare;
                     }
