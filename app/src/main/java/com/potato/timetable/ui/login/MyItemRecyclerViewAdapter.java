@@ -11,6 +11,8 @@ import com.potato.timetable.R;
 import com.potato.timetable.colleges.base.CollegeFactory;
 import com.potato.timetable.ui.login.ItemFragment.OnListFragmentInteractionListener;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 /**
@@ -27,6 +29,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         mListener = listener;
     }
 
+    @NotNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
