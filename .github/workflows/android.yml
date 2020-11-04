@@ -40,6 +40,14 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
+    - name: Get Version Name
+      uses: actions/github-script@v3
+      id: get-version
+      with:
+        script: |
+          const str=process.env.GITHUB_REF;
+          return str.substring(str.indexOf("v"));
+        result-encoding: string
     
     - name: Upload Release Asset
       id: upload-release-asset 
@@ -49,5 +57,11 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: app/build/outputs/apk/release/app-release.apk
-        asset_name: LightTimetable-${{ github.ref }}.apk
+        asset_name: LightTimetable-${{steps.get-version.outputs.result}}.apk
         asset_content_type: application/vnd.android.package-archiv
+        
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: build
+        path: app/build/outputs
