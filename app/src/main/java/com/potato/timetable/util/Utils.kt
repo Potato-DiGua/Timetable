@@ -6,10 +6,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.text.TextUtils
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.annotation.NonNull
+import androidx.annotation.StringRes
 import androidx.cardview.widget.CardView
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
+import com.potato.timetable.MyApplication
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -335,4 +338,30 @@ object Utils {
             calendar.time = date
             return calendar[Calendar.DAY_OF_WEEK]
         }
+
+    /**
+     * 展示提醒
+     * @param text 内容
+     */
+    @JvmStatic
+    fun showToast(text: String, isShortLength: Boolean) {
+        val duration = if (isShortLength) Toast.LENGTH_SHORT else Toast.LENGTH_LONG
+        Toast.makeText(MyApplication.getApplication(), text, duration).show()
+    }
+
+
+    @JvmStatic
+    fun showToast(@StringRes textId: Int, isShortLength: Boolean) {
+        showToast(MyApplication.getApplication().resources.getString(textId), isShortLength)
+    }
+
+    @JvmStatic
+    fun showToast(@StringRes textId: Int) {
+        showToast(textId, true)
+    }
+
+    @JvmStatic
+    fun showToast(text: String) {
+        showToast(text, true)
+    }
 }

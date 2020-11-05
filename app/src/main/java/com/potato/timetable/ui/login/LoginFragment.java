@@ -20,7 +20,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,6 +36,7 @@ import com.potato.timetable.ui.main.MainActivity;
 import com.potato.timetable.util.Config;
 import com.potato.timetable.util.HttpUtils;
 import com.potato.timetable.util.OkHttpUtils;
+import com.potato.timetable.util.Utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,9 +48,6 @@ import java.util.Objects;
  * create an instance of this fragment.
  */
 public class LoginFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
 
     private College college;
 
@@ -98,7 +95,7 @@ public class LoginFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu_login,menu);
+        inflater.inflate(R.menu.menu_login, menu);
     }
 
     @Override
@@ -106,47 +103,28 @@ public class LoginFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         setRandomCodeImg();
         judgeConnected();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (college.isLogin()) {
-                    final String[] strings = college.getTermOptions();
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            showSelectDialog(strings);
-                        }
-                    });
-                }
-
+        new Thread(() -> {
+            if (college.isLogin()) {
+                final String[] strings = college.getTermOptions();
+                mHandler.post(() -> showSelectDialog(strings));
             }
+
         }).start();
     }
 
     private void judgeConnected() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (judgeFlag) {
-                    if (!HttpUtils.isNetworkConnected()) {
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(
-                                        getActivity(),
-                                        "当前网络不可用，请检查网络设置！",
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                        try {
-                            Thread.sleep(30000);//每30秒循环一次
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+        new Thread(() -> {
+            while (judgeFlag) {
+                if (!HttpUtils.isNetworkConnected()) {
+                    mHandler.post(() -> Utils.showToast("当前网络不可用，请检查网络设置！"));
+                    try {
+                        Thread.sleep(30000);//每30秒循环一次
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
-
             }
+
         }).start();
     }
 
@@ -164,30 +142,22 @@ public class LoginFragment extends Fragment {
 
         mRandomCodeEt = view.findViewById(R.id.et_random_code);
         mRandomCodeEt.setFilters(new InputFilter[]{new InputFilter.LengthFilter(college.getRandomCodeMaxLength()),});
-        mLoginBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                hideInput();
-                String account = mAccountEt.getText().toString();
-                String pw = mPwEt.getText().toString();
-                String randomCode = mRandomCodeEt.getText().toString();
+        mLoginBtn.setOnClickListener(view1 -> {
+            hideInput();
+            String account = mAccountEt.getText().toString();
+            String pw = mPwEt.getText().toString();
+            String randomCode = mRandomCodeEt.getText().toString();
 
-                if (pw.isEmpty() || account.isEmpty() || randomCode.isEmpty()) {
-                    Toast.makeText(getContext(), "内容不能为空", Toast.LENGTH_SHORT).show();
-                } else {
-                    setLoading(true);
-                    login(account, pw, randomCode);
-                }
-
+            if (pw.isEmpty() || account.isEmpty() || randomCode.isEmpty()) {
+                Utils.showToast("内容不能为空");
+            } else {
+                setLoading(true);
+                login(account, pw, randomCode);
             }
+
         });
 
-        mRandomCodeIv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                setRandomCodeImg();
-            }
-        });
+        mRandomCodeIv.setOnClickListener(view12 -> setRandomCodeImg());
         readAccountFromLocal();
     }
 
@@ -231,7 +201,7 @@ public class LoginFragment extends Fragment {
      */
     private void showSelectDialog(String[] termOptions) {
         if (termOptions == null || termOptions.length == 0) {
-            Toast.makeText(getActivity(), "无法获取学期选项", Toast.LENGTH_SHORT).show();
+            Utils.showToast("无法获取学期选项");
             return;
         }
         final List<String> items = new ArrayList<>();
@@ -261,37 +231,27 @@ public class LoginFragment extends Fragment {
      * @param term
      */
     private void getCourses(final String term) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final List<Course> list = college.getCourses(term);
-                final boolean success = list != null;
-                if (success&&list.size()>0) {
-                    Collections.sort(list);//按星期和上课时间排序
-                }
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        setLoading(false);
-                        if (success) {
-                            if(list.size()==0){
-                                Toast.makeText(getActivity(), "该学期没有课程", Toast.LENGTH_SHORT).show();
-                            }else {
-                                Toast.makeText(getActivity(), "导入成功", Toast.LENGTH_SHORT).show();
-                            }
-                            MainActivity.sCourseList = list;
-                            setUpdateResult();
-                            judgeFlag = false;
-                            Activity activity = getActivity();
-                            if (activity != null) {
-                                activity.finish();
-                            }
-                        }else {
-                            Toast.makeText(getActivity(), "导入失败", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+        new Thread(() -> {
+            final List<Course> list = college.getCourses(term);
+            final boolean success = list != null;
+            if (success && list.size() > 0) {
+                Collections.sort(list);//按星期和上课时间排序
             }
+            mHandler.post(() -> {
+                setLoading(false);
+                if (success) {
+                    Utils.showToast(list.size() == 0 ? "该学期没有课程" : "导入成功");
+                    MainActivity.sCourseList = list;
+                    setUpdateResult();
+                    judgeFlag = false;
+                    Activity activity = getActivity();
+                    if (activity != null) {
+                        activity.finish();
+                    }
+                } else {
+                    Utils.showToast("导入失败");
+                }
+            });
         }).start();
 
 
@@ -327,6 +287,7 @@ public class LoginFragment extends Fragment {
         }
 
     }
+
     /**
      * 登录
      *
@@ -335,29 +296,20 @@ public class LoginFragment extends Fragment {
      * @param randomCode String 验证码
      */
     private void login(final String account, final String pw, final String randomCode) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final boolean isLogin = college.login(account, pw, randomCode);
-                final String[] termOptions = college.getTermOptions();
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        setLoading(false);
-                        if (isLogin) {
-                            saveAccountToLocal(mAccountEt.getText().toString(), mPwEt.getText().toString());
-                            showSelectDialog(termOptions);
-                        } else {
-                            Toast.makeText(
-                                    getContext(),
-                                    "账户或密码或验证码错误，登陆失败。",
-                                    Toast.LENGTH_SHORT).show();
-                            setRandomCodeImg();
-                        }
+        new Thread(() -> {
+            final boolean isLogin = college.login(account, pw, randomCode);
+            final String[] termOptions = college.getTermOptions();
+            mHandler.post(() -> {
+                setLoading(false);
+                if (isLogin) {
+                    saveAccountToLocal(mAccountEt.getText().toString(), mPwEt.getText().toString());
+                    showSelectDialog(termOptions);
+                } else {
+                    Utils.showToast("账户或密码或验证码错误，登陆失败");
+                    setRandomCodeImg();
+                }
 
-                    }
-                });
-            }
+            });
         }).start();
 
     }
@@ -366,22 +318,16 @@ public class LoginFragment extends Fragment {
      * 从登录页面下载并加载验证码
      */
     private void setRandomCodeImg() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final Bitmap bitmap = college.getRandomCodeImg(getContext().getExternalCacheDir().getAbsolutePath());
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (bitmap == null) {
-                            mRandomCodeIv.setImageDrawable(getContext().getDrawable(R.drawable.ic_error_red_24dp));
-                        } else {
-                            mRandomCodeIv.setImageBitmap(bitmap);
-                        }
+        new Thread(() -> {
+            final Bitmap bitmap = college.getRandomCodeImg(getContext().getExternalCacheDir().getAbsolutePath());
+            mHandler.post(() -> {
+                if (bitmap == null) {
+                    mRandomCodeIv.setImageDrawable(getContext().getDrawable(R.drawable.ic_error_red_24dp));
+                } else {
+                    mRandomCodeIv.setImageBitmap(bitmap);
+                }
 
-                    }
-                });
-            }
+            });
         }).start();
 
     }
