@@ -4,11 +4,11 @@ buildscript {
     repositories {
         google()
         jcenter()
-        
+
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.0'
-        
+
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -20,10 +20,52 @@ allprojects {
         maven { url "https://jitpack.io" }
         google()
         jcenter()
-        
+
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+task upgradeVersion {
+    doLast {
+        println("---自动升级版本号---\n")
+        def versionProps = new Properties()
+        def versionPropsFile = rootProject.file('version.properties')
+        if (versionPropsFile.exists()) {
+            versionProps.load(new FileInputStream(versionPropsFile))
+        }
+        String oldVersionCode = versionProps['versionCode']
+        String oldVersionName = versionProps['versionName']
+        if (oldVersionCode == null || oldVersionName == null ||
+                oldVersionCode.isEmpty() || oldVersionName.isEmpty()) {
+            println("error:版本号不能为空")
+            return;
+        }
+        versionProps['versionCode'] = String.valueOf(versionProps['versionCode'].toInteger() + 1)
+        String str = versionProps['versionName'].toString()
+        versionProps['versionName'] = str.substring(0, str.lastIndexOf('.') + 1) +
+                (str.substring(str.lastIndexOf('.') + 1).toInteger() + 1)
+        String tip =
+                "版本号从$oldVersionName($oldVersionCode)升级到${versionProps['versionName']}(${versionProps['versionCode']})"
+        println(tip)
+
+        def writer = new FileWriter(versionPropsFile)
+        versionProps.store(writer, null)
+        writer.flush()
+        writer.close()
+        def tag = "v${versionProps['versionName']}"
+        cmdExecute("git pull")
+        cmdExecute("git add version.properties")
+        cmdExecute("git commit -m \"版本号升级为：$tag\"")
+        cmdExecute("git push origin")
+        cmdExecute("git tag $tag")
+        cmdExecute("git push origin $tag")
+    }
+}
+
+void cmdExecute(String cmd) {
+    println "\n执行$cmd"
+    println cmd.execute().text
 }
