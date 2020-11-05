@@ -3,7 +3,6 @@ package com.potato.timetable.colleges;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.potato.timetable.MyApplication;
 import com.potato.timetable.bean.Course;
@@ -146,7 +145,7 @@ public class CSUCollege implements College {
 
         String path = MyApplication.getApplication().getFilesDir().getAbsolutePath();
         String name = "timetable.xls";
-        Log.d("excel", path + "/" + name);
+//        Log.d("excel", path + "/" + name);
 
         if (OkHttpUtils.downloadToLocal(request, path, name)) {
             File file = new File(path, name);

@@ -3,7 +3,6 @@ package com.potato.timetable.ui.editcourse;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyboardShortcutGroup;
 import android.view.LayoutInflater;
@@ -188,7 +187,7 @@ public class WeekOfTermSelectDialog extends Dialog {
             holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    Log.d("checkbox", "发生改变");
+//                    Log.d("checkbox", "发生改变");
                     list.set(position, b);
                 }
             });

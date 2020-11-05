@@ -2,7 +2,6 @@ package com.potato.timetable.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import com.potato.timetable.R;
 
@@ -125,7 +124,7 @@ public class Config {
         SharedPreferences sharedPreferences =
                 context.getSharedPreferences("data", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        Log.d("weeknum", "save=" + (Utils.getWeekNum() - currentWeek));
+//        Log.d("weeknum", "save=" + (Utils.getWeekNum() - currentWeek));
         editor.putLong(KEY_WEEK_OF_TERM, Utils.getWeekNum() - currentWeek);
         editor.apply();
     }
@@ -141,7 +140,7 @@ public class Config {
 
         long weekNum = Utils.getWeekNum();
         currentWeek = (int) (weekNum - sharedPreferences.getLong(KEY_WEEK_OF_TERM, weekNum - 1));
-        Log.d("weeknum", "currentWeek=" + currentWeek);
+//        Log.d("weeknum", "currentWeek=" + currentWeek);
         currentWeek = currentWeek > 0 ? currentWeek : 1;
         flagCurrentWeek = sharedPreferences.getBoolean(KEY_FLAG_WEEK, false);//用于更新当前周数
 

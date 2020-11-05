@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
@@ -464,7 +463,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.menu_share_timetable:
                 Gson gson = new Gson();
                 String json = gson.toJson(sCourseList);
-                Log.d("share", json);
+//                Log.d("share", json);
                 RequestBody requestBody = RequestBody.create(json, OkHttpUtils.JSON);
                 Request request = new Request.Builder()
                         .url(ShareUtils.SHARE_URL)
@@ -485,7 +484,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                         if (response.code() == 200) {
                             String json = response.body().string();
-                            Log.d("share", json);
+//                            Log.d("share", json);
                             final Send<String> send = gson.fromJson(json, new TypeToken<Send>() {
                             }.getType());
                             mHandler.post(new Runnable() {
@@ -561,7 +560,14 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+//                Log.d("TAG",url);
                 DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE |
+                        DownloadManager.Request.NETWORK_WIFI);
+                request.setDestinationInExternalPublicDir("Download", "LightTimetable.apk");
+                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+                request.setVisibleInDownloadsUi(true);
+
                 DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
                 dm.enqueue(request);
                 alertDialog.dismiss();
@@ -586,7 +592,7 @@ public class MainActivity extends AppCompatActivity {
         new Thread(() -> {
             final String url = Utils.checkUpdate(versionName);
             mHandler.post(() -> {
-                if (url.isEmpty()) {
+                if (TextUtils.isEmpty(url)) {
                     Toast.makeText(MainActivity.this, "当前版本已经是最新版", Toast.LENGTH_SHORT).show();
                 } else {
                     showUpdateDialog(url);
@@ -876,7 +882,7 @@ public class MainActivity extends AppCompatActivity {
             if (i < mClassTableListSize) {
                 textView = mClassTableTvList.get(i);
             } else {//已有课程格数量不足新建
-                Log.d("Main","新建");
+//                Log.d("Main","新建");
                 textView = new TextView(this);
                 mClassTableTvList.add(textView);
                 mFrameLayout.addView(textView);
@@ -1102,7 +1108,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case REQUEST_CODE_SET_TIME:
                     if (data != null && data.getBooleanExtra(SetTimeActivity.EXTRA_UPDATE_Time, false)) {
-                        Log.d("update", "更新时间");
+//                        Log.d("update", "更新时间");
                         updateClassNumHeader();
                     }
                     break;

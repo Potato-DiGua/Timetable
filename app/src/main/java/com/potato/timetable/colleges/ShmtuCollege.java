@@ -3,7 +3,6 @@ package com.potato.timetable.colleges;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.potato.timetable.bean.Course;
 import com.potato.timetable.colleges.base.College;
@@ -124,7 +123,7 @@ public class ShmtuCollege implements College {
         if (TextUtils.isEmpty(id)) {
             return null;
         }
-        Log.d("courses", id);
+//        Log.d("courses", id);
         FormBody form = new FormBody.Builder()
                 .add("ignoreHead", "1")
                 .add("setting.kind", "std")
@@ -137,19 +136,19 @@ public class ShmtuCollege implements College {
                 .post(form)
                 .build();
         String result = OkHttpUtils.downloadText(request);
-        Log.d("courses", result);
+//        Log.d("courses", result);
         Document doc = Jsoup.parse(result);
         Element e = doc.getElementsByTag("script").last();
         String script = e.html();
         String info = script.split("var fakeCourses = \\[\\];")[1]
                 .split("function containFakeCourse")[0]
                 .replaceAll("[\\s\\u00A0]", "");//去除&nbsp;和空格
-        Log.d("courses", info);
+//        Log.d("courses", info);
 
         List<Course> courseList = new ArrayList<>();
         boolean flag = false;//用于标记是否新建课程
         for (String s : info.split(";")) {
-            Log.d("courses", s);
+//            Log.d("courses", s);
             if (s.startsWith("activity")) {
                 //需要的解析字符串
                 //activity = new TaskActivity("9905","戴峰","1679(XX210270_001)","微波技术与天线(XX210270_001)","5362","教学3B503","00000000011111111000000000000000000000000000000000000");
@@ -160,7 +159,7 @@ public class ShmtuCollege implements College {
                 course.setClassRoom(courseInfo[5]);
                 course.setWeekOfTerm(Integer.parseInt(courseInfo[6].substring(1, Config.getMaxWeekNum() + 1), 2));//二进制转十进制
                 flag = true;
-                Log.d("courses", course.getTeacher() + courseInfo[6]);
+//                Log.d("courses", course.getTeacher() + courseInfo[6]);
                 courseList.add(course);
             } else if (s.startsWith("index")) {
                 Course course = courseList.get(courseList.size() - 1);
@@ -219,22 +218,22 @@ public class ShmtuCollege implements College {
         }
         String s1 = elements.get(size - 1).html();
         String s2 = elements.get(size - 2).html();
-        Log.d("find", s1);
-        Log.d("find", s2);
+//        Log.d("find", s1);
+//        Log.d("find", s2);
         String semesterBarId = null;
         Matcher matcher = Pattern.compile("bg.form.addInput\\(form,\"ids\",\"(\\d+)\"\\)").matcher(s1);
         if (matcher.find()) {
             ids = matcher.group(1);
             if (TextUtils.isEmpty(ids))
                 return EMPTY_STRINGS;
-            Log.d("find", ids);
+//            Log.d("find", ids);
         }
         matcher = Pattern.compile("jQuery\\(\"#semesterBar(\\d+)\"\\)").matcher(s2);
         if (matcher.find()) {
             semesterBarId = matcher.group(1);
             if (TextUtils.isEmpty(semesterBarId))
                 return EMPTY_STRINGS;
-            Log.d("find", semesterBarId);
+//            Log.d("find", semesterBarId);
         }
 
 

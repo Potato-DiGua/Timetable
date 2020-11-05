@@ -3,7 +3,6 @@ package com.potato.timetable.ui.settime;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -96,7 +95,7 @@ public class SetTimeActivity extends AppCompatActivity {
      * 通知主界面更新
      */
     private void setUpdateResult() {
-        Log.d("settime", "通知更新");
+//        Log.d("settime", "通知更新");
         Intent intent = new Intent();
         intent.putExtra(EXTRA_UPDATE_Time, true);
         setResult(RESULT_OK, intent);
