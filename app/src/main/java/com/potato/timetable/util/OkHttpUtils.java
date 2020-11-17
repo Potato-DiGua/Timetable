@@ -58,7 +58,7 @@ public class OkHttpUtils {
         private static final CookieJar cookieJar = new PersistentCookieJar(
                 new SetCookieCache(),
                 new SharedPrefsCookiePersistor(MyApplication.getApplication()));
-        private static OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
+        private static OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .cookieJar(cookieJar)
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .readTimeout(5, TimeUnit.SECONDS)
@@ -73,11 +73,7 @@ public class OkHttpUtils {
 
     public static void setFollowRedirects(boolean followRedirects) {
         if (Inner.okHttpClient.followRedirects() != followRedirects) {
-            Inner.okHttpClient = new OkHttpClient().newBuilder()
-                    .cookieJar(Inner.cookieJar)
-                    .connectTimeout(5, TimeUnit.SECONDS)
-                    .readTimeout(5, TimeUnit.SECONDS)
-                    .writeTimeout(5, TimeUnit.SECONDS)
+            Inner.okHttpClient = Inner.okHttpClient.newBuilder()
                     .followRedirects(followRedirects)
                     .build();
         }
