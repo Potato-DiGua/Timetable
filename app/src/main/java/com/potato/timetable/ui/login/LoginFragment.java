@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
@@ -322,7 +323,7 @@ public class LoginFragment extends Fragment {
             final Bitmap bitmap = college.getRandomCodeImg(getContext().getExternalCacheDir().getAbsolutePath());
             mHandler.post(() -> {
                 if (bitmap == null) {
-                    mRandomCodeIv.setImageDrawable(getContext().getDrawable(R.drawable.ic_error_red_24dp));
+                    mRandomCodeIv.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.ic_error_red_24dp));
                 } else {
                     mRandomCodeIv.setImageBitmap(bitmap);
                 }

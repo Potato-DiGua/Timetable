@@ -9,6 +9,10 @@
         <item name="colorAccent">@color/colorAccent</item>
 
         <item name="android:textColorSecondary">@color/colorWhite</item>
+
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@color/colorPrimary</item>
     </style>
 
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
@@ -17,6 +21,10 @@
         <item name="colorAccent">@color/colorAccent</item>
 
         <item name="android:textColorSecondary">@color/colorWhite</item>
+
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@color/colorPrimary</item>
     </style>
 
     <!-- 定义dialog的样式-->
