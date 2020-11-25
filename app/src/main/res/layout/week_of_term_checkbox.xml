@@ -16,6 +16,6 @@
         android:button="@null"
         android:gravity="center"
         android:padding="5dp"
-        android:textSize="10sp" />
+        android:textSize="13sp" />
 </LinearLayout>
 

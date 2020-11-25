@@ -58,6 +58,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@null"
+                    android:textSize="@dimen/edit_text_size"
                     android:hint="@string/edit_text_hint"
                     android:inputType="text" />
 
@@ -112,6 +113,7 @@
                     android:hint="@string/edit_text_hint"
                     android:inputType="text"
                     android:padding="8dp"
+                    android:textSize="@dimen/edit_text_size"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_weight="1"
                     app:layout_constraintStart_toEndOf="@+id/textView2"
@@ -189,6 +191,7 @@
                     android:hint="@string/edit_text_hint"
                     android:inputType="text"
                     android:padding="8dp"
+                    android:textSize="@dimen/edit_text_size"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.0"

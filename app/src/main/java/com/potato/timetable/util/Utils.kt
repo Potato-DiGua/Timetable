@@ -1,18 +1,23 @@
 package com.potato.timetable.util
 
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.text.TextUtils
+import android.view.View
+import android.view.Window
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.annotation.NonNull
 import androidx.annotation.StringRes
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import com.potato.timetable.MyApplication
+import com.potato.timetable.ui.config.ConfigActivity
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -53,10 +58,14 @@ object Utils {
 
     @JvmStatic
     fun setBackGround(context: Context, imageView: ImageView, id: Int) {
-        if (bgBitmap == null) {
+
+        if (id == ConfigActivity.CUSTOM_BG_ID) {
             refreshBg(context, id)
+            imageView.setImageBitmap(bgBitmap)
+        } else {
+            imageView.setImageDrawable(ContextCompat.getDrawable(context, id))
         }
-        imageView.setImageBitmap(bgBitmap)
+
     }
 
     @JvmStatic
@@ -89,13 +98,11 @@ object Utils {
      */
     @JvmStatic
     fun refreshBg(context: Context, id: Int) {
-        if (id == 0) {
+        if (id == ConfigActivity.CUSTOM_BG_ID) {
             val file = File(PATH, BG_NAME)
             if (file.exists()) {
                 bgBitmap = BitmapFactory.decodeFile(file.absolutePath)
             }
-        } else {
-            bgBitmap = BitmapFactory.decodeResource(context.resources, id)
         }
     }
 
@@ -339,16 +346,6 @@ object Utils {
             return calendar[Calendar.DAY_OF_WEEK]
         }
 
-    /**
-     * 展示提醒
-     * @param text 内容
-     */
-    @JvmStatic
-    fun showToast(text: String, isShortLength: Boolean) {
-        val duration = if (isShortLength) Toast.LENGTH_SHORT else Toast.LENGTH_LONG
-        Toast.makeText(MyApplication.getApplication(), text, duration).show()
-    }
-
 
     @JvmStatic
     fun showToast(@StringRes textId: Int, isShortLength: Boolean) {
@@ -361,7 +358,24 @@ object Utils {
     }
 
     @JvmStatic
-    fun showToast(text: String) {
+    fun showToast(text: String?) {
         showToast(text, true)
+    }
+
+    /**
+     * 展示提醒
+     * @param text 内容
+     */
+    @JvmStatic
+    fun showToast(text: String?, isShortLength: Boolean) {
+        if (!TextUtils.isEmpty(text)) {
+            val duration = if (isShortLength) Toast.LENGTH_SHORT else Toast.LENGTH_LONG
+            Toast.makeText(MyApplication.getApplication(), text, duration).show()
+        }
+    }
+
+    @JvmStatic
+    fun getStatusBarAndActionBarHeight(activity: Activity): Int {
+        return activity.window.findViewById<View>(Window.ID_ANDROID_CONTENT).top
     }
 }

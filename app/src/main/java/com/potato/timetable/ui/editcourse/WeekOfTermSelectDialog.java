@@ -28,21 +28,23 @@ import java.util.List;
 
 
 public class WeekOfTermSelectDialog extends Dialog {
-    private List<Boolean> list = new ArrayList<>(Config.getMaxWeekNum());
-    private int mWeekOfTerm;
-    private Context mContext;
+    private final List<Boolean> list = new ArrayList<>(Config.getMaxWeekNum());
+    private final int mWeekOfTerm;
+    private final Context mContext;
     private DialogAdapter dialogAdapter;
     private CheckBox selectAll;
     private CheckBox singleWeek;
     private CheckBox doubleWeek;
-    private View.OnClickListener[] listeners = new View.OnClickListener[2];
+    private View.OnClickListener positiveListener;
+    private View.OnClickListener nativeListener;
 
 
     public WeekOfTermSelectDialog(@NonNull Context context, int weekOfTerm) {
-        super(context,R.style.CustomDialog);
+        super(context, R.style.CustomDialog);
         this.mWeekOfTerm = weekOfTerm;
         this.mContext = context;
     }
+
     /**
      * 设置dialog居下占满屏幕
      */
@@ -66,8 +68,8 @@ public class WeekOfTermSelectDialog extends Dialog {
                 //Log.d("weekofterm",String.valueOf(i));
                 weekOfTerm++;
             }
-            if(i!=len-1){//最后不移动
-                weekOfTerm=weekOfTerm<<1;
+            if (i != len - 1) {//最后不移动
+                weekOfTerm = weekOfTerm << 1;
             }
         }
         return weekOfTerm;
@@ -84,66 +86,57 @@ public class WeekOfTermSelectDialog extends Dialog {
                 new GridLayoutManager(mContext, 5);
         recyclerView.setLayoutManager(gridLayoutManager);
 
-        dialogAdapter = new DialogAdapter();
+        dialogAdapter = new DialogAdapter(list);
         recyclerView.setAdapter(dialogAdapter);
+
         selectAll = findViewById(R.id.check_box_select_all);
-        selectAll.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                boolean b = selectAll.isChecked();
-                if (b) {
-                    singleWeek.setChecked(false);
-                    doubleWeek.setChecked(false);
-                }
-                for (int i = 0, len = list.size(); i < len; i++) {
-                    dialogAdapter.checkBoxList.get(i).setChecked(b);
-                }
+        selectAll.setOnClickListener(view -> {
+            boolean b = selectAll.isChecked();
+            if (b) {
+                singleWeek.setChecked(false);
+                doubleWeek.setChecked(false);
+            }
+            for (int i = 0, len = list.size(); i < len; i++) {
+                dialogAdapter.checkBoxList.get(i).setChecked(b);
             }
         });
+
         singleWeek = findViewById(R.id.check_box_single_week);
-        singleWeek.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                boolean b = singleWeek.isChecked();
-                if (b) {
-                    selectAll.setChecked(false);
-                    doubleWeek.setChecked(false);
-                    for (int i = 0, len = list.size(); i < len; i++) {
-                        dialogAdapter.checkBoxList.get(i).setChecked((i + 1) % 2 == 1);
-                    }
+        singleWeek.setOnClickListener(view -> {
+            if (singleWeek.isChecked()) {
+                selectAll.setChecked(false);
+                doubleWeek.setChecked(false);
+                for (int i = 0, len = list.size(); i < len; i++) {
+                    dialogAdapter.checkBoxList.get(i).setChecked((i + 1) % 2 == 1);
                 }
-
             }
-        });
-        doubleWeek = findViewById(R.id.check_box_double_week);
-        doubleWeek.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                boolean b = doubleWeek.isChecked();
-                if (b) {
-                    singleWeek.setChecked(false);
-                    selectAll.setChecked(false);
-                    for (int i = 0, len = list.size(); i < len; i++) {
-                        dialogAdapter.checkBoxList.get(i).setChecked((i + 1) % 2 == 0);
-                    }
-                }
 
+        });
+
+        doubleWeek = findViewById(R.id.check_box_double_week);
+        doubleWeek.setOnClickListener(view -> {
+            if (doubleWeek.isChecked()) {
+                singleWeek.setChecked(false);
+                selectAll.setChecked(false);
+                for (int i = 0, len = list.size(); i < len; i++) {
+                    dialogAdapter.checkBoxList.get(i).setChecked((i + 1) % 2 == 0);
+                }
             }
         });
         Button cancelBtn = findViewById(R.id.btn_cancel);
         Button yesBtn = findViewById(R.id.btn_yes);
-        cancelBtn.setOnClickListener(listeners[1]);
-        yesBtn.setOnClickListener(listeners[0]);
+        cancelBtn.setOnClickListener(nativeListener);
+        yesBtn.setOnClickListener(positiveListener);
 
         changeDialogStyle();
     }
 
     public void setPositiveBtn(View.OnClickListener listener) {
-        listeners[0] = listener;
+        positiveListener = listener;
     }
 
     public void setNativeBtn(View.OnClickListener listener) {
-        listeners[1] = listener;
+        nativeListener = listener;
     }
 
     private void init() {
@@ -169,37 +162,43 @@ public class WeekOfTermSelectDialog extends Dialog {
 
     }
 
-    private class DialogAdapter extends RecyclerView.Adapter<DialogAdapter.ViewHolder> {
-        public List<CheckBox> checkBoxList = new ArrayList<>();
+    private static class DialogAdapter extends RecyclerView.Adapter<DialogAdapter.ViewHolder> {
+        private final List<CheckBox> checkBoxList = new ArrayList<>();
+        private final List<Boolean> resultList;
+
+        public DialogAdapter(List<Boolean> resultList) {
+            this.resultList = resultList;
+        }
 
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.week_of_term_checkbox, parent, false);
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.week_of_term_checkbox, parent, false);
             return new ViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             checkBoxList.add(holder.checkBox);
-            holder.checkBox.setChecked(list.get(position));
+            holder.checkBox.setChecked(resultList.get(position));
             holder.checkBox.setText(String.valueOf(position + 1));
             holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 //                    Log.d("checkbox", "发生改变");
-                    list.set(position, b);
+                    resultList.set(position, b);
                 }
             });
         }
 
         @Override
         public int getItemCount() {
-            return list.size();
+            return resultList.size();
         }
 
-        private class ViewHolder extends RecyclerView.ViewHolder {
-            private CheckBox checkBox;
+        private static class ViewHolder extends RecyclerView.ViewHolder {
+            public final CheckBox checkBox;
 
             public ViewHolder(View view) {
                 super(view);

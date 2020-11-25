@@ -14,8 +14,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -29,6 +27,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.potato.timetable.R;
@@ -38,8 +37,9 @@ import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.Utils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
-public class ConfigActivity extends AppCompatActivity{
+public class ConfigActivity extends AppCompatActivity {
 
     private TextView mAlphaTextView;
     private CardView mCardView;
@@ -48,8 +48,16 @@ public class ConfigActivity extends AppCompatActivity{
     private static final int REQUEST_CODE_SYSTEM_PIC = 1;
     private static final int REQUEST_CODE_STORAGE_PERMISSION = 2;// 动态申请存储权限标识
     private static final int REQUEST_CODE_PHOTO_CUT = 3;
+
+    private static final int REQUEST_WRITE_CALENDAR = 4;
+
+    private static final String[] PERMISSIONS = {
+            "android.permission.WRITE_CALENDAR"
+    };
+
     public static final String EXTRA_UPDATE_BG = "update_bg";
     public static final String BG_NAME = "bg.jpg";
+    public static final int CUSTOM_BG_ID = 0;//用户选择自定义背景图片
 
     public static String sPath;
 
@@ -93,6 +101,7 @@ public class ConfigActivity extends AppCompatActivity{
                 mAlpha = value / 100.0f;
                 mCardView.setAlpha(mAlpha);
             }
+
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
 
@@ -103,18 +112,23 @@ public class ConfigActivity extends AppCompatActivity{
 
             }
         });
-        Button cleanBtn=findViewById(R.id.btn_delete_calendar_event);
+        Button cleanBtn = findViewById(R.id.btn_delete_calendar_event);
         cleanBtn.setOnClickListener(view -> {
-            CalendarReminderUtils.deleteCalendarEvent(ConfigActivity.this
-                    ,CalendarReminderUtils.DESCRIPTION);
+            if (ActivityCompat.checkSelfPermission(this, PERMISSIONS[0]) == PackageManager.PERMISSION_GRANTED) {
+                CalendarReminderUtils.deleteCalendarEvent(ConfigActivity.this
+                        , CalendarReminderUtils.DESCRIPTION);
+            } else {
+                ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_WRITE_CALENDAR);
+            }
+
         });
 
-        Utils.setBackGround(this,mBgImageView);
+        Utils.setBackGround(this, mBgImageView);
     }
-    private void initGridView()
-    {
-        GridView gridView=findViewById(R.id.gv_bg_select);
-        final BgBtnAdapter bgBtnAdapter=new BgBtnAdapter(this);
+
+    private void initGridView() {
+        GridView gridView = findViewById(R.id.gv_bg_select);
+        final BgBtnAdapter bgBtnAdapter = new BgBtnAdapter(this);
         bgBtnAdapter.bgIdList.add(R.drawable.camera_logo);
         bgBtnAdapter.bgIdList.add(R.drawable.bg_x);
         bgBtnAdapter.bgIdList.add(R.drawable.bg_gradient);
@@ -122,7 +136,8 @@ public class ConfigActivity extends AppCompatActivity{
         bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_3);
         bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_4);
 
-        final int[] bgId=new int[]{0,
+        final int[] bgId = new int[]{
+                CUSTOM_BG_ID,
                 R.color.background_color_white,
                 R.drawable.bg_1,
                 R.drawable.bg_2,
@@ -130,18 +145,11 @@ public class ConfigActivity extends AppCompatActivity{
                 R.drawable.bg_4
         };
         gridView.setAdapter(bgBtnAdapter);
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(i==0)
-                {
-                    userSelectBg();
-                }
-                else
-                {
-                    showBgConfirmDialog(bgId[i]);
-                }
-
+        gridView.setOnItemClickListener((adapterView, view, i, l) -> {
+            if (bgId[i] == CUSTOM_BG_ID) {
+                userSelectBg();
+            } else {
+                showBgConfirmDialog(bgId[i]);
             }
         });
     }
@@ -159,6 +167,7 @@ public class ConfigActivity extends AppCompatActivity{
 
     /**
      * 显示背景确认对话框
+     *
      * @param id
      */
     private void showBgConfirmDialog(final int id) {
@@ -166,21 +175,12 @@ public class ConfigActivity extends AppCompatActivity{
                 .setTitle("提示")
                 .setMessage("是否将其设为背景图片")
                 .create();
-        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (mBgId != id) {
-                    showUserSelectBg(id);
-                }
-
+        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", (dialogInterface, i) -> {
+            if (mBgId != id) {
+                showUserSelectBg(id);
             }
         });
-        alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "取消", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                alertDialog.dismiss();
-            }
-        });
+        alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "取消", (dialogInterface, i) -> alertDialog.dismiss());
         alertDialog.show();
     }
 
@@ -205,6 +205,7 @@ public class ConfigActivity extends AppCompatActivity{
 
     /**
      * 菜单栏
+     *
      * @param item
      * @return
      */
@@ -216,20 +217,14 @@ public class ConfigActivity extends AppCompatActivity{
                 final AlertDialog alertDialog = new AlertDialog.Builder(this)
                         .setTitle("提示")
                         .setMessage("是否保存设置?").create();
-                alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        saveConfig();
-                        alertDialog.dismiss();
-                        finish();
-                    }
+                alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", (dialogInterface, i) -> {
+                    saveConfig();
+                    alertDialog.dismiss();
+                    finish();
                 });
-                alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        alertDialog.dismiss();
-                        finish();
-                    }
+                alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "取消", (dialogInterface, i) -> {
+                    alertDialog.dismiss();
+                    finish();
                 });
                 alertDialog.show();
             } else {
@@ -248,7 +243,6 @@ public class ConfigActivity extends AppCompatActivity{
     }
 
     /**
-     *
      * @return 设置是否改变
      */
     private boolean isConfigChange() {
@@ -269,8 +263,7 @@ public class ConfigActivity extends AppCompatActivity{
     /**
      * 通知MainActivity更新背景图片
      */
-    private void setUpdateResult()
-    {
+    private void setUpdateResult() {
         Intent intent = new Intent();
         intent.putExtra(EXTRA_UPDATE_BG, true);
         setResult(RESULT_OK, intent);
@@ -284,40 +277,70 @@ public class ConfigActivity extends AppCompatActivity{
             if (requestCode == REQUEST_CODE_SYSTEM_PIC) {
                 if (data != null) {
                     Uri imgUri = data.getData();
-                    String path = FileUtils.getPath(this, imgUri);
-                    BitmapFactory.Options options=new BitmapFactory.Options();
-                    options.inJustDecodeBounds=true;
-                    BitmapFactory.decodeFile(path,options);
+                    String path = FileUtils.getPathFromUri(this, imgUri);
+                    File file = new File(path);
+                    if (!file.exists()) {
+                        Utils.showToast("获取图片失败");
+                        return;
+                    }
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inJustDecodeBounds = false;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        String name = file.getName();
+                        String copyPath = sPath + File.separator + "copy" + name.substring(name.lastIndexOf('.'));
+                        try {
+                            if (!FileUtils.fileCopy(getContentResolver().openInputStream(imgUri), copyPath)) {
+                                Utils.showToast("获取图片失败");
+                                return;
+                            }
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                        BitmapFactory.decodeFile(copyPath, options);
+                    } else {
+                        BitmapFactory.decodeFile(path, options);
+                    }
                     int height = options.outHeight;
                     int width = options.outWidth;
-
-                    DisplayMetrics dm = getResources().getDisplayMetrics();
-                    float ratio=(float) dm.heightPixels/dm.widthPixels;
-                    if(height>dm.heightPixels||width>dm.widthPixels)
-                    {
-                        startPhotoCrop(imgUri,dm.heightPixels,dm.widthPixels);
+                    if (height <= 0 || width <= 0) {
+                        Utils.showToast("获取图片尺寸失败！");
+                        return;
                     }
-                    else if ((float) height / width == ratio) {//如果图片比例与屏幕比例相同，直接复制图片
+                    DisplayMetrics dm = getResources().getDisplayMetrics();
+
+                    int contentHeight = dm.heightPixels - Utils.getStatusBarAndActionBarHeight(this);
+                    float ratio = (float) contentHeight / dm.widthPixels;
+
+                    if (height > contentHeight && width > dm.widthPixels) {
+                        startPhotoCrop(imgUri, contentHeight, dm.widthPixels);
+                    } else if ((float) height / width == ratio) {//如果图片比例与屏幕比例相同，直接复制图片
                         FileUtils.fileCopy(path, sPath + File.separator + BG_NAME);
-                        showUserSelectBg(0);
+                        showUserSelectBg(CUSTOM_BG_ID);
                     } else {
-                        startPhotoCrop(imgUri, height,Math.round(height/ratio));
+                        if ((float) height / width < ratio) {
+                            startPhotoCrop(imgUri, height, Math.round(height / ratio));
+                        } else {
+                            startPhotoCrop(imgUri, Math.round(width * ratio), width);
+                        }
+
                     }
 
                 }
             } else if (requestCode == REQUEST_CODE_PHOTO_CUT) {
                 //预览图片改变效果,设置不会保存到本地
-                showUserSelectBg(0);
+                showUserSelectBg(CUSTOM_BG_ID);
             }
         }
     }
-    public void showUserSelectBg(int id)
-    {
+
+    public void showUserSelectBg(int id) {
         mBgId = id;//当为0时,读取自定义背景
-        Utils.refreshBg(this,id);
-        Utils.setBackGround(this,mBgImageView, mBgId);
-        if(id==0)
+        Utils.setBackGround(this, mBgImageView, mBgId);
+        if (id == CUSTOM_BG_ID) {
             setUpdateResult();
+        }
+
     }
 
     @Override
@@ -330,6 +353,16 @@ public class ConfigActivity extends AppCompatActivity{
             } else {
                 Toast.makeText(this, "需要访问本地图片才能完成背景图片的设置", Toast.LENGTH_LONG).show();
             }
+        } else if(requestCode == REQUEST_WRITE_CALENDAR){
+            for(int result : grantResults){
+                if(result != PackageManager.PERMISSION_GRANTED) {
+                    Utils.showToast("没有权限！请授权");
+                    return;
+                }
+            }
+            CalendarReminderUtils.deleteCalendarEvent(ConfigActivity.this
+                    , CalendarReminderUtils.DESCRIPTION);
+
         }
     }
 
@@ -362,12 +395,10 @@ public class ConfigActivity extends AppCompatActivity{
     /**
      * 以屏幕分辨率比例裁剪图片
      *
-     * @param uri 图片uri
+     * @param uri    图片uri
      * @param height 图片高度,用于设置裁剪后的高度
      */
-    public void startPhotoCrop(Uri uri, int height,int width) {
-        DisplayMetrics dm = getResources().getDisplayMetrics();
-
+    public void startPhotoCrop(Uri uri, int height, int width) {
         Intent intent = new Intent("com.android.camera.action.CROP");
 
         intent.setDataAndType(uri, "image/*");
@@ -380,9 +411,9 @@ public class ConfigActivity extends AppCompatActivity{
 
         // aspectX aspectY 是宽高的比例
 
-        intent.putExtra("aspectX", 9);
+        intent.putExtra("aspectX", width);
 
-        intent.putExtra("aspectY", 16);
+        intent.putExtra("aspectY", height);
 
 
         // outputX,outputY 是剪裁图片的宽高
@@ -414,7 +445,7 @@ public class ConfigActivity extends AppCompatActivity{
         intent.putExtra("noFaceDetection", true);
 
         startActivityForResult(intent, REQUEST_CODE_PHOTO_CUT);
-        
+
 
     }
 }

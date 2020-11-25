@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -105,8 +106,8 @@ public class FileUtils<T> {
      *
      * @param bitmap
      */
-    public static void saveBitmap(Context context,Bitmap bitmap,String fileName) {
-        File file=null;
+    public static void saveBitmap(Context context, Bitmap bitmap, String fileName) {
+        File file = null;
         try {
             // 指纹图片存放路径
             String sdCardDir = Environment.getExternalStorageDirectory() + "/QrCodeimages/";
@@ -139,6 +140,18 @@ public class FileUtils<T> {
 
     }
 
+    public static String getPathFromUri(Context context, Uri uri) {
+        try (Cursor cursor = context.getContentResolver()
+                .query(uri, new String[]{MediaStore.Audio.Media.DATA}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int index = cursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+                return cursor.getString(index);
+            } else {
+                return "";
+            }
+        }
+    }
+
     /**
      * 文件复制
      *
@@ -151,19 +164,28 @@ public class FileUtils<T> {
         File infile = new File(inpath);
         if (!infile.exists() || !infile.isFile())
             return false;
-        File outfile = new File(outpath);
-        if (!outfile.isFile())
+        try {
+            return fileCopy(new FileInputStream(inpath), outpath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+
+        }
+        return false;
+
+    }
+
+    public static boolean fileCopy(InputStream inputStream, String outPath) {
+        if (inputStream == null)
             return false;
-        File f = outfile.getAbsoluteFile();
-        if (!f.exists()) {
-            if (!f.mkdirs())
-                return false;
+        File outfile = new File(outPath);
+        if (!outfile.getParentFile().exists() && !outfile.mkdirs()) {
+            return false;
         }
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
         byte[] buffer = new byte[1024];
         try {
-            bis = new BufferedInputStream(new FileInputStream(infile));
+            bis = new BufferedInputStream(inputStream);
             bos = new BufferedOutputStream(new FileOutputStream(outfile));
             int n;
             while ((n = bis.read(buffer, 0, buffer.length)) != -1) {

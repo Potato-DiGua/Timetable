@@ -1,6 +1,5 @@
 package com.potato.timetable.ui.main;
 
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
@@ -39,8 +38,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
-import com.bigkoo.pickerview.listener.OnOptionsSelectChangeListener;
-import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
 import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -48,6 +45,7 @@ import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
 import com.potato.timetable.bean.Send;
 import com.potato.timetable.bean.Time;
+import com.potato.timetable.help.OneClickListener;
 import com.potato.timetable.ui.config.ConfigActivity;
 import com.potato.timetable.ui.coursedetails.CourseDetailsActivity;
 import com.potato.timetable.ui.editcourse.EditActivity;
@@ -69,6 +67,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
@@ -92,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
     public static List<Course> sCourseList;
     public static Time[] sTimes;
 
-    private List<TextView> mClassTableTvList = new ArrayList<>();
+    private final List<TextView> mClassTableTvList = new ArrayList<>();
     private TextView[] mClassNumHeaders = null;
 
 
@@ -106,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQ_PER_CALENDAR = 0x11;//日历权限申请
 
-    private OptionsPickerView mOptionsPv;
+    private OptionsPickerView<String> mOptionsPv;
 
     public static float VALUE_1DP;//1dp的值
 
@@ -117,12 +116,13 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
 
     private static final String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.WRITE_CALENDAR,
+            Manifest.permission.READ_CALENDAR,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    };
 
-            "android.permission.READ_EXTERNAL_STORAGE",
-
-            "android.permission.WRITE_EXTERNAL_STORAGE"};
-
-    private Handler mHandler = new Handler();
+    private final Handler mHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
                 R.id.tv_thur,
                 R.id.tv_fri,
                 R.id.tv_sat
-
         };
         mWeekOfTermTextView = findViewById(R.id.tv_week_of_term);
         mAddImgBtn = findViewById(R.id.img_btn_add);
@@ -165,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Log.d("week", "" + week);
         TextView weekTv = findViewById(weekTextView[week - 1]);
-        weekTv.setBackground(getDrawable(R.color.day_of_week_color));
+        weekTv.setBackground(ContextCompat.getDrawable(this, R.color.day_of_week_color));
         //设置标题为自定义toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("");
@@ -176,8 +175,6 @@ public class MainActivity extends AppCompatActivity {
         initTimetable();
 
         Utils.setBackGround(this, mBgImageView);
-
-        setCalendarEvent();
     }
 
     /**
@@ -323,20 +320,17 @@ public class MainActivity extends AppCompatActivity {
         ZXingLibrary.initDisplayOpinion(this);
         ImageView imageView = findViewById(R.id.img_btn_scan);
 
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                    // Do not have the permission of camera, request it.
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, 1);
-                } else {
-                    // Have gotten the permission
-                    startActivityForResult(
-                            new Intent(MainActivity.this, CaptureActivity.class),
-                            REQUEST_CODE_SCAN);
-                }
-
+        imageView.setOnClickListener(view -> {
+            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                // Do not have the permission of camera, request it.
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, 1);
+            } else {
+                // Have gotten the permission
+                startActivityForResult(
+                        new Intent(MainActivity.this, CaptureActivity.class),
+                        REQUEST_CODE_SCAN);
             }
+
         });
     }
 
@@ -375,23 +369,20 @@ public class MainActivity extends AppCompatActivity {
         mAddImgBtn.getLayoutParams().height = (int) sCellHeightPx;
 
         mFrameLayout.performClick();
-        mFrameLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                int event = motionEvent.getAction();
-                if (event == MotionEvent.ACTION_UP) {
-                    if (mAddImgBtn.getVisibility() == View.VISIBLE) {
-                        mAddImgBtn.setVisibility(View.GONE);
-                    } else {
-                        int x = (int) (motionEvent.getX() / sCellWidthPx);
-                        int y = (int) (motionEvent.getY() / sCellHeightPx);
-                        x = (int) (x * sCellWidthPx);
-                        y = (int) (y * sCellHeightPx);
-                        setAddImgBtn(x, y);
-                    }
+        mFrameLayout.setOnTouchListener((view, motionEvent) -> {
+            int event = motionEvent.getAction();
+            if (event == MotionEvent.ACTION_UP) {
+                if (mAddImgBtn.getVisibility() == View.VISIBLE) {
+                    mAddImgBtn.setVisibility(View.GONE);
+                } else {
+                    int x = (int) (motionEvent.getX() / sCellWidthPx);
+                    int y = (int) (motionEvent.getY() / sCellHeightPx);
+                    x = (int) (x * sCellWidthPx);
+                    y = (int) (y * sCellHeightPx);
+                    setAddImgBtn(x, y);
                 }
-                return true;
             }
+            return true;
         });
     }
 
@@ -400,19 +391,16 @@ public class MainActivity extends AppCompatActivity {
         layoutParams.width = (int) sCellWidthPx;
         layoutParams.height = (int) sCellHeightPx;
 
-        mAddImgBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, EditActivity.class);
-                int dayOfWeek = layoutParams.leftMargin / (int) sCellWidthPx;
-                int classStart = layoutParams.topMargin / (int) sCellHeightPx;
-                mAddImgBtn.setVisibility(View.INVISIBLE);
-                intent.putExtra(EditActivity.EXTRA_Day_OF_WEEK, dayOfWeek + 1);
-                intent.putExtra(EditActivity.EXTRA_CLASS_START, classStart + 1);
-                startActivityForResult(intent, REQUEST_CODE_COURSE_EDIT);
-                //点击后隐藏按钮，否则可能会被新建的课程覆盖
-                mAddImgBtn.setVisibility(View.GONE);
-            }
+        mAddImgBtn.setOnClickListener(view -> {
+            //点击后隐藏按钮，否则可能会被新建的课程覆盖
+            mAddImgBtn.setVisibility(View.GONE);
+            Intent intent = new Intent(MainActivity.this, EditActivity.class);
+            int dayOfWeek = layoutParams.leftMargin / (int) sCellWidthPx;
+            int classStart = layoutParams.topMargin / (int) sCellHeightPx;
+            mAddImgBtn.setVisibility(View.INVISIBLE);
+            intent.putExtra(EditActivity.EXTRA_Day_OF_WEEK, dayOfWeek + 1);
+            intent.putExtra(EditActivity.EXTRA_CLASS_START, classStart + 1);
+            startActivityForResult(intent, REQUEST_CODE_COURSE_EDIT);
         });
     }
 
@@ -436,85 +424,65 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent;
 
-        switch (id) {
-            case R.id.menu_config://菜单设置
-                intent = new Intent(this, ConfigActivity.class);
-                startActivityForResult(intent, REQUEST_CODE_CONFIG);
-                break;
-
-            case R.id.menu_set_week://菜单设置当前周
-                showSelectCurrentWeekDialog();
-                break;
-
-            case R.id.menu_import://菜单登录教务系统
-                intent = new Intent(this, LoginActivity.class);
-                startActivityForResult(intent, REQUEST_CODE_LOGIN);
-                break;
-            case R.id.menu_append://菜单导入Excel
-                intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("*Excel/xls");
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                startActivityForResult(intent, REQUEST_CODE_FILE_CHOOSE);
-                break;
-            case R.id.menu_append_class://菜单添加课程
-                intent = new Intent(this, EditActivity.class);
-                startActivityForResult(intent, REQUEST_CODE_COURSE_EDIT);
-                break;
-            case R.id.menu_share_timetable:
-                Gson gson = new Gson();
-                String json = gson.toJson(sCourseList);
-//                Log.d("share", json);
-                RequestBody requestBody = RequestBody.create(json, OkHttpUtils.JSON);
-                Request request = new Request.Builder()
-                        .url(ShareUtils.SHARE_URL)
-                        .post(requestBody)
-                        .build();
-                OkHttpUtils.getOkHttpClient().newCall(request).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(MainActivity.this, "服务器不可用", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                        if (response.code() == 200) {
-                            String json = response.body().string();
-//                            Log.d("share", json);
-                            final Send<String> send = gson.fromJson(json, new TypeToken<Send>() {
-                            }.getType());
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (send.getStatus().equals("ok")) {
-                                        showQRCodeDialog(send.getData());
-                                    } else {
-                                        if (TextUtils.isEmpty(send.getMessage()))
-                                            Toast.makeText(MainActivity.this, send.getMessage(), Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            });
-                        }
-
-                    }
-                });
-                break;
-            case R.id.menu_set_time://设置上课时间
-                startActivityForResult(
-                        new Intent(this, SetTimeActivity.class),
-                        REQUEST_CODE_SET_TIME);
-                break;
-            case R.id.menu_update://菜单检查更新
-                checkUpdate();
-                break;
-            default:
-                break;
+        if (id == R.id.menu_config) {//菜单设置
+            intent = new Intent(this, ConfigActivity.class);
+            startActivityForResult(intent, REQUEST_CODE_CONFIG);
+        } else if (id == R.id.menu_set_week) {//菜单设置当前周
+            showSelectCurrentWeekDialog();
+        } else if (id == R.id.menu_import) {//菜单登录教务系统
+            intent = new Intent(this, LoginActivity.class);
+            startActivityForResult(intent, REQUEST_CODE_LOGIN);
+        } else if (id == R.id.menu_append) {//菜单导入Excel
+            intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("*Excel/xls");
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            startActivityForResult(intent, REQUEST_CODE_FILE_CHOOSE);
+        } else if (id == R.id.menu_append_class) {//菜单添加课程
+            intent = new Intent(this, EditActivity.class);
+            startActivityForResult(intent, REQUEST_CODE_COURSE_EDIT);
+        } else if (id == R.id.menu_share_timetable) {
+            shareTimetable();
+        } else if (id == R.id.menu_set_time) {//设置上课时间
+            startActivityForResult(
+                    new Intent(this, SetTimeActivity.class),
+                    REQUEST_CODE_SET_TIME);
+        } else if (id == R.id.menu_update) {//菜单检查更新
+            checkUpdate();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void shareTimetable() {
+        Gson gson = new Gson();
+        String json = gson.toJson(sCourseList);
+        RequestBody requestBody = RequestBody.create(json, OkHttpUtils.JSON);
+        Request request = new Request.Builder()
+                .url(ShareUtils.SHARE_URL)
+                .post(requestBody)
+                .build();
+        OkHttpUtils.getOkHttpClient().newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                mHandler.post(() -> Utils.showToast("服务器不可用"));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.code() == 200 && response.body() != null) {
+                    String json = response.body().string();
+                    final Send<String> send = gson.fromJson(json, new TypeToken<Send>() {
+                    }.getType());
+                    mHandler.post(() -> {
+                        if (send.getStatus().equals("ok")) {
+                            showQRCodeDialog(send.getData());
+                        } else {
+                            Utils.showToast(send.getMessage());
+                        }
+                    });
+                }
+
+            }
+        });
     }
 
     private void showQRCodeDialog(final String id) {
@@ -528,21 +496,13 @@ public class MainActivity extends AppCompatActivity {
             AlertDialog alertDialog = new AlertDialog.Builder(this)
                     .setTitle("二维码")
                     .setView(imageView)
-                    .setPositiveButton("保存", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            FileUtils.saveBitmap(MainActivity.this, bitmap, "LightTimetable-" + Utils.getDate());
-                            Toast.makeText(MainActivity.this,
-                                    "二维码图片已保存",
-                                    Toast.LENGTH_SHORT).show();
-                        }
+                    .setPositiveButton("保存", (dialogInterface, i) -> {
+                        FileUtils.saveBitmap(MainActivity.this, bitmap, "LightTimetable-" + Utils.getDate());
+                        Toast.makeText(MainActivity.this,
+                                "二维码图片已保存",
+                                Toast.LENGTH_SHORT).show();
                     })
-                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-
-                        }
-                    })
+                    .setNegativeButton("取消", null)
                     .create();
             alertDialog.show();
         }
@@ -557,28 +517,20 @@ public class MainActivity extends AppCompatActivity {
         final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this)
                 .setTitle("提示")
                 .setMessage("检测到新版本,是否下载?").create();
-        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", (dialogInterface, i) -> {
 //                Log.d("TAG",url);
-                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-                request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE |
-                        DownloadManager.Request.NETWORK_WIFI);
-                request.setDestinationInExternalPublicDir("Download", "LightTimetable.apk");
-                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
-                request.setVisibleInDownloadsUi(true);
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE |
+                    DownloadManager.Request.NETWORK_WIFI);
+            request.setDestinationInExternalPublicDir("Download", "LightTimetable.apk");
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+            request.setVisibleInDownloadsUi(true);
 
-                DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-                dm.enqueue(request);
-                alertDialog.dismiss();
-            }
+            DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+            dm.enqueue(request);
+            alertDialog.dismiss();
         });
-        alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "取消", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                alertDialog.dismiss();
-            }
-        });
+        alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "取消", (dialogInterface, i) -> alertDialog.dismiss());
         alertDialog.show();
 
     }
@@ -615,22 +567,15 @@ public class MainActivity extends AppCompatActivity {
             items.add("第" + i + "周");
         }
 
-        mOptionsPv = new OptionsPickerBuilder(this, new OnOptionsSelectListener() {
-            @Override
-            public void onOptionsSelect(int options1, int options2, int options3, View v) {
-                int selectCurrentWeek = options1 + 1;
-                if (selectCurrentWeek != currentWeek) {
-                    Config.setCurrentWeek(selectCurrentWeek);
-                    updateTimetable();
-                    Config.saveCurrentWeek(MainActivity.this);
-                }
+        mOptionsPv = new OptionsPickerBuilder(this, (options1, options2, options3, v) -> {
+            int selectCurrentWeek = options1 + 1;
+            if (selectCurrentWeek != currentWeek) {
+                Config.setCurrentWeek(selectCurrentWeek);
+                updateTimetable();
+                Config.saveCurrentWeek(MainActivity.this);
             }
-        }).setOptionsSelectChangeListener(new OnOptionsSelectChangeListener() {
-            @Override
-            public void onOptionsSelectChanged(int options1, int options2, int options3) {
-                mOptionsPv.setTitleText(str + items.get(options1));
-            }
-        }).build();
+        }).setOptionsSelectChangeListener(
+                (options1, options2, options3) -> mOptionsPv.setTitleText(str + items.get(options1))).build();
 
         mOptionsPv.setTitleText("当前周为:" + items.get(currentWeek - 1));
 
@@ -639,31 +584,26 @@ public class MainActivity extends AppCompatActivity {
         mOptionsPv.show();
     }
 
+    private boolean hasAllPermissions() {
+        for (String item : PERMISSIONS_STORAGE) {
+            int permission = ActivityCompat.checkSelfPermission(this, item);
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * 获取读写权限
      */
 
     private void getWritePermission() {
-        try {
-
-            //检测是否有写的权限
-
-            int permission = ActivityCompat.checkSelfPermission(this,
-
-                    "android.permission.WRITE_EXTERNAL_STORAGE");
-
-            if (permission != PackageManager.PERMISSION_GRANTED) {
-
-                // 没有写的权限，去申请写的权限，会弹出对话框
-
-                ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
-
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
+        //检测是否有写的权限
+        if (hasAllPermissions()) {
+            setCalendarEvent();
+        } else {
+            ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
         }
     }
 
@@ -732,9 +672,8 @@ public class MainActivity extends AppCompatActivity {
 
             //Log.d("week", course.getDayOfWeek() + "");
             if (course.getDayOfWeek() != weekOfDay) {
-                for (int i = 0; i < flag.length; i++) {//初始化flag
-                    flag[i] = false;
-                }
+                //初始化flag
+                Arrays.fill(flag, false);
                 weekOfDay = course.getDayOfWeek();
             }
 
@@ -777,17 +716,10 @@ public class MainActivity extends AppCompatActivity {
         int offset = Config.getMaxWeekNum() - Config.getCurrentWeek();
         //判断是否未到上课时间
         if ((1 << offset) > weekOfTerm) {
-            //Log.d("course", "未开始" + Integer.toBinaryString(weekOfTerm));
             return false;
         }
 
-        /*for (int i = offset; i >= 0; i--) {
-            if (((1 << i) & weekOfTerm) > 0) {
-                return true;
-            }
-        }*/
         //判断课程是否已结束
-
 
         //(1 << (offset + 1) - 1
         // 快速给前offset位赋值1
@@ -922,8 +854,8 @@ public class MainActivity extends AppCompatActivity {
         for (int i = size, len = mClassTableTvList.size(); i < len; i++) {
             mFrameLayout.removeView(mClassTableTvList.get(i));
         }
-        for(int i=mClassTableTvList.size()-1;i>=size;i--){
-            mClassTableTvList.remove(i);
+        if (mClassTableTvList.size() > size) {
+            mClassTableTvList.subList(size, mClassTableTvList.size()).clear();
         }
 
         flagUpdateCalendar = true;//更新日程
@@ -938,14 +870,11 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setTableClickListener(TextView textView, final int index)//设置课程视图的监听
     {
-        textView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, CourseDetailsActivity.class);
-                intent.putExtra(CourseDetailsActivity.KEY_COURSE_INDEX, index);
-                startActivityForResult(intent, REQUEST_CODE_COURSE_DETAILS);
-            }
-        });
+        textView.setOnClickListener(new OneClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, CourseDetailsActivity.class);
+            intent.putExtra(CourseDetailsActivity.KEY_COURSE_INDEX, index);
+            startActivityForResult(intent, REQUEST_CODE_COURSE_DETAILS);
+        }));
     }
 
     /**
@@ -1001,9 +930,12 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQ_PER_CALENDAR) {
             for (int r : grantResults) {
-                if (r != PackageManager.PERMISSION_DENIED)
+                if (r != PackageManager.PERMISSION_DENIED) {
                     finish();
+                    return;
+                }
             }
+            setCalendarEvent();
         }
     }
 
@@ -1013,6 +945,9 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_CODE_FILE_CHOOSE:
+                    if (data == null) {
+                        return;
+                    }
                     Uri uri = data.getData();
 
                     String path = FileUtils.getPath(MainActivity.this, uri);
@@ -1055,66 +990,62 @@ public class MainActivity extends AppCompatActivity {
                 case REQUEST_CODE_SCAN://处理二维码返回结果
                     //处理扫描结果
                     if (null != data) {
-                        Bundle bundle = data.getExtras();
-                        if (bundle == null) {
-                            return;
-                        }
-                        if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_SUCCESS) {
-                            String url = bundle.getString(CodeUtils.RESULT_STRING);
-                            //判断扫描出的二维码的网址是否为本app服务器的网址
-                            if (!TextUtils.isEmpty(url) && ShareUtils.judgeURL(url)) {
-                                Request request = new Request.Builder()
-                                        .url(url)
-                                        .build();
-                                //使用http获取分享的课程表
-                                OkHttpUtils.getOkHttpClient().newCall(request).enqueue(new Callback() {
-                                    @Override
-                                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                                        mHandler.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(MainActivity.this, "服务器不可用", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                                    }
-
-                                    @Override
-                                    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                                        if (response.code() == 200) {
-                                            String json = response.body().string();
-                                            if (!TextUtils.isEmpty(json)) {
-                                                Gson gson = new Gson();
-                                                //解析获取的json
-                                                Send<List<Course>> send = gson.fromJson(
-                                                        json, new TypeToken<Send<List<Course>>>() {
-                                                        }.getType());
-                                                if (send.getData() != null && send.getData().size() > 0) {
-                                                    sCourseList = send.getData();
-                                                    mHandler.post(() -> {
-                                                        updateTimetable();
-                                                    });
-                                                }
-                                            }
-                                        }
-                                    }
-                                });
-                            } else {
-                                Toast.makeText(this, "无效二维码", Toast.LENGTH_SHORT).show();
-                            }
-                        } else if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_FAILED) {
-                            Toast.makeText(MainActivity.this, "解析二维码失败", Toast.LENGTH_LONG).show();
-                        }
+                        handleQRScanResult(data);
                     }
                     break;
                 case REQUEST_CODE_SET_TIME:
                     if (data != null && data.getBooleanExtra(SetTimeActivity.EXTRA_UPDATE_Time, false)) {
-//                        Log.d("update", "更新时间");
                         updateClassNumHeader();
                     }
                     break;
                 default:
                     break;
             }
+        }
+    }
+
+    private void handleQRScanResult(@NotNull Intent data) {
+        Bundle bundle = data.getExtras();
+        if (bundle == null) {
+            return;
+        }
+        if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_SUCCESS) {
+            String url = bundle.getString(CodeUtils.RESULT_STRING);
+            //判断扫描出的二维码的网址是否为本app服务器的网址
+            if (!TextUtils.isEmpty(url) && ShareUtils.judgeURL(url)) {
+                Request request = new Request.Builder()
+                        .url(url)
+                        .build();
+                //使用http获取分享的课程表
+                OkHttpUtils.getOkHttpClient().newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                        mHandler.post(() -> Utils.showToast("服务器不可用"));
+                    }
+
+                    @Override
+                    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                        if (response.code() == 200 && response.body() != null) {
+                            String json = response.body().string();
+                            if (!TextUtils.isEmpty(json)) {
+                                Gson gson = new Gson();
+                                //解析获取的json
+                                Send<List<Course>> send = gson.fromJson(
+                                        json, new TypeToken<Send<List<Course>>>() {
+                                        }.getType());
+                                if (send.getData() != null && send.getData().size() > 0) {
+                                    sCourseList = send.getData();
+                                    mHandler.post(() -> updateTimetable());
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                Toast.makeText(this, "无效二维码", Toast.LENGTH_SHORT).show();
+            }
+        } else if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_FAILED) {
+            Toast.makeText(MainActivity.this, "解析二维码失败", Toast.LENGTH_LONG).show();
         }
     }
 
