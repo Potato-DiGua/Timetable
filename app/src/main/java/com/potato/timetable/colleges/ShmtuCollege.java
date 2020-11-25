@@ -22,12 +22,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -36,17 +34,10 @@ public class ShmtuCollege implements College {
     private static final String BASE_URL = "https://cas.shmtu.edu.cn";
     private static final String LOGIN_URL = BASE_URL + "/cas/login";
     private static final String RANDOM_IMG_URL = BASE_URL + "/cas/captcha";
-    private Map<String, String> termMap = new HashMap<>();
+    private final Map<String, String> termMap = new HashMap<>();
     private static final String[] EMPTY_STRINGS = new String[0];
     private boolean isLogin = false;
     private String ids;
-    private static OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
-            .cookieJar(OkHttpUtils.getCookieJar())
-            .connectTimeout(5, TimeUnit.SECONDS)
-            .readTimeout(5, TimeUnit.SECONDS)
-            .writeTimeout(5, TimeUnit.SECONDS)
-            .followRedirects(true)
-            .build();
 
     @Override
     public String getCollegeName() {

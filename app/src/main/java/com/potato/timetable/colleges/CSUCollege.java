@@ -107,8 +107,8 @@ public class CSUCollege implements College {
         StringBuilder encoded = new StringBuilder();
         for (int i = 0; i < code.length(); i++) {
             if (i < 50) {
-                encoded.append(code.substring(i, i + 1));
-                int value = Integer.parseInt(sxh.substring(i, i + 1));
+                encoded.append(code.charAt(i));
+                int value = sxh.charAt(i) - '0';
                 encoded.append(scode.substring(0, value));
                 scode = scode.substring(value);
             } else {

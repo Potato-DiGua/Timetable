@@ -92,10 +92,7 @@ public class OkHttpUtils {
      * @return
      */
     public static boolean downloadToLocal(String url, String path, String name) {
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-        return downloadToLocal(request, path, name);
+        return downloadToLocal(createRequest(url), path, name);
     }
 
     /**
@@ -157,7 +154,7 @@ public class OkHttpUtils {
      * @return
      */
     public static String downloadText(String url) {
-        return downloadText(url, "UTF-8");
+        return downloadText(createRequest(url));
     }
 
     /**
@@ -177,12 +174,7 @@ public class OkHttpUtils {
      * @return
      */
     public static String downloadText(String url, String encoding) {
-        try {
-            return new String(downloadRaw(url), encoding);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return "";
-        }
+        return downloadText(createRequest(url), encoding);
     }
 
     /**
@@ -238,5 +230,11 @@ public class OkHttpUtils {
             e.printStackTrace();
         }
         return EMPTY_BYTES;
+    }
+
+    public static Request createRequest(String url) {
+        return new Request.Builder()
+                .url(url)
+                .build();
     }
 }
