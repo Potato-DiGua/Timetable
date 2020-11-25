@@ -11,7 +11,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -28,7 +27,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.potato.timetable.R;
 import com.potato.timetable.util.CalendarReminderUtils;
@@ -38,6 +36,7 @@ import com.potato.timetable.util.Utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Collections;
 
 public class ConfigActivity extends AppCompatActivity {
 
@@ -63,6 +62,16 @@ public class ConfigActivity extends AppCompatActivity {
 
     private float mAlpha = Config.getCardViewAlpha();
     private int mBgId = Config.getBgId();
+
+    // 背景图片的资源id
+    public static final int[] bgIds = new int[]{
+            ConfigActivity.CUSTOM_BG_ID,//用户自己从相册选择
+            R.color.background_color_white,
+            R.drawable.bg_gradient,
+            R.drawable.bg_2,
+            R.drawable.bg_3,
+            R.drawable.bg_4
+    };
 
 
     @Override
@@ -126,44 +135,50 @@ public class ConfigActivity extends AppCompatActivity {
         Utils.setBackGround(this, mBgImageView);
     }
 
+
     private void initGridView() {
         GridView gridView = findViewById(R.id.gv_bg_select);
         final BgBtnAdapter bgBtnAdapter = new BgBtnAdapter(this);
-        bgBtnAdapter.bgIdList.add(R.drawable.camera_logo);
-        bgBtnAdapter.bgIdList.add(R.drawable.bg_x);
-        bgBtnAdapter.bgIdList.add(R.drawable.bg_gradient);
-        bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_2);
-        bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_3);
-        bgBtnAdapter.bgIdList.add(R.drawable.btn_bg_4);
-
-        final int[] bgId = new int[]{
-                CUSTOM_BG_ID,
-                R.color.background_color_white,
-                R.drawable.bg_1,
+        Collections.addAll(bgBtnAdapter.bgIdList,
+                R.drawable.camera_logo,
+                R.drawable.bg_x,
+                R.drawable.bg_gradient,
                 R.drawable.bg_2,
                 R.drawable.bg_3,
                 R.drawable.bg_4
-        };
+        );
+
         gridView.setAdapter(bgBtnAdapter);
         gridView.setOnItemClickListener((adapterView, view, i, l) -> {
-            if (bgId[i] == CUSTOM_BG_ID) {
+            if (bgIds[i] == CUSTOM_BG_ID) {
                 userSelectBg();
             } else {
-                showBgConfirmDialog(bgId[i]);
+                showBgConfirmDialog(bgIds[i]);
             }
         });
     }
 
     /**
-     * 打开系统相册选取图片
+     * 用户自己选择图片
      */
     private void userSelectBg() {
         //申请权限
-        requestStoragePermission();
-        //打开图库选取图片
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent, REQUEST_CODE_SYSTEM_PIC);//打开系统相册
+        if (hasStoragePermission()) {
+            //打开图库选取图片
+            pickImgFromSystemPic();
+        } else {
+            requestStoragePermission();
+        }
     }
+
+    /**
+     * 从系统相册选择图片
+     */
+    private void pickImgFromSystemPic() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, REQUEST_CODE_SYSTEM_PIC);
+    }
+
 
     /**
      * 显示背景确认对话框
@@ -347,15 +362,15 @@ public class ConfigActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE_STORAGE_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // 用户同意，执行相应操作
-                Log.e("TAG", "用户已经同意了存储权限");
-            } else {
-                Toast.makeText(this, "需要访问本地图片才能完成背景图片的设置", Toast.LENGTH_LONG).show();
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    Utils.showToast("需要访问本地图片才能完成背景图片的设置");
+                }
             }
-        } else if(requestCode == REQUEST_WRITE_CALENDAR){
-            for(int result : grantResults){
-                if(result != PackageManager.PERMISSION_GRANTED) {
+            pickImgFromSystemPic();
+        } else if (requestCode == REQUEST_WRITE_CALENDAR) {
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
                     Utils.showToast("没有权限！请授权");
                     return;
                 }
@@ -366,20 +381,14 @@ public class ConfigActivity extends AppCompatActivity {
         }
     }
 
-    private void requestStoragePermission() {
+    private boolean hasStoragePermission() {
+        return PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+    }
 
-        int hasCameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        Log.e("TAG", "开始" + hasCameraPermission);
-        if (hasCameraPermission == PackageManager.PERMISSION_GRANTED) {
-            // 拥有权限，可以执行涉及到存储权限的操作
-            Log.e("TAG", "你已经授权了该组权限");
-        } else {
-            // 没有权限，向用户申请该权限
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                Log.e("TAG", "向用户申请该组权限");
-                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_STORAGE_PERMISSION);
-            }
-        }
+    private void requestStoragePermission() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                REQUEST_CODE_STORAGE_PERMISSION);
 
     }
 

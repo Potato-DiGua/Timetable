@@ -157,6 +157,18 @@ object Utils {
     }
 
     /**
+     * 从url获取文件名
+     */
+    @JvmStatic
+    fun getFileNameFromUrl(url: String?): String {
+        return if (url == null || url.isEmpty()) {
+            ""
+        } else {
+            url.substring(url.lastIndexOf('/') + 1)
+        }
+    }
+
+    /**
      * 获取版本名称(例如1.0.3)
      * 从https://github.com/Potato-DiGua/Timetable/releases/download/v1.0.3/LightTimetable-v1.0.3.apk中
      * 提取 1.0.3
@@ -166,8 +178,6 @@ object Utils {
      */
     fun getVersionNameFromUrl(url: String): String {
         if (url.isNotEmpty()) {
-
-            //
             val anchor = "LightTimetable-v"
             val index = url.indexOf(anchor)
             val apkIndex = url.indexOf(".apk")

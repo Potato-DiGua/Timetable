@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -518,13 +519,13 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("提示")
                 .setMessage("检测到新版本,是否下载?").create();
         alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", (dialogInterface, i) -> {
-//                Log.d("TAG",url);
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
             request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE |
                     DownloadManager.Request.NETWORK_WIFI);
-            request.setDestinationInExternalPublicDir("Download", "LightTimetable.apk");
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, Utils.getFileNameFromUrl(url));
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
             request.setVisibleInDownloadsUi(true);
+            request.setDescription("新版小轻课程表下载");
 
             DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
             dm.enqueue(request);
