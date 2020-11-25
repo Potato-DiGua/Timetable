@@ -19,8 +19,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
-import com.bigkoo.pickerview.listener.OnOptionsSelectChangeListener;
-import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
 import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
@@ -43,7 +41,7 @@ public class EditActivity extends AppCompatActivity {
     private EditText mClassRoomEditText;
     private TextView mWeekOfTermTextView;
     private EditText mTeacherEditText;
-    private OptionsPickerView pvOptions;
+    private OptionsPickerView<String> pvOptions;
 
     private Course mCourse;
 
@@ -108,38 +106,21 @@ public class EditActivity extends AppCompatActivity {
 
         Utils.setBackGround(this, imageView);
 
-        mClassNumTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                hideInput();//关闭软键盘防止挡住选择控件
-                int start = mCourse.getClassStart();
-                if (start == -1)
-                    initOptionsPicker();
-                else
-                    initOptionsPicker();
-            }
+        mClassNumTextView.setOnClickListener(view -> {
+            hideInput();//关闭软键盘防止挡住选择控件
+            initOptionsPicker();
         });
-        mWeekOfTermTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final WeekOfTermSelectDialog dialog = new WeekOfTermSelectDialog(EditActivity.this, mCourse.getWeekOfTerm());
 
-                dialog.setPositiveBtn(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        mCourse.setWeekOfTerm(dialog.getWeekOfTerm());
-                        mWeekOfTermTextView.setText(Utils.getFormatStringFromWeekOfTerm(mCourse.getWeekOfTerm()));
-                        dialog.dismiss();
-                    }
-                });
-                dialog.setNativeBtn(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        dialog.dismiss();
-                    }
-                });
-                dialog.show();
-            }
+        mWeekOfTermTextView.setOnClickListener(view -> {
+            final WeekOfTermSelectDialog dialog = new WeekOfTermSelectDialog(EditActivity.this, mCourse.getWeekOfTerm());
+
+            dialog.setPositiveBtn(view1 -> {
+                mCourse.setWeekOfTerm(dialog.getWeekOfTerm());
+                mWeekOfTermTextView.setText(Utils.getFormatStringFromWeekOfTerm(mCourse.getWeekOfTerm()));
+                dialog.dismiss();
+            });
+            dialog.setNativeBtn(view2 -> dialog.dismiss());
+            dialog.show();
         });
 
     }
@@ -254,8 +235,6 @@ public class EditActivity extends AppCompatActivity {
     private void setDefaultValue() {
         mTeacherEditText.setText(mCourse.getTeacher());
         mNameEditText.setText(mCourse.getName());
-        int weekOption = Utils.getWeekOptionFromWeekOfTerm(mCourse.getWeekOfTerm());
-
 
         mWeekOfTermTextView.setText(Utils.getFormatStringFromWeekOfTerm(mCourse.getWeekOfTerm()));
 
@@ -269,12 +248,6 @@ public class EditActivity extends AppCompatActivity {
                 String.format(getString(R.string.schedule_section), week, class_start, class_end));
     }
 
-    /**
-     * 菜单栏
-     *
-     * @param item
-     * @return
-     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
@@ -286,23 +259,15 @@ public class EditActivity extends AppCompatActivity {
                     .create();
 
             alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定",
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            //在退出之前结束dialog,再退出,否则退出会很慢
-                            alertDialog.dismiss();
-                            finish();
+                    (dialogInterface, i) -> {
+                        //在退出之前结束dialog,再退出,否则退出会很慢
+                        alertDialog.dismiss();
+                        finish();
 
-                        }
                     });
 
             alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "取消",
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            alertDialog.dismiss();
-                        }
-                    });
+                    (dialogInterface, i) -> alertDialog.dismiss());
 
             alertDialog.show();
 
@@ -310,18 +275,15 @@ public class EditActivity extends AppCompatActivity {
             if (setCourseFromView()) {
                 final AlertDialog alertDialog = initAlertDialog("提示", "是否保存内容?", "取消");
                 alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "确定",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                saveCourse();
-
-                            }
+                        (dialogInterface, i) -> {
+                            saveCourse();
+                            finish();
                         });
                 alertDialog.show();
             }
         }
 
-//        boolean Return false to allow normal menu processing to  proceed, true to consume it here.
+        //boolean Return false to allow normal menu processing to  proceed, true to consume it here.
         return super.onOptionsItemSelected(item);
     }
 
@@ -332,12 +294,7 @@ public class EditActivity extends AppCompatActivity {
                 .create();
 
         alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, cancleBtnText,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        alertDialog.dismiss();
-                    }
-                });
+                (dialogInterface, i) -> alertDialog.dismiss());
         return alertDialog;
     }
 
@@ -369,44 +326,35 @@ public class EditActivity extends AppCompatActivity {
     }
 
     /**
-     * 初始化选择对话框
+     * 初始化上课时间选择对话框
      */
     private void initOptionsPicker() {
 
-        int options1 = mDayOfWeek - 1;
-        int options2 = mClassStart - 1;
-        int options3 = mClassEnd - 1;
+        int defaultOptions1 = mDayOfWeek - 1;
+        int defaultOptions2 = mClassStart - 1;
+        int defaultOptions3 = mClassEnd - 1;
 
-        final String str = "%s %d-%d节";
-        pvOptions = new OptionsPickerBuilder(this, new OnOptionsSelectListener() {
+        pvOptions = new OptionsPickerBuilder(this, (options1, options2, options3, v) -> {
+            //返回的分别是三个级别的选中位置
+            String str12 = sWeekItems.get(options1) + " " + (options2 + 1) + "-" + (options3 + 1) + "节";
+            mClassNumTextView.setText(str12);
+            //保存节数信息
+            mDayOfWeek = options1 + 1;
+            mClassStart = options2 + 1;
+            mClassEnd = options3 + 1;
 
-            @Override
-            public void onOptionsSelect(int options1, int options2, int options3, View v) {
-                //返回的分别是三个级别的选中位置
-                String str = sWeekItems.get(options1) + " " + (options2 + 1) + "-" + (options3 + 1) + "节";
-                mClassNumTextView.setText(str);
-                //保存节数信息
-                mDayOfWeek = options1 + 1;
-                mClassStart = options2 + 1;
-                mClassEnd = options3 + 1;
+        }).setOptionsSelectChangeListener((options1, options2, options3) -> {
+            String str1 = sWeekItems.get(options1) + " " + (options2 + 1) + "-" + (options3 + 1) + "节";
 
+            pvOptions.setTitleText(str1);
+            if (options3 < options2) {
+                pvOptions.setSelectOptions(options1, options2, options2 + 1);
             }
-        })
-                .setOptionsSelectChangeListener(new OnOptionsSelectChangeListener() {
-                    @Override
-                    public void onOptionsSelectChanged(int options1, int options2, int options3) {
-                        String str = sWeekItems.get(options1) + " " + (options2 + 1) + "-" + (options3 + 1) + "节";
+        }).build();
 
-                        pvOptions.setTitleText(str);
-                        if (options3 < options2) {
-                            pvOptions.setSelectOptions(options1, options2, options2 + 1);
-                        }
-                    }
-                })
-                .build();
         if (pvOptions != null) {
             pvOptions.setNPicker(sWeekItems, sStartItems, sEndItems);
-            pvOptions.setSelectOptions(options1, options2, options3);
+            pvOptions.setSelectOptions(defaultOptions1, defaultOptions2, defaultOptions3);
             pvOptions.setTitleText("选择上课节数");
             pvOptions.show();
         }
