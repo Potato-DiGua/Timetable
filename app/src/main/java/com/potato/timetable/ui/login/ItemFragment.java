@@ -63,10 +63,6 @@ public class ItemFragment extends Fragment {
             RecyclerView recyclerView = (RecyclerView) view;
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
-
-//                DividerItemDecoration decoration=new DividerItemDecoration(context,DividerItemDecoration.VERTICAL);
-//                decoration.setDrawable(getResources().getDrawable(R.drawable.divider_vertical));
-//                recyclerView.addItemDecoration(decoration);
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }

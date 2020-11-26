@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#34A2DA</color>
-    <color name="colorPrimaryDark">#1785C6</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimary">#2196F3</color>
+    <color name="colorPrimaryDark">#1565C0</color>
+    <color name="colorAccent">#2962FF</color>
+
     <color name="colorOrange">#ffc450</color>
     <color name="colorTitle">#00BFFF</color>
     <color name="colorWhite">#FFFFFF</color>
@@ -20,17 +21,19 @@
     <color name="bg_color_gray">#D0D0D0</color>
     <color name="colorTransparent">#99D0D0D0</color>
 
-    <color name="item_orange">#ccFFB90F</color>
-    <color name="item_tomato">#ccFF6347</color>
-    <color name="item_green">#cc54FF9F</color>
-    <color name="item_cyan">#cc00E5EE</color>
-    <color name="item_purple">#cc836FFF</color>
-    <color name="item_gray">#ccD3D3D3</color>
+    <color name="item_1">#CCFF5252</color>
+    <color name="item_2">#CC536DFE</color>
+    <color name="item_3">#CCE040FB</color>
+    <color name="item_4">#CCFF6E40</color>
+    <color name="item_5">#CCFF4081</color>
+    <color name="item_6">#CCFFAB40</color>
+    <color name="item_7">#CC7C4DFF</color>
+    <color name="item_gray">#CCD3D3D3</color>
 
     <color name="header_text_color">#0C0B0B</color>
 
     <color name="header_week_color">#CCD3D3D3</color>
     <color name="header_class_color">#CCD0D0D0</color>
 
-    <color name="day_of_week_color">#CC87CEFA</color>
+    <color name="day_of_week_color">#90CAF9</color>
 </resources>

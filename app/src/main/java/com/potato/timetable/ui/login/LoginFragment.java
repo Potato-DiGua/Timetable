@@ -27,7 +27,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
-import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
 import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
@@ -35,7 +34,6 @@ import com.potato.timetable.colleges.base.College;
 import com.potato.timetable.colleges.base.CollegeFactory;
 import com.potato.timetable.ui.main.MainActivity;
 import com.potato.timetable.util.Config;
-import com.potato.timetable.util.HttpUtils;
 import com.potato.timetable.util.OkHttpUtils;
 import com.potato.timetable.util.Utils;
 
@@ -59,9 +57,7 @@ public class LoginFragment extends Fragment {
     private Button mLoginBtn;
     private ProgressBar mProgressBar;
 
-    private Handler mHandler = new Handler();
-
-    private boolean judgeFlag = true;//判断网络是否可用的循环退出标志，方便结束线程
+    private final Handler mHandler = new Handler();
 
     public static final String EXTRA_UPDATE_TIMETABLE = "update_timetable";
     private static final String KEY_ACCOUNT = "account";
@@ -103,27 +99,10 @@ public class LoginFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setRandomCodeImg();
-        judgeConnected();
         new Thread(() -> {
             if (college.isLogin()) {
                 final String[] strings = college.getTermOptions();
                 mHandler.post(() -> showSelectDialog(strings));
-            }
-
-        }).start();
-    }
-
-    private void judgeConnected() {
-        new Thread(() -> {
-            while (judgeFlag) {
-                if (!HttpUtils.isNetworkConnected()) {
-                    mHandler.post(() -> Utils.showToast("当前网络不可用，请检查网络设置！"));
-                    try {
-                        Thread.sleep(30000);//每30秒循环一次
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
             }
 
         }).start();
@@ -210,12 +189,9 @@ public class LoginFragment extends Fragment {
             if (!s.isEmpty())
                 items.add(s);
         }
-        OptionsPickerView mOptionsPv = new OptionsPickerBuilder(getActivity(), new OnOptionsSelectListener() {
-            @Override
-            public void onOptionsSelect(int options1, int options2, int options3, View v) {
-                setLoading(true);
-                getCourses(items.get(options1));
-            }
+        OptionsPickerView<String> mOptionsPv = new OptionsPickerBuilder(getActivity(), (options1, options2, options3, v) -> {
+            setLoading(true);
+            getCourses(items.get(options1));
         }).build();
 
         mOptionsPv.setTitleText("选择学期");
@@ -244,7 +220,6 @@ public class LoginFragment extends Fragment {
                     Utils.showToast(list.size() == 0 ? "该学期没有课程" : "导入成功");
                     MainActivity.sCourseList = list;
                     setUpdateResult();
-                    judgeFlag = false;
                     Activity activity = getActivity();
                     if (activity != null) {
                         activity.finish();
@@ -331,5 +306,11 @@ public class LoginFragment extends Fragment {
             });
         }).start();
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mHandler.removeCallbacksAndMessages(null);
     }
 }

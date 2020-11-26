@@ -132,15 +132,7 @@ public class MainActivity extends AppCompatActivity {
 
         getWritePermission();//得到读写权限用于保存课表信息
 
-        int[] weekTextView = new int[]{//储存周几表头
-                R.id.tv_sun,
-                R.id.tv_mon,
-                R.id.tv_tues,
-                R.id.tv_wed,
-                R.id.tv_thur,
-                R.id.tv_fri,
-                R.id.tv_sat
-        };
+
         mWeekOfTermTextView = findViewById(R.id.tv_week_of_term);
         mAddImgBtn = findViewById(R.id.img_btn_add);
         mBgImageView = findViewById(R.id.iv_bg_main);
@@ -161,21 +153,41 @@ public class MainActivity extends AppCompatActivity {
         //设置课程格子高度和宽度
         setTableCellDimens(headerClassNumWidth);
 
-        int week = Utils.getWeekOfDay();
-
-        //Log.d("week", "" + week);
-        TextView weekTv = findViewById(weekTextView[week - 1]);
-        weekTv.setBackground(ContextCompat.getDrawable(this, R.color.day_of_week_color));
-        //设置标题为自定义toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("");
-        setSupportActionBar(toolbar);
+        updateDayOfWeekHeader();
+        initToolbar();
 
         initScanQRCode();
 
         initTimetable();
 
         Utils.setBackGround(this, mBgImageView);
+    }
+
+    private void initToolbar() {
+        //设置标题为自定义toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("");
+        setSupportActionBar(toolbar);
+    }
+
+    /**
+     * 更新周数表头
+     *
+     */
+    private void updateDayOfWeekHeader() {
+        int[] weekTextView = new int[]{//储存周几表头
+                R.id.tv_sun,
+                R.id.tv_mon,
+                R.id.tv_tues,
+                R.id.tv_wed,
+                R.id.tv_thur,
+                R.id.tv_fri,
+                R.id.tv_sat
+        };
+
+        int week = Utils.getWeekOfDay();
+        TextView weekTv = findViewById(weekTextView[week - 1]);
+        weekTv.setBackground(ContextCompat.getDrawable(this, R.color.day_of_week_color));
     }
 
     /**
@@ -453,6 +465,9 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * 分享课表
+     */
     private void shareTimetable() {
         Gson gson = new Gson();
         String json = gson.toJson(sCourseList);
@@ -617,7 +632,6 @@ public class MainActivity extends AppCompatActivity {
         initAddBtn();
         //设置标题中显示的当前周数
         mWeekOfTermTextView.setText(String.format(getString(R.string.day_of_week), Config.getCurrentWeek()));
-        //sCourseList=mMyDBHelper.getCourseList();
         //初始化课程表视图
         initFrameLayout();
 
@@ -792,11 +806,13 @@ public class MainActivity extends AppCompatActivity {
         int size = courseList.size();//显示课程数
         StringBuilder stringBuilder = new StringBuilder();
         int[] color = new int[]{//课程表循环颜色
-                ContextCompat.getColor(this, R.color.item_orange),
-                ContextCompat.getColor(this, R.color.item_tomato),
-                ContextCompat.getColor(this, R.color.item_green),
-                ContextCompat.getColor(this, R.color.item_cyan),
-                ContextCompat.getColor(this, R.color.item_purple),
+                ContextCompat.getColor(this, R.color.item_1),
+                ContextCompat.getColor(this, R.color.item_2),
+                ContextCompat.getColor(this, R.color.item_3),
+                ContextCompat.getColor(this, R.color.item_4),
+                ContextCompat.getColor(this, R.color.item_5),
+                ContextCompat.getColor(this, R.color.item_6),
+                ContextCompat.getColor(this, R.color.item_7)
         };
 
         //Log.d("size", size + "");
@@ -827,8 +843,9 @@ public class MainActivity extends AppCompatActivity {
             setTableClickListener(textView, sCourseList.indexOf(course));
 
             String name = course.getName();
-            if (name.length() > 10) {
-                name = name.substring(0, 10) + "...";
+            int maxLength = 8;
+            if (name.length() > maxLength) {
+                name = name.substring(0, maxLength) + "...";
             }
             stringBuilder.append(name);
             stringBuilder.append("\n@");
@@ -839,13 +856,12 @@ public class MainActivity extends AppCompatActivity {
 
             if (courseIsThisWeek(course))//判断是否为当前周课程，如果不是，设置背景为灰色
             {
-                myGrad.setColor(color[i % 5]);
-                textView.setText(stringBuilder.toString());
+                myGrad.setColor(color[i % color.length]);
             } else {
                 myGrad.setColor(getResources().getColor(R.color.item_gray));
                 stringBuilder.insert(0, "[非本周]\n");
-                textView.setText(stringBuilder.toString());
             }
+            textView.setText(stringBuilder.toString());
             textView.setBackground(myGrad);
 
             stringBuilder.delete(0, stringBuilder.length());

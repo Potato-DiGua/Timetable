@@ -47,7 +47,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
-                        android:textColor="@color/colorOrange"
+                        android:textColor="@color/colorAccent"
                         android:textSize="@dimen/course_name" />
 
                     <Button
@@ -57,7 +57,7 @@
                         android:layout_marginTop="2dp"
                         android:layout_marginBottom="2dp"
                         android:layout_gravity="center_vertical"
-                        android:background="@drawable/seletor_button"
+                        android:background="@drawable/selector_button"
                         android:text="@string/edit_course_btn" />
 
 
