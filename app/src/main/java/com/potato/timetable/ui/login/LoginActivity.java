@@ -47,11 +47,17 @@ public class LoginActivity extends AppCompatActivity implements ItemFragment.OnL
     }
 
     public LoginFragment getLoginFragment() {
-        return loginFragment == null ? new LoginFragment() : loginFragment;
+        if (loginFragment == null) {
+            loginFragment = new LoginFragment();
+        }
+        return loginFragment;
     }
 
     public ItemFragment getItemFragment() {
-        return itemFragment == null ? ItemFragment.newInstance(1) : itemFragment;
+        if (itemFragment == null) {
+            itemFragment = ItemFragment.newInstance(1);
+        }
+        return itemFragment;
     }
 
     private void init() {

@@ -34,6 +34,7 @@ import com.potato.timetable.colleges.base.College;
 import com.potato.timetable.colleges.base.CollegeFactory;
 import com.potato.timetable.ui.main.MainActivity;
 import com.potato.timetable.util.Config;
+import com.potato.timetable.util.KeyStoreUtils;
 import com.potato.timetable.util.OkHttpUtils;
 import com.potato.timetable.util.Utils;
 
@@ -60,8 +61,8 @@ public class LoginFragment extends Fragment {
     private final Handler mHandler = new Handler();
 
     public static final String EXTRA_UPDATE_TIMETABLE = "update_timetable";
-    private static final String KEY_ACCOUNT = "account";
-    private static final String KEY_PWD = "pwd";
+    private static final String KEY_ACCOUNT = "encryption_account";
+    private static final String KEY_PWD = "encryption_pwd";
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -144,16 +145,17 @@ public class LoginFragment extends Fragment {
     private void saveAccountToLocal(String account, String pwd) {
         SharedPreferences sharedPreferences = Objects.requireNonNull(getContext()).getSharedPreferences("account", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(KEY_ACCOUNT, account);
-        editor.putString(KEY_PWD, pwd);
+        editor.putString(KEY_ACCOUNT, KeyStoreUtils.encrypt(account));
+        editor.putString(KEY_PWD, KeyStoreUtils.encrypt(pwd));
         editor.apply();
     }
 
     private void readAccountFromLocal() {
         SharedPreferences sharedPreferences = Objects.requireNonNull(getContext()).getSharedPreferences("account", Context.MODE_PRIVATE);
-        mAccountEt.setText(sharedPreferences.getString(KEY_ACCOUNT, ""));
-        mPwEt.setText(sharedPreferences.getString(KEY_PWD, ""));
+        mAccountEt.setText(KeyStoreUtils.decrypt(sharedPreferences.getString(KEY_ACCOUNT, "")));
+        mPwEt.setText(KeyStoreUtils.decrypt(sharedPreferences.getString(KEY_PWD, "")));
     }
+
 
 
     @Override
