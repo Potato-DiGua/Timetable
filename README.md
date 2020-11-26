@@ -6,11 +6,12 @@
 * 简洁
 * 支持Excel导入课程
 * 支持教务系统导入（中南大学）
-* 可设置背景和透明度
-
-<p>
-<a href="/Potato-DiGua/Timetable/raw/master/app/release/LightTimetable-v1.0.1-20191008.apk">下载</a>
-</p>
+* 可设置背景和卡片透明度
+* 日程提醒（需设置上课时间）
+* 学生账号密码加密存储
+* 从github上检查是否有新版本
+* 无广告，秒开
+* apk仅为2.3M
 
 ---
 ### 界面
