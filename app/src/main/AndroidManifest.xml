@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <uses-feature android:name="android.hardware.camera" />
 
@@ -25,7 +26,7 @@
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup"
         tools:targetApi="n">
-        <activity android:name=".ui.settime.SetTimeActivity"/>
+        <activity android:name=".ui.settime.SetTimeActivity" />
         <activity android:name=".ui.login.LoginActivity" />
         <activity android:name=".ui.config.ConfigActivity" />
         <activity android:name=".ui.editcourse.EditActivity" />

@@ -6,6 +6,7 @@ import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -548,7 +549,9 @@ public class MainActivity extends AppCompatActivity {
             request.setDescription("新版小轻课程表下载");
 
             DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-            dm.enqueue(request);
+            long downloadID = dm.enqueue(request);
+            registerReceiver(new DownloadReceiver(downloadID), new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
             alertDialog.dismiss();
         });
         alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "取消", (dialogInterface, i) -> alertDialog.dismiss());
