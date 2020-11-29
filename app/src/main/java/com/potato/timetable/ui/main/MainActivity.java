@@ -972,7 +972,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     Uri uri = data.getData();
                     String name = FileUtils.getNameFromUri(this, uri);
-                    if (!FileUtils.getFileExtension(name).equals("xla")) {
+                    if (!FileUtils.getFileExtension(name).equals("xls")) {
                         DialogUtils.showTipDialog(this, "请选择后缀名为xls的Excel文件");
                         return;
                     }
