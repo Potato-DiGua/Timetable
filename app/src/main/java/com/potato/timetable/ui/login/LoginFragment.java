@@ -99,13 +99,13 @@ public class LoginFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        setRandomCodeImg();
         new Thread(() -> {
             if (college.isLogin()) {
                 final String[] strings = college.getTermOptions();
                 mHandler.post(() -> showSelectDialog(strings));
+            } else {
+                setRandomCodeImg();
             }
-
         }).start();
     }
 
