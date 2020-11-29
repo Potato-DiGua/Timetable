@@ -13,6 +13,8 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.Gson;
 
 import java.io.BufferedInputStream;
@@ -153,6 +155,17 @@ public class FileUtils<T> {
         }
         return "";
     }
+
+    @NonNull
+    public static String getFileExtension(String name) {
+        if (null == name || name.isEmpty()) {
+            return "";
+        }
+        int index = name.lastIndexOf('.');
+        return index != -1 ? name.substring(index+1) : "";
+
+    }
+
 
     public static String getNameFromUri(Context context, Uri uri) {
         try (Cursor cursor = context.getContentResolver()

@@ -11,7 +11,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -55,6 +54,7 @@ import com.potato.timetable.ui.login.LoginActivity;
 import com.potato.timetable.ui.settime.SetTimeActivity;
 import com.potato.timetable.util.CalendarReminderUtils;
 import com.potato.timetable.util.Config;
+import com.potato.timetable.util.DialogUtils;
 import com.potato.timetable.util.ExcelUtils;
 import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.OkHttpUtils;
@@ -448,7 +448,7 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, REQUEST_CODE_LOGIN);
         } else if (id == R.id.menu_append) {//菜单导入Excel
             intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("application/vnd.ms-excel");
+            intent.setType("application/*");
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             startActivityForResult(intent, REQUEST_CODE_FILE_CHOOSE);
         } else if (id == R.id.menu_append_class) {//菜单添加课程
@@ -971,24 +971,27 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
                     Uri uri = data.getData();
-                    String path;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        path = getExternalCacheDir().getAbsolutePath() + File.separator + FileUtils.getNameFromUri(this, uri);
-                        try {
-                            if (!FileUtils.fileCopy(getContentResolver().openInputStream(uri), path)) {
-                                return;
-                            }
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
+                    String name = FileUtils.getNameFromUri(this, uri);
+                    if(!FileUtils.getFileExtension(name).equals("xla")){
+                        DialogUtils.showTipDialog(this,"请选择后缀名为xls的Excel文件");
+                        return;
+                    }
+                    String path = getExternalCacheDir().getAbsolutePath() + File.separator + name;
+                    if (TextUtils.isEmpty(path)){
+                        Utils.showToast("获取文件路径失败");
+                        return;
+                    }
+                    try {
+                        if (!FileUtils.fileCopy(getContentResolver().openInputStream(uri), path)) {
                             return;
                         }
-                    } else {
-                        path = FileUtils.getPath(this, uri);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                        return;
                     }
 
                     sCourseList = ExcelUtils.handleExcel(path);
-                    if (path == null || path.isEmpty())
-                        return;
+
                     //mMyDBHelper.insertItems(sCourseList);
                     new FileUtils<List<Course>>().saveToJson(this, sCourseList, FileUtils.TIMETABLE_FILE_NAME);
                     updateTimetable();

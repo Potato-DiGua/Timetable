@@ -1,14 +1,9 @@
 package com.potato.timetable;
 
-import com.potato.timetable.util.ExcelUtils;
-import com.potato.timetable.util.HttpUtils;
-import com.potato.timetable.util.OkHttpUtils;
-import com.potato.timetable.util.ShareUtils;
 import com.potato.timetable.util.Utils;
 
 import org.junit.Test;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
