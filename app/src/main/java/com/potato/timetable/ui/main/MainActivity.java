@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -66,6 +67,7 @@ import com.uuzuche.lib_zxing.activity.ZXingLibrary;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -172,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 更新周数表头
-     *
      */
     private void updateDayOfWeekHeader() {
         int[] weekTextView = new int[]{//储存周几表头
@@ -447,13 +448,13 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, REQUEST_CODE_LOGIN);
         } else if (id == R.id.menu_append) {//菜单导入Excel
             intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("*Excel/xls");
+            intent.setType("application/vnd.ms-excel");
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             startActivityForResult(intent, REQUEST_CODE_FILE_CHOOSE);
         } else if (id == R.id.menu_append_class) {//菜单添加课程
             intent = new Intent(this, EditActivity.class);
             startActivityForResult(intent, REQUEST_CODE_COURSE_EDIT);
-        } else if (id == R.id.menu_share_timetable) {
+        } else if (id == R.id.menu_share_timetable) {//分享
             shareTimetable();
         } else if (id == R.id.menu_set_time) {//设置上课时间
             startActivityForResult(
@@ -469,6 +470,10 @@ public class MainActivity extends AppCompatActivity {
      * 分享课表
      */
     private void shareTimetable() {
+        if (sCourseList == null || sCourseList.isEmpty()) {
+            Utils.showToast("当前课表为空无法分享");
+            return;
+        }
         Gson gson = new Gson();
         String json = gson.toJson(sCourseList);
         RequestBody requestBody = RequestBody.create(json, OkHttpUtils.JSON);
@@ -486,7 +491,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.code() == 200 && response.body() != null) {
                     String json = response.body().string();
-                    final Send<String> send = gson.fromJson(json, new TypeToken<Send>() {
+                    final Send<String> send = gson.fromJson(json, new TypeToken<Send<String>>() {
                     }.getType());
                     mHandler.post(() -> {
                         if (send.getStatus().equals("ok")) {
@@ -966,8 +971,21 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
                     Uri uri = data.getData();
+                    String path;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        path = getExternalCacheDir().getAbsolutePath() + File.separator + FileUtils.getNameFromUri(this, uri);
+                        try {
+                            if (!FileUtils.fileCopy(getContentResolver().openInputStream(uri), path)) {
+                                return;
+                            }
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                            return;
+                        }
+                    } else {
+                        path = FileUtils.getPath(this, uri);
+                    }
 
-                    String path = FileUtils.getPath(MainActivity.this, uri);
                     sCourseList = ExcelUtils.handleExcel(path);
                     if (path == null || path.isEmpty())
                         return;

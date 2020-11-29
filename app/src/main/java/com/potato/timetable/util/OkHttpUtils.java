@@ -110,10 +110,13 @@ public class OkHttpUtils {
             if (response.code() == 200) {
                 File file = new File(path);
                 if (!file.exists()) {
-                    file.mkdirs();
-                } else {
-                    if (!file.isDirectory())
+                    if (!file.mkdirs()) {
                         return false;
+                    }
+                } else {
+                    if (!file.isDirectory()) {
+                        return false;
+                    }
                 }
 
                 bos = new BufferedOutputStream(

@@ -303,10 +303,10 @@ public class ConfigActivity extends AppCompatActivity {
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         String name = file.getName();
-                        String copyPath = sPath + File.separator + "copy" + name.substring(name.lastIndexOf('.'));
+                        String copyPath = sPath + File.separator + name;
                         try {
                             if (!FileUtils.fileCopy(getContentResolver().openInputStream(imgUri), copyPath)) {
-                                Utils.showToast("获取图片失败");
+                                Utils.showToast("复制图片失败");
                                 return;
                             }
                         } catch (FileNotFoundException e) {

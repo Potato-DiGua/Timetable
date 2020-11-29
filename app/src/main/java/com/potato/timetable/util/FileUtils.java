@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 
 import com.google.gson.Gson;
 
@@ -113,15 +114,15 @@ public class FileUtils<T> {
             String sdCardDir = Environment.getExternalStorageDirectory() + "/QrCodeimages/";
             File dirFile = new File(sdCardDir);
             if (!dirFile.exists()) {              //如果不存在，那就建立这个文件夹
-                dirFile.mkdirs();
+                if (!dirFile.mkdirs()) {
+                    return;
+                }
             }
             file = new File(sdCardDir, fileName + ".jpg");
             FileOutputStream fos = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
             fos.flush();
             fos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -145,11 +146,25 @@ public class FileUtils<T> {
                 .query(uri, new String[]{MediaStore.Audio.Media.DATA}, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
                 int index = cursor.getColumnIndex(MediaStore.Audio.Media.DATA);
-                return cursor.getString(index);
-            } else {
-                return "";
+                if (index != -1) {
+                    return cursor.getString(index);
+                }
             }
         }
+        return "";
+    }
+
+    public static String getNameFromUri(Context context, Uri uri) {
+        try (Cursor cursor = context.getContentResolver()
+                .query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (index != -1) {
+                    return cursor.getString(index);
+                }
+            }
+        }
+        return "";
     }
 
     /**
@@ -168,17 +183,19 @@ public class FileUtils<T> {
             return fileCopy(new FileInputStream(inpath), outpath);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-
         }
         return false;
 
     }
 
     public static boolean fileCopy(InputStream inputStream, String outPath) {
-        if (inputStream == null)
+        if (inputStream == null) {
             return false;
+        }
+
         File outfile = new File(outPath);
-        if (!outfile.getParentFile().exists() && !outfile.mkdirs()) {
+        File parentFile = outfile.getParentFile();
+        if (parentFile == null || !parentFile.exists() && !parentFile.mkdirs()) {
             return false;
         }
         BufferedInputStream bis = null;
@@ -192,6 +209,7 @@ public class FileUtils<T> {
                 bos.write(buffer, 0, n);
             }
             bos.flush();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -204,8 +222,7 @@ public class FileUtils<T> {
                 e.printStackTrace();
             }
         }
-        return true;
-
+        return false;
     }
 
 

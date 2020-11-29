@@ -17,7 +17,7 @@ import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
 public class ExcelUtils {
-    public static interface HandleResult {
+    public interface HandleResult {
         Course handle(String courseStr, int row, int col);
     }
 
@@ -105,16 +105,13 @@ public class ExcelUtils {
     }
 
     public static List<Course> handleExcel(String path, int startRow, int startCol) {
-        return handleExcel(path, startRow, startCol, new HandleResult() {
-            @Override
-            public Course handle(String courseStr, int row, int col) {
-                Course course = getCourseFromString(courseStr);
-                if (course == null)
-                    return null;
-                course.setDayOfWeek(col);
-                course.setClassStart(row * 2 - 1);
-                return course;
-            }
+        return handleExcel(path, startRow, startCol, (courseStr, row, col) -> {
+            Course course = getCourseFromString(courseStr);
+            if (course == null)
+                return null;
+            course.setDayOfWeek(col);
+            course.setClassStart(row * 2 - 1);
+            return course;
         });
     }
 
