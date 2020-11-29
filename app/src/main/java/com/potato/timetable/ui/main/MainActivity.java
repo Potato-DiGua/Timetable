@@ -972,12 +972,12 @@ public class MainActivity extends AppCompatActivity {
                     }
                     Uri uri = data.getData();
                     String name = FileUtils.getNameFromUri(this, uri);
-                    if(!FileUtils.getFileExtension(name).equals("xla")){
-                        DialogUtils.showTipDialog(this,"请选择后缀名为xls的Excel文件");
+                    if (!FileUtils.getFileExtension(name).equals("xla")) {
+                        DialogUtils.showTipDialog(this, "请选择后缀名为xls的Excel文件");
                         return;
                     }
                     String path = getExternalCacheDir().getAbsolutePath() + File.separator + name;
-                    if (TextUtils.isEmpty(path)){
+                    if (TextUtils.isEmpty(path)) {
                         Utils.showToast("获取文件路径失败");
                         return;
                     }
@@ -993,7 +993,7 @@ public class MainActivity extends AppCompatActivity {
                     sCourseList = ExcelUtils.handleExcel(path);
 
                     //mMyDBHelper.insertItems(sCourseList);
-                    new FileUtils<List<Course>>().saveToJson(this, sCourseList, FileUtils.TIMETABLE_FILE_NAME);
+                    saveCurrentTimetable();
                     updateTimetable();
                     //Log.d("path", path);
                     break;
@@ -1021,9 +1021,10 @@ public class MainActivity extends AppCompatActivity {
                     if (data == null)
                         return;
                     boolean update_login = data.getBooleanExtra(LoginActivity.EXTRA_UPDATE_TIMETABLE, false);
-                    if (update_login)
+                    if (update_login) {
                         updateTimetable();
-                    new FileUtils<List<Course>>().saveToJson(this, sCourseList, FileUtils.TIMETABLE_FILE_NAME);
+                    }
+                    saveCurrentTimetable();
                     break;
                 case REQUEST_CODE_SCAN://处理二维码返回结果
                     //处理扫描结果
@@ -1040,6 +1041,10 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         }
+    }
+
+    private void saveCurrentTimetable() {
+        new FileUtils<List<Course>>().saveToJson(this, sCourseList, FileUtils.TIMETABLE_FILE_NAME);
     }
 
     private void handleQRScanResult(@NotNull Intent data) {
@@ -1074,6 +1079,7 @@ public class MainActivity extends AppCompatActivity {
                                 if (send.getData() != null && send.getData().size() > 0) {
                                     sCourseList = send.getData();
                                     mHandler.post(() -> updateTimetable());
+                                    saveCurrentTimetable();
                                 }
                             }
                         }
