@@ -6,7 +6,7 @@
     android:orientation="horizontal"
     android:layout_marginBottom="5dp"
     android:padding="10dp"
-    android:background="@drawable/seletor_layout_btn">
+    android:background="@drawable/selector_layout_btn">
     <TextView
         android:layout_marginStart="15dp"
         android:id="@+id/tv_class_num"

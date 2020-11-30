@@ -1,6 +1,5 @@
 package com.potato.timetable.ui.settime;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -20,8 +19,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
-import com.bigkoo.pickerview.listener.OnOptionsSelectChangeListener;
-import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
 import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.potato.timetable.R;
 import com.potato.timetable.bean.Time;
@@ -34,10 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SetTimeActivity extends AppCompatActivity {
-    private OptionsPickerView mOptionsPv;
-    private TimeAdapter timeAdapter = new TimeAdapter();
-    private List<String> timeList = new ArrayList<>(18 * 12);
-    private Time[] times = new Time[Config.getMaxClassNum()];
+    private OptionsPickerView<String> mOptionsPv;
+    private final TimeAdapter timeAdapter = new TimeAdapter();
+    private final List<String> timeList = new ArrayList<>(18 * 12);
+    private final Time[] times = new Time[Config.getMaxClassNum()];
     public static final String EXTRA_UPDATE_Time = "time";
 
     @Override
@@ -88,7 +85,7 @@ public class SetTimeActivity extends AppCompatActivity {
     private void setActionBar() {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setTitle(R.string.course_details);
+        actionBar.setTitle(R.string.set_time);
     }
 
     /**
@@ -116,25 +113,18 @@ public class SetTimeActivity extends AppCompatActivity {
             AlertDialog alertDialog = new AlertDialog.Builder(this)
                     .setTitle("提示")
                     .setMessage("是否保存该时间表并退出?")
-                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            new FileUtils<Time[]>().saveToJson(
-                                    SetTimeActivity.this,
-                                    times,
-                                    FileUtils.TIME_FILE_NAME);
-                            MainActivity.sTimes = times;
-                            //通知主界面更新
-                            setUpdateResult();
-                            finish();
-                        }
+                    .setPositiveButton("确定", (dialogInterface, i) -> {
+                        new FileUtils<Time[]>().saveToJson(
+                                SetTimeActivity.this,
+                                times,
+                                FileUtils.TIME_FILE_NAME);
+                        MainActivity.sTimes = times;
+                        //通知主界面更新
+                        setUpdateResult();
+                        finish();
                     })
-                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-
-                        }
-                    }).create();
+                    .setNegativeButton("取消", null)
+                    .create();
             alertDialog.show();
         } else if (id == R.id.menu_delete) {
             for (int i = 0; i < times.length; i++) {
@@ -148,22 +138,16 @@ public class SetTimeActivity extends AppCompatActivity {
 
     private void showTimeSelectDialog(final TextView textView, final int index) {
 
-        mOptionsPv = new OptionsPickerBuilder(this, new OnOptionsSelectListener() {
-            @Override
-            public void onOptionsSelect(int options1, int options2, int options3, View v) {
-                String start = timeList.get(options1);
-                String end = timeList.get(options2);
+        mOptionsPv = new OptionsPickerBuilder(this, (options1, options2, options3, v) -> {
+            String start = timeList.get(options1);
+            String end = timeList.get(options2);
 
-                times[index].setStart(start);
-                times[index].setEnd(end);
-                textView.setText(times[index].toString());
-            }
-        }).setOptionsSelectChangeListener(new OnOptionsSelectChangeListener() {
-            @Override
-            public void onOptionsSelectChanged(int options1, int options2, int options3) {
-                if (options1 >= options2) {
-                    mOptionsPv.setSelectOptions(options1, options1 + 1);
-                }
+            times[index].setStart(start);
+            times[index].setEnd(end);
+            textView.setText(times[index].toString());
+        }).setOptionsSelectChangeListener((options1, options2, options3) -> {
+            if (options1 >= options2) {
+                mOptionsPv.setSelectOptions(options1, options1 + 1);
             }
         }).build();
 
@@ -202,12 +186,7 @@ public class SetTimeActivity extends AppCompatActivity {
             holder.classTv.setText("第 " + (position + 1) + " 节");
             holder.timeTv.setText(times[position].toString());
             if (!holder.linearLayout.hasOnClickListeners()) {
-                holder.linearLayout.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        showTimeSelectDialog(holder.timeTv, position);
-                    }
-                });
+                holder.linearLayout.setOnClickListener(view -> showTimeSelectDialog(holder.timeTv, position));
             }
         }
 
@@ -217,9 +196,9 @@ public class SetTimeActivity extends AppCompatActivity {
         }
 
         private class ViewHolder extends RecyclerView.ViewHolder {
-            private TextView classTv;
-            private TextView timeTv;
-            private LinearLayout linearLayout;
+            private final TextView classTv;
+            private final TextView timeTv;
+            private final LinearLayout linearLayout;
 
             public ViewHolder(View view) {
                 super(view);

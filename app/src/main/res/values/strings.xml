@@ -18,6 +18,7 @@
 
     <!--    CourseDetailsActivity ActionBar标题-->
     <string name="course_details">课程详情</string>
+    <string name="set_time">设置课程时间</string>
     <!--    EditActivity ActionBar标题-->
     <string name="course_edit">编辑课程</string>
 

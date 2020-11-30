@@ -157,7 +157,6 @@ public class LoginFragment extends Fragment {
     }
 
 
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
@@ -299,20 +298,21 @@ public class LoginFragment extends Fragment {
         new Thread(() -> {
             final Bitmap bitmap = college.getRandomCodeImg(getContext().getExternalCacheDir().getAbsolutePath());
             mHandler.post(() -> {
-                if (bitmap == null) {
-                    mRandomCodeIv.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.ic_error_red_24dp));
-                } else {
-                    mRandomCodeIv.setImageBitmap(bitmap);
+                if (getContext() != null) {
+                    if (bitmap == null) {
+                        mRandomCodeIv.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.ic_error_red_24dp));
+                    } else {
+                        mRandomCodeIv.setImageBitmap(bitmap);
+                    }
                 }
-
             });
         }).start();
 
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDetach() {
         mHandler.removeCallbacksAndMessages(null);
+        super.onDetach();
     }
 }
