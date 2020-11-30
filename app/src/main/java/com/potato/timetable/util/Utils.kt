@@ -139,7 +139,7 @@ object Utils {
         val json = OkHttpUtils.downloadText(UPDATE_URL)
         if (!TextUtils.isEmpty(json)) {
             try {
-                val url: String? = JsonParser().parse(json)?.asJsonObject?.get("assets")?.asJsonArray?.get(0)?.asJsonObject?.get("browser_download_url")?.asString
+                val url: String? = JsonParser.parseString(json)?.asJsonObject?.get("assets")?.asJsonArray?.get(0)?.asJsonObject?.get("browser_download_url")?.asString
                 if (url != null) {
                     val remoteVersionName = getVersionNameFromUrl(url)
 //                    Log.d("TAG", "远程仓库版本号：$remoteVersionName")

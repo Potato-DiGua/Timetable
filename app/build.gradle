@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
 
 def keyProps = new Properties()
@@ -25,6 +24,9 @@ android {
         versionCode versionProps['versionCode'].toInteger()
         versionName versionProps['versionName']
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildFeatures {
+        viewBinding true
     }
     // 签名
     signingConfigs {
