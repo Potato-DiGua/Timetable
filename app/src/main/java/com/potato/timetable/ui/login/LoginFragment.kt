@@ -14,6 +14,7 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder
 import com.potato.timetable.R
+import com.potato.timetable.databinding.FragmentLoginBinding
 import com.potato.timetable.httpservice.CollegeService
 import com.potato.timetable.ui.main.MainActivity
 import com.potato.timetable.util.Config
@@ -29,15 +30,9 @@ import java.util.*
 
 
 class LoginFragment : Fragment() {
-    private var mAccountEt: EditText? = null
-    private var mPwEt: EditText? = null
-    private var mRandomCodeEt: EditText? = null
-    private var mRandomCodeIv: ImageView? = null
-    private var mLoginBtn: Button? = null
-    private var mProgressBar: ProgressBar? = null
-
     private var collegeService: CollegeService = retrofit.create(CollegeService::class.java)
     private val compositeDisposable = CompositeDisposable()
+    private lateinit var binding: FragmentLoginBinding
 
     companion object {
         const val EXTRA_UPDATE_TIMETABLE = "update_timetable"
@@ -54,8 +49,8 @@ class LoginFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_login, container, false)
-        init(view)
+        binding = FragmentLoginBinding.inflate(layoutInflater)
+        init(binding.root)
         return view
     }
 
@@ -87,21 +82,12 @@ class LoginFragment : Fragment() {
      * 初始化
      */
     private fun init(view: View) {
-        val collegeName = view.findViewById<TextView>(R.id.tv_college_name)
-        collegeName.text = Config.getCollegeName()
-
-        mRandomCodeIv = view.findViewById(R.id.iv_random_code)
-        mLoginBtn = view.findViewById(R.id.btn_login)
-        mProgressBar = view.findViewById(R.id.loading)
-        mAccountEt = view.findViewById(R.id.et_account)
-        mPwEt = view.findViewById(R.id.et_password)
-        mRandomCodeEt = view.findViewById(R.id.et_random_code)
-
-        mLoginBtn?.setOnClickListener {
+        binding.tvCollegeName.text = Config.getCollegeName()
+        binding.btnLogin.setOnClickListener {
             hideInput()
-            val account = mAccountEt?.text.toString()
-            val pw = mPwEt?.text.toString()
-            val randomCode = mRandomCodeEt?.text.toString()
+            val account = binding.etAccount.text.toString()
+            val pw = binding.etPassword.text.toString()
+            val randomCode = binding.etRandomCode.text.toString()
             if (pw.isEmpty() || account.isEmpty() || randomCode.isEmpty()) {
                 showToast("内容不能为空")
             } else {
@@ -110,7 +96,7 @@ class LoginFragment : Fragment() {
             }
         }
 
-        mRandomCodeIv?.setOnClickListener { setRandomCodeImg() }
+        binding.ivRandomCode.setOnClickListener { setRandomCodeImg() }
         readAccountFromLocal()
     }
 
@@ -124,8 +110,8 @@ class LoginFragment : Fragment() {
 
     private fun readAccountFromLocal() {
         val sharedPreferences = context?.getSharedPreferences("account", Context.MODE_PRIVATE)
-        mAccountEt!!.setText(decrypt(sharedPreferences?.getString(KEY_ACCOUNT, "")))
-        mPwEt!!.setText(decrypt(sharedPreferences?.getString(KEY_PWD, "")))
+        binding.etAccount.setText(decrypt(sharedPreferences?.getString(KEY_ACCOUNT, "")))
+        binding.etPassword.setText(decrypt(sharedPreferences?.getString(KEY_PWD, "")))
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -209,11 +195,11 @@ class LoginFragment : Fragment() {
      * @param b
      */
     private fun setLoading(b: Boolean) {
-        mLoginBtn!!.isEnabled = !b
+        binding.btnLogin.isEnabled = !b
         if (b) {
-            mProgressBar!!.visibility = View.VISIBLE
+            binding.loading.visibility = View.VISIBLE
         } else {
-            mProgressBar!!.visibility = View.GONE
+            binding.loading.visibility = View.GONE
         }
     }
 
@@ -245,7 +231,7 @@ class LoginFragment : Fragment() {
                 .subscribe({ resp ->
                     setLoading(false)
                     if (resp.status == 0 && resp.data) {
-                        saveAccountToLocal(mAccountEt!!.text.toString(), mPwEt!!.text.toString())
+                        saveAccountToLocal(binding.etAccount.text.toString(), binding.etPassword.text.toString())
                         selectTerm()
                     } else {
                         showToast("账户或密码或验证码错误，登陆失败")
@@ -264,8 +250,8 @@ class LoginFragment : Fragment() {
                 .subscribe({ resp ->
                     if (resp.status == 0) {
                         val img = Base64.decode(resp.data.base64, Base64.DEFAULT)
-                        mRandomCodeIv?.setImageBitmap(BitmapFactory.decodeByteArray(img, 0, img.size))
-                        mRandomCodeEt?.filters = arrayOf<InputFilter>(LengthFilter(resp.data.randomCodeLength))
+                        binding.ivRandomCode.setImageBitmap(BitmapFactory.decodeByteArray(img, 0, img.size))
+                        binding.etRandomCode.filters = arrayOf<InputFilter>(LengthFilter(resp.data.randomCodeLength))
                     } else {
                         if (resp.msg.isNotEmpty()) {
                             showToast(resp.msg)
