@@ -1,7 +1,9 @@
 package com.potato.timetable.ui.login;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +14,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.potato.timetable.R;
+import com.potato.timetable.httpservice.CollegeService;
+import com.potato.timetable.util.RetrofitUtils;
+import com.potato.timetable.util.Utils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * A fragment representing a list of Items.
@@ -26,6 +37,8 @@ public class ItemFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    private final List<String> collegeList = new ArrayList<>();
+    private MyItemRecyclerViewAdapter adapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -52,6 +65,7 @@ public class ItemFragment extends Fragment {
         }
     }
 
+    @SuppressLint("CheckResult")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -66,7 +80,24 @@ public class ItemFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(mListener));
+            adapter = new MyItemRecyclerViewAdapter(collegeList, mListener);
+            recyclerView.setAdapter(adapter);
+
+            RetrofitUtils.getRetrofit().create(CollegeService.class)
+                    .getCollegeNameList()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe((data) -> {
+                        if (data.getStatus() == 0) {
+                            collegeList.clear();
+                            collegeList.addAll(data.getData());
+                        } else {
+                            if (!TextUtils.isEmpty(data.getMsg())) {
+                                Utils.showToast(data.getMsg());
+                            }
+                        }
+                        adapter.notifyDataSetChanged();
+                    });
         }
         return view;
     }

@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
 import com.potato.timetable.R;
-import com.potato.timetable.colleges.base.CollegeFactory;
 import com.potato.timetable.util.Config;
 import com.potato.timetable.util.Utils;
 
@@ -33,7 +32,7 @@ public class LoginActivity extends AppCompatActivity implements ItemFragment.OnL
 
         fragmentManager = getSupportFragmentManager();//初始化管理者
         String name = Config.getCollegeName();
-        if (!name.isEmpty() && CollegeFactory.getCollegeNameList().contains(name)) {
+        if (!name.isEmpty()) {
             fragmentManager.beginTransaction()
                     .add(R.id.fragment_container, getLoginFragment())
                     .commit();

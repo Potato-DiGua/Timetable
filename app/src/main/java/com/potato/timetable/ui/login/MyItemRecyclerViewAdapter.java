@@ -8,7 +8,6 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.potato.timetable.R;
-import com.potato.timetable.colleges.base.CollegeFactory;
 import com.potato.timetable.ui.login.ItemFragment.OnListFragmentInteractionListener;
 
 import org.jetbrains.annotations.NotNull;
@@ -24,8 +23,8 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     private final List<String> collegeNameList;
     private final OnListFragmentInteractionListener mListener;
 
-    public MyItemRecyclerViewAdapter(OnListFragmentInteractionListener listener) {
-        collegeNameList= CollegeFactory.getCollegeNameList();
+    public MyItemRecyclerViewAdapter(List<String> collegeNameList,OnListFragmentInteractionListener listener) {
+        this.collegeNameList = collegeNameList;
         mListener = listener;
     }
 
