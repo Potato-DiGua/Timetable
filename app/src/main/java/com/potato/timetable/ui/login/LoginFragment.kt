@@ -12,6 +12,7 @@ import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder
 import com.potato.timetable.R
 import com.potato.timetable.databinding.FragmentLoginBinding
@@ -22,17 +23,16 @@ import com.potato.timetable.util.KeyStoreUtils.decrypt
 import com.potato.timetable.util.KeyStoreUtils.encrypt
 import com.potato.timetable.util.RetrofitUtils.Companion.retrofit
 import com.potato.timetable.util.Utils.showToast
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import com.trello.lifecycle4.android.lifecycle.AndroidLifecycle
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.*
 
 
 class LoginFragment : Fragment() {
     private var collegeService: CollegeService = retrofit.create(CollegeService::class.java)
-    private val compositeDisposable = CompositeDisposable()
     private lateinit var binding: FragmentLoginBinding
+    private val provider = AndroidLifecycle.createLifecycleProvider(this)
 
     companion object {
         const val EXTRA_UPDATE_TIMETABLE = "update_timetable"
@@ -47,11 +47,11 @@ class LoginFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+                              savedInstanceState: Bundle?): View {
         // Inflate the layout for this fragment
         binding = FragmentLoginBinding.inflate(layoutInflater)
         init(binding.root)
-        return view
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -64,6 +64,7 @@ class LoginFragment : Fragment() {
 
         collegeService
                 .isLogin
+                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ resp ->
@@ -75,7 +76,6 @@ class LoginFragment : Fragment() {
                 }, {
                     showToast("服务器不可用,判断是否登录 失败")
                 })
-                .add(compositeDisposable)
     }
 
     /**
@@ -134,12 +134,12 @@ class LoginFragment : Fragment() {
     private fun selectTerm() {
         collegeService
                 .termOptions
+                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ resp ->
                     showSelectDialog(resp.data)
                 }, { showToast("服务器不可用,获取学期选项失败！") })
-                .add(compositeDisposable)
     }
 
     /**
@@ -169,7 +169,9 @@ class LoginFragment : Fragment() {
      * @param term
      */
     private fun getCourses(term: String) {
-        collegeService.getCourses(term).subscribeOn(Schedulers.io())
+        collegeService.getCourses(term)
+                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ resp ->
                     setLoading(false)
@@ -186,7 +188,6 @@ class LoginFragment : Fragment() {
                 }, {
                     showToast("服务器不可用,获取课程失败")
                 })
-                .add(compositeDisposable)
     }
 
     /**
@@ -226,6 +227,7 @@ class LoginFragment : Fragment() {
      */
     private fun login(account: String, pwd: String, randomCode: String) {
         collegeService.login(account, pwd, randomCode)
+                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ resp ->
@@ -238,14 +240,15 @@ class LoginFragment : Fragment() {
                         setRandomCodeImg()
                     }
                 }, { showToast("服务器不可用,登录失败!") })
-                .add(compositeDisposable)
     }
 
     /**
      * 从登录页面下载并加载验证码
      */
     private fun setRandomCodeImg() {
-        collegeService.randomImg.subscribeOn(Schedulers.io())
+        collegeService.randomImg
+                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ resp ->
                     if (resp.status == 0) {
@@ -258,16 +261,5 @@ class LoginFragment : Fragment() {
                         }
                     }
                 }, { showToast("服务器不可用,获取验证码失败!") })
-                .add(compositeDisposable)
     }
-
-    override fun onDetach() {
-//        mHandler.removeCallbacksAndMessages(null)
-        compositeDisposable.dispose()
-        super.onDetach()
-    }
-}
-
-fun Disposable.add(c: CompositeDisposable) {
-    c.add(this)
 }

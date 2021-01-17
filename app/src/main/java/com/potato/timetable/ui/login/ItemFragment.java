@@ -4,11 +4,13 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,12 +19,14 @@ import com.potato.timetable.R;
 import com.potato.timetable.httpservice.CollegeService;
 import com.potato.timetable.util.RetrofitUtils;
 import com.potato.timetable.util.Utils;
+import com.trello.lifecycle4.android.lifecycle.AndroidLifecycle;
+import com.trello.rxlifecycle4.LifecycleProvider;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 /**
  * A fragment representing a list of Items.
@@ -39,6 +43,8 @@ public class ItemFragment extends Fragment {
     private OnListFragmentInteractionListener mListener;
     private final List<String> collegeList = new ArrayList<>();
     private MyItemRecyclerViewAdapter adapter;
+    private final LifecycleProvider<Lifecycle.Event> provider
+            = AndroidLifecycle.createLifecycleProvider(this);
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -85,6 +91,7 @@ public class ItemFragment extends Fragment {
 
             RetrofitUtils.getRetrofit().create(CollegeService.class)
                     .getCollegeNameList()
+                    .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe((data) -> {
@@ -97,6 +104,8 @@ public class ItemFragment extends Fragment {
                             }
                         }
                         adapter.notifyDataSetChanged();
+                    }, error -> {
+                        Log.e(getClass().getName(), error.toString());
                     });
         }
         return view;
