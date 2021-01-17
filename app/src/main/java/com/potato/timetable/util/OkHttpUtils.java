@@ -7,12 +7,11 @@ import com.potato.timetable.MyApplication;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.CookieJar;
@@ -105,8 +104,7 @@ public class OkHttpUtils {
     public static boolean downloadToLocal(Request request, String path, String name) {
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
-        try {
-            Response response = getOkHttpClient().newCall(request).execute();
+        try (Response response = getOkHttpClient().newCall(request).execute()) {
             if (response.code() == 200) {
                 File file = new File(path);
                 if (!file.exists()) {
@@ -216,18 +214,11 @@ public class OkHttpUtils {
      * @return 返回下载内容
      */
     public static byte[] downloadRaw(Request request) {
-        try {
-            Response response = getOkHttpClient().newCall(request).execute();
+        try (Response response = getOkHttpClient().newCall(request).execute()) {
             if (response.code() == 200) {
-                InputStream is = response.body().byteStream();
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                byte[] buffer = new byte[1024];
-                int len;
-                while ((len = is.read(buffer, 0, 1024)) != -1) {
-                    bos.write(buffer, 0, len);
+                if (response.body() != null) {
+                    return Objects.requireNonNull(response.body()).bytes();
                 }
-                bos.flush();
-                return bos.toByteArray();
             }
         } catch (IOException | NullPointerException e) {
             e.printStackTrace();

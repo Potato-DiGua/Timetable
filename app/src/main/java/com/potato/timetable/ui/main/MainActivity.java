@@ -502,7 +502,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                 }
-
+                response.close();
             }
         });
     }
@@ -1086,6 +1086,8 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
                         }
+                        response.close();
+
                     }
                 });
             } else {
