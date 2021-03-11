@@ -26,8 +26,12 @@
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup"
         tools:targetApi="n">
+        <activity
+            android:name=".ui.login.LoginActivity"
+            android:label="@string/title_activity_login"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".ui.settime.SetTimeActivity" />
-        <activity android:name=".ui.login.LoginActivity" />
+        <activity android:name=".ui.collegelogin.CollegeLoginActivity" />
         <activity android:name=".ui.config.ConfigActivity" />
         <activity android:name=".ui.editcourse.EditActivity" />
         <activity android:name=".ui.coursedetails.CourseDetailsActivity" />

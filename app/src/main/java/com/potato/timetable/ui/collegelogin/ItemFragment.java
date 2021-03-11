@@ -1,4 +1,4 @@
-package com.potato.timetable.ui.login;
+package com.potato.timetable.ui.collegelogin;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -43,8 +43,7 @@ public class ItemFragment extends Fragment {
     private OnListFragmentInteractionListener mListener;
     private final List<String> collegeList = new ArrayList<>();
     private MyItemRecyclerViewAdapter adapter;
-    private final LifecycleProvider<Lifecycle.Event> provider
-            = AndroidLifecycle.createLifecycleProvider(this);
+    private LifecycleProvider<Lifecycle.Event> provider = null;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -76,6 +75,7 @@ public class ItemFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
+        provider = AndroidLifecycle.createLifecycleProvider(getViewLifecycleOwner());
 
         // Set the adapter
         if (view instanceof RecyclerView) {

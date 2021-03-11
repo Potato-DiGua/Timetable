@@ -1,4 +1,4 @@
-package com.potato.timetable.ui.login;
+package com.potato.timetable.ui.collegelogin;
 
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -11,14 +11,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
 import com.potato.timetable.R;
+import com.potato.timetable.httpservice.CollegeService;
 import com.potato.timetable.util.Config;
+import com.potato.timetable.util.RetrofitUtils;
 import com.potato.timetable.util.Utils;
 
-public class LoginActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener {
+public class CollegeLoginActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener {
 
     private FragmentManager fragmentManager;
-    private LoginFragment loginFragment = null;
+    private CollegeLoginFragment collegeLoginFragment = null;
     private ItemFragment itemFragment = null;
+    private final CollegeService collegeService = RetrofitUtils.getRetrofit().create(CollegeService.class);
 
     public static final String EXTRA_UPDATE_TIMETABLE = "update_timetable";
 
@@ -26,7 +29,7 @@ public class LoginActivity extends AppCompatActivity implements ItemFragment.OnL
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_college_login);
 
         init();
 
@@ -34,7 +37,7 @@ public class LoginActivity extends AppCompatActivity implements ItemFragment.OnL
         String name = Config.getCollegeName();
         if (!name.isEmpty()) {
             fragmentManager.beginTransaction()
-                    .add(R.id.fragment_container, getLoginFragment())
+                    .add(R.id.fragment_container, getCollegeLoginFragment())
                     .commit();
 
         } else {
@@ -45,11 +48,11 @@ public class LoginActivity extends AppCompatActivity implements ItemFragment.OnL
         }
     }
 
-    public LoginFragment getLoginFragment() {
-        if (loginFragment == null) {
-            loginFragment = new LoginFragment();
+    public CollegeLoginFragment getCollegeLoginFragment() {
+        if (collegeLoginFragment == null) {
+            collegeLoginFragment = new CollegeLoginFragment();
         }
-        return loginFragment;
+        return collegeLoginFragment;
     }
 
     public ItemFragment getItemFragment() {
@@ -89,12 +92,15 @@ public class LoginActivity extends AppCompatActivity implements ItemFragment.OnL
         return super.onOptionsItemSelected(item);
     }
 
+
     @Override
     public void onListFragmentInteraction(String item) {
         Config.setCollegeName(item);
         Config.saveSelectCollege(this);
+
         fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, getLoginFragment())
+                .replace(R.id.fragment_container, getCollegeLoginFragment())
                 .commit();
+
     }
 }

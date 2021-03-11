@@ -1,4 +1,4 @@
-package com.potato.timetable.ui.login;
+package com.potato.timetable.ui.collegelogin;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,7 +8,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.potato.timetable.R;
-import com.potato.timetable.ui.login.ItemFragment.OnListFragmentInteractionListener;
+import com.potato.timetable.ui.collegelogin.ItemFragment.OnListFragmentInteractionListener;
 
 import org.jetbrains.annotations.NotNull;
 

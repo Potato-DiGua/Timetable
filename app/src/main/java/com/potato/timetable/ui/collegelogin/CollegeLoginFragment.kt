@@ -1,13 +1,13 @@
-package com.potato.timetable.ui.login
+package com.potato.timetable.ui.collegelogin
 
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
 import android.util.Base64
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder
 import com.potato.timetable.R
-import com.potato.timetable.databinding.FragmentLoginBinding
+import com.potato.timetable.databinding.FragmentCollegeLoginBinding
 import com.potato.timetable.httpservice.CollegeService
 import com.potato.timetable.ui.main.MainActivity
 import com.potato.timetable.util.Config
@@ -24,15 +24,19 @@ import com.potato.timetable.util.KeyStoreUtils.encrypt
 import com.potato.timetable.util.RetrofitUtils.Companion.retrofit
 import com.potato.timetable.util.Utils.showToast
 import com.trello.lifecycle4.android.lifecycle.AndroidLifecycle
+import com.trello.rxlifecycle4.LifecycleProvider
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.*
 
 
-class LoginFragment : Fragment() {
+class CollegeLoginFragment : Fragment() {
     private var collegeService: CollegeService = retrofit.create(CollegeService::class.java)
-    private lateinit var binding: FragmentLoginBinding
-    private val provider = AndroidLifecycle.createLifecycleProvider(this)
+    private var _binding: FragmentCollegeLoginBinding? = null
+    private val binding get() = _binding!!
+
+    private var _provider: LifecycleProvider<Lifecycle.Event>? = null
+    private val provider get() = _provider!!
 
     companion object {
         const val EXTRA_UPDATE_TIMETABLE = "update_timetable"
@@ -49,8 +53,9 @@ class LoginFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
         // Inflate the layout for this fragment
-        binding = FragmentLoginBinding.inflate(layoutInflater)
-        init(binding.root)
+        _binding = FragmentCollegeLoginBinding.inflate(layoutInflater, container, false)
+        _provider = AndroidLifecycle.createLifecycleProvider(viewLifecycleOwner)
+        init()
         return binding.root
     }
 
@@ -71,17 +76,18 @@ class LoginFragment : Fragment() {
                     if (resp.status == 0 && resp.data) {
                         selectTerm()
                     } else {
-                        setRandomCodeImg()
+                        setRandomCodeLength()
                     }
                 }, {
                     showToast("服务器不可用,判断是否登录 失败")
+                    setRandomCodeLength()
                 })
     }
 
     /**
      * 初始化
      */
-    private fun init(view: View) {
+    private fun init() {
         binding.tvCollegeName.text = Config.getCollegeName()
         binding.btnLogin.setOnClickListener {
             hideInput()
@@ -100,18 +106,32 @@ class LoginFragment : Fragment() {
         readAccountFromLocal()
     }
 
+    private fun setRandomCodeLength() {
+        collegeService.getRandomCodeLength(Config.getCollegeName())
+                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ resp ->
+                    if (resp != null && resp.status == 0 && resp.data != null) {
+                        binding.etRandomCode.filters = arrayOf(LengthFilter(resp.data))
+                        setRandomCodeImg()
+                    }
+                }, { showToast("无法获取验证码长度") })
+    }
+
     private fun saveAccountToLocal(account: String, pwd: String) {
-        val sharedPreferences = context?.getSharedPreferences("account", Context.MODE_PRIVATE)
-        val editor = sharedPreferences?.edit()
-        editor?.putString(KEY_ACCOUNT, encrypt(account))
-        editor?.putString(KEY_PWD, encrypt(pwd))
-        editor?.apply()
+        context?.getSharedPreferences("account", Context.MODE_PRIVATE)
+                ?.edit()
+                ?.putString(KEY_ACCOUNT, encrypt(account))
+                ?.putString(KEY_PWD, encrypt(pwd))
+                ?.apply()
     }
 
     private fun readAccountFromLocal() {
         val sharedPreferences = context?.getSharedPreferences("account", Context.MODE_PRIVATE)
         binding.etAccount.setText(decrypt(sharedPreferences?.getString(KEY_ACCOUNT, "")))
         binding.etPassword.setText(decrypt(sharedPreferences?.getString(KEY_PWD, "")))
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -254,12 +274,17 @@ class LoginFragment : Fragment() {
                     if (resp.status == 0) {
                         val img = Base64.decode(resp.data.base64, Base64.DEFAULT)
                         binding.ivRandomCode.setImageBitmap(BitmapFactory.decodeByteArray(img, 0, img.size))
-                        binding.etRandomCode.filters = arrayOf<InputFilter>(LengthFilter(resp.data.randomCodeLength))
                     } else {
                         if (resp.msg.isNotEmpty()) {
                             showToast(resp.msg)
                         }
                     }
                 }, { showToast("服务器不可用,获取验证码失败!") })
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        Log.d("test", "摧毁view")
     }
 }

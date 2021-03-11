@@ -71,14 +71,6 @@ public class OkHttpUtils {
         return Inner.okHttpClient;
     }
 
-    public static void setFollowRedirects(boolean followRedirects) {
-        if (Inner.okHttpClient.followRedirects() != followRedirects) {
-            Inner.okHttpClient = Inner.okHttpClient.newBuilder()
-                    .followRedirects(followRedirects)
-                    .build();
-        }
-    }
-
     public static CookieJar getCookieJar() {
         return Inner.cookieJar;
     }

@@ -48,6 +48,7 @@ import com.potato.timetable.bean.Course;
 import com.potato.timetable.bean.Send;
 import com.potato.timetable.bean.Time;
 import com.potato.timetable.help.OneClickListener;
+import com.potato.timetable.ui.collegelogin.CollegeLoginActivity;
 import com.potato.timetable.ui.config.ConfigActivity;
 import com.potato.timetable.ui.coursedetails.CourseDetailsActivity;
 import com.potato.timetable.ui.editcourse.EditActivity;
@@ -59,6 +60,7 @@ import com.potato.timetable.util.DialogUtils;
 import com.potato.timetable.util.ExcelUtils;
 import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.OkHttpUtils;
+import com.potato.timetable.util.SharePreferenceUtil;
 import com.potato.timetable.util.ShareUtils;
 import com.potato.timetable.util.Utils;
 import com.uuzuche.lib_zxing.activity.CaptureActivity;
@@ -164,6 +166,15 @@ public class MainActivity extends AppCompatActivity {
         initTimetable();
 
         Utils.setBackGround(this, mBgImageView);
+
+        isLogin();
+    }
+
+    private void isLogin(){
+        String token =SharePreferenceUtil.getToken();
+        if(token.isEmpty()){
+            Utils.showToast("请先登录");
+        }
     }
 
     private void initToolbar() {
@@ -438,14 +449,15 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         Intent intent;
-
-        if (id == R.id.menu_config) {//菜单设置
+        if (id == R.id.menu_login) {
+            startActivity(new Intent(this, LoginActivity.class));
+        } else if (id == R.id.menu_config) {//菜单设置
             intent = new Intent(this, ConfigActivity.class);
             startActivityForResult(intent, REQUEST_CODE_CONFIG);
         } else if (id == R.id.menu_set_week) {//菜单设置当前周
             showSelectCurrentWeekDialog();
         } else if (id == R.id.menu_import) {//菜单登录教务系统
-            intent = new Intent(this, LoginActivity.class);
+            intent = new Intent(this, CollegeLoginActivity.class);
             startActivityForResult(intent, REQUEST_CODE_LOGIN);
         } else if (id == R.id.menu_append) {//菜单导入Excel
             intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -1023,7 +1035,7 @@ public class MainActivity extends AppCompatActivity {
                 case REQUEST_CODE_LOGIN:
                     if (data == null)
                         return;
-                    boolean update_login = data.getBooleanExtra(LoginActivity.EXTRA_UPDATE_TIMETABLE, false);
+                    boolean update_login = data.getBooleanExtra(CollegeLoginActivity.EXTRA_UPDATE_TIMETABLE, false);
                     if (update_login) {
                         updateTimetable();
                     }

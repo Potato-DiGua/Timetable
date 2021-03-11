@@ -7,5 +7,5 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layoutManager="LinearLayoutManager"
-    tools:context=".ui.login.ItemFragment"
+    tools:context=".ui.collegelogin.ItemFragment"
     tools:listitem="@layout/fragment_item" />

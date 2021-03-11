@@ -17,7 +17,10 @@ public interface CollegeService {
     @GET("/collegeList")
     Observable<ResponseWrap<List<String>>> getCollegeNameList();
 
-    @GET("/college/randomImg")
+    @GET("/college/random-code-length")
+    Observable<ResponseWrap<Integer>> getRandomCodeLength(@Query("collegeName") String collegeName);
+
+    @GET("/college/random-img-base64")
     Observable<ResponseWrap<RandomImg>> getRandomImg();
 
     @POST("/college/login")
@@ -26,12 +29,12 @@ public interface CollegeService {
                                             @Field("password") String pwd,
                                             @Field("randomCode") String randomCode);
 
-    @GET("/college/termOptions")
+    @GET("/college/term-options")
     Observable<ResponseWrap<List<String>>> getTermOptions();
 
-    @GET("/college/isLogin")
+    @GET("/college/is-login")
     Observable<ResponseWrap<Boolean>> isLogin();
 
-    @GET("/college/courses")
+    @GET("/college/timetable")
     Observable<ResponseWrap<List<Course>>> getCourses(@Query("term") String term);
 }
