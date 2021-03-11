@@ -42,9 +42,6 @@ Excel导入（因为使用jxl包所以**只支持xls文件**）<br>
 一天只支持12节课。<br>
 **Excel算上表头只支持(列数x行数)8x7**<br>
 
----
-### 捐赠
-[![8gEXCV.md.png](https://s1.ax1x.com/2020/03/20/8gEXCV.md.png)](https://imgchr.com/i/8gEXCV)
 
 ---
 ##### 开发者的废话(可跳过)
