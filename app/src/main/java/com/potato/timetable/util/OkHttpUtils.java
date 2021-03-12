@@ -1,9 +1,12 @@
 package com.potato.timetable.util;
 
+import android.content.Intent;
+
 import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
 import com.potato.timetable.MyApplication;
+import com.potato.timetable.ui.login.LoginActivity;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -58,12 +61,27 @@ public class OkHttpUtils {
         private static final CookieJar cookieJar = new PersistentCookieJar(
                 new SetCookieCache(),
                 new SharedPrefsCookiePersistor(MyApplication.getApplication()));
-        private static OkHttpClient okHttpClient = new OkHttpClient.Builder()
+        private static final OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .cookieJar(cookieJar)
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .readTimeout(5, TimeUnit.SECONDS)
                 .writeTimeout(5, TimeUnit.SECONDS)
                 .followRedirects(true)
+                .addInterceptor(chain -> {
+                    /*
+                     * 登录拦截器
+                     * */
+                    Request request = chain.request();
+                    Response response = chain.proceed(request);
+                    if (response.code() == 401) {
+                        Intent intent = new Intent(MyApplication.getApplication(), LoginActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        MyApplication
+                                .getApplication()
+                                .startActivity(intent);
+                    }
+                    return response;
+                })
                 .build();
     }
 

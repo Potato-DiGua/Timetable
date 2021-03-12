@@ -38,16 +38,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Lifecycle;
 
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
 import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
-import com.potato.timetable.bean.Send;
 import com.potato.timetable.bean.Time;
 import com.potato.timetable.help.OneClickListener;
+import com.potato.timetable.httpservice.ShareService;
+import com.potato.timetable.model.ResponseWrap;
 import com.potato.timetable.ui.collegelogin.CollegeLoginActivity;
 import com.potato.timetable.ui.config.ConfigActivity;
 import com.potato.timetable.ui.coursedetails.CourseDetailsActivity;
@@ -60,9 +63,11 @@ import com.potato.timetable.util.DialogUtils;
 import com.potato.timetable.util.ExcelUtils;
 import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.OkHttpUtils;
+import com.potato.timetable.util.RetrofitUtils;
 import com.potato.timetable.util.SharePreferenceUtil;
-import com.potato.timetable.util.ShareUtils;
 import com.potato.timetable.util.Utils;
+import com.trello.lifecycle4.android.lifecycle.AndroidLifecycle;
+import com.trello.rxlifecycle4.LifecycleProvider;
 import com.uuzuche.lib_zxing.activity.CaptureActivity;
 import com.uuzuche.lib_zxing.activity.CodeUtils;
 import com.uuzuche.lib_zxing.activity.ZXingLibrary;
@@ -79,10 +84,11 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
@@ -129,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final Handler mHandler = new Handler();
+    private final LifecycleProvider<Lifecycle.Event> provider = AndroidLifecycle.createLifecycleProvider(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,9 +177,9 @@ public class MainActivity extends AppCompatActivity {
         isLogin();
     }
 
-    private void isLogin(){
-        String token =SharePreferenceUtil.getToken();
-        if(token.isEmpty()){
+    private void isLogin() {
+        String token = SharePreferenceUtil.getToken();
+        if (token.isEmpty()) {
             Utils.showToast("请先登录");
         }
     }
@@ -489,41 +496,31 @@ public class MainActivity extends AppCompatActivity {
         }
         Gson gson = new Gson();
         String json = gson.toJson(sCourseList);
-        RequestBody requestBody = RequestBody.create(json, OkHttpUtils.JSON);
-        Request request = new Request.Builder()
-                .url(ShareUtils.SHARE_URL)
-                .post(requestBody)
-                .build();
-        OkHttpUtils.getOkHttpClient().newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                mHandler.post(() -> Utils.showToast("服务器不可用"));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.code() == 200 && response.body() != null) {
-                    String json = response.body().string();
-                    final Send<String> send = gson.fromJson(json, new TypeToken<Send<String>>() {
-                    }.getType());
-                    mHandler.post(() -> {
-                        if (send.getStatus().equals("ok")) {
-                            showQRCodeDialog(send.getData());
+        RetrofitUtils
+                .getRetrofit()
+                .create(ShareService.class)
+                .shareTimeTable(json)
+                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((resp) -> {
+                    if (resp != null) {
+                        if (resp.getStatus() == 0) {
+                            showQRCodeDialog(resp.getData().getShareUrl());
                         } else {
-                            Utils.showToast(send.getMessage());
+                            Utils.showToast(resp.getMsg());
                         }
-                    });
-                }
-
-            }
-        });
+                    }
+                }, (error) -> {
+                    Utils.showToast("服务器不可用");
+                });
     }
 
-    private void showQRCodeDialog(final String id) {
-        if (TextUtils.isEmpty(id)) {
-            Toast.makeText(this, "获取二维码失败", Toast.LENGTH_SHORT).show();
+    private void showQRCodeDialog(final String url) {
+        if (TextUtils.isEmpty(url)) {
+            Utils.showToast("获取二维码失败");
         } else {
-            final Bitmap bitmap = CodeUtils.createImage(ShareUtils.SHARE_URL + "/" + id, 400, 400, null);
+            final Bitmap bitmap = CodeUtils.createImage(url, 500, 500, null);
             ImageView imageView = new ImageView(this);
             imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
             imageView.setImageBitmap(bitmap);
@@ -1067,10 +1064,11 @@ public class MainActivity extends AppCompatActivity {
         if (bundle == null) {
             return;
         }
+
         if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_SUCCESS) {
             String url = bundle.getString(CodeUtils.RESULT_STRING);
             //判断扫描出的二维码的网址是否为本app服务器的网址
-            if (!TextUtils.isEmpty(url) && ShareUtils.judgeURL(url)) {
+            if (!TextUtils.isEmpty(url)) {
                 Request request = new Request.Builder()
                         .url(url)
                         .build();
@@ -1088,10 +1086,16 @@ public class MainActivity extends AppCompatActivity {
                             if (!TextUtils.isEmpty(json)) {
                                 Gson gson = new Gson();
                                 //解析获取的json
-                                Send<List<Course>> send = gson.fromJson(
-                                        json, new TypeToken<Send<List<Course>>>() {
-                                        }.getType());
-                                if (send.getData() != null && send.getData().size() > 0) {
+                                ResponseWrap<List<Course>> send = null;
+                                try {
+                                    send = gson.fromJson(
+                                            json, new TypeToken<ResponseWrap<List<Course>>>() {
+                                            }.getType());
+                                } catch (JsonSyntaxException e) {
+                                    mHandler.post(() -> Utils.showToast("二维码格式错误"));
+                                    e.printStackTrace();
+                                }
+                                if (send != null && send.getData() != null && send.getData().size() > 0) {
                                     sCourseList = send.getData();
                                     mHandler.post(() -> updateTimetable());
                                     saveCurrentTimetable();
@@ -1101,10 +1105,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             } else {
-                Toast.makeText(this, "无效二维码", Toast.LENGTH_SHORT).show();
+                Utils.showToast("无效二维码");
             }
         } else if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_FAILED) {
-            Toast.makeText(MainActivity.this, "解析二维码失败", Toast.LENGTH_LONG).show();
+            Utils.showToast("解析二维码失败");
         }
     }
 
