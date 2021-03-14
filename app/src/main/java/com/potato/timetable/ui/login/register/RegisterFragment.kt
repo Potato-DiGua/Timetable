@@ -4,14 +4,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.potato.timetable.R
+import com.potato.timetable.base.ViewBindingFragment
 import com.potato.timetable.databinding.FragmentRegisterBinding
+import com.potato.timetable.ext.afterTextChanged
+import com.potato.timetable.ui.login.LoginActivity
+import com.potato.timetable.ui.login.login.LoginFragment
+import com.potato.timetable.util.PatternUtils
+import com.potato.timetable.util.Utils
 
-class RegisterFragment : Fragment() {
-
-    private lateinit var binding: FragmentRegisterBinding;
-
+class RegisterFragment : ViewBindingFragment<FragmentRegisterBinding>() {
     companion object {
         fun newInstance() = RegisterFragment()
     }
@@ -20,14 +23,59 @@ class RegisterFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        binding = FragmentRegisterBinding.inflate(inflater, container, false);
-        return binding.root
+        return super.onCreateView(inflater, container, savedInstanceState)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(RegisterViewModel::class.java)
-        // TODO: Use the ViewModel
+
+
+        viewModel.registerResult.observe(viewLifecycleOwner, { success ->
+            binding.register.isEnabled = true
+            binding.loading.visibility = View.GONE
+            if (success) {
+                Utils.showToast("注册成功")
+                if (activity is LoginActivity) {
+                    val bundle = Bundle()
+                    bundle.putString(LoginFragment.ACCOUNT_KEY, binding.account.text.toString())
+                    (activity as LoginActivity).navigate(0, bundle)
+                }
+            }
+        })
+
+        binding.register.setOnClickListener {
+            binding.loading.visibility = View.VISIBLE
+            binding.register.isEnabled = false
+            viewModel.register(
+                    binding.username.text.toString(),
+                    binding.account.text.toString(),
+                    binding.password.text.toString(),
+            )
+        }
+
+        binding.username.afterTextChanged {
+            isValid()
+        }
+        binding.account.afterTextChanged {
+            isValid()
+        }
+        binding.password.afterTextChanged {
+            isValid()
+        }
     }
 
+    private fun isValid() {
+        var temp = false
+        if (!PatternUtils.isUserNameValid(binding.username.text.toString())) {
+            binding.username.error = getString(R.string.invalid_name)
+        } else if (!PatternUtils.isAccountValid(binding.account.text.toString())) {
+            binding.account.error = getString(R.string.invalid_account)
+        } else if (!PatternUtils.isPasswordValid(binding.password.text.toString())) {
+            binding.password.error = getString(R.string.invalid_password)
+        } else {
+            temp = true
+        }
+        binding.register.isEnabled = temp
+    }
 }

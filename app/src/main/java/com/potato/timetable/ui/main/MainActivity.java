@@ -1113,10 +1113,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onStop() {
+        super.onStop();
         if (flagUpdateCalendar) {
             updateCalendarEvent();
         }
-        super.onDestroy();
     }
 }

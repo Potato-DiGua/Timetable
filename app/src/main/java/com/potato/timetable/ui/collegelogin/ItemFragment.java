@@ -9,18 +9,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.potato.timetable.R;
+import com.potato.timetable.base.BaseFragment;
 import com.potato.timetable.httpservice.CollegeService;
 import com.potato.timetable.util.RetrofitUtils;
 import com.potato.timetable.util.Utils;
-import com.trello.lifecycle4.android.lifecycle.AndroidLifecycle;
-import com.trello.rxlifecycle4.LifecycleProvider;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class ItemFragment extends Fragment {
+public class ItemFragment extends BaseFragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -43,7 +43,6 @@ public class ItemFragment extends Fragment {
     private OnListFragmentInteractionListener mListener;
     private final List<String> collegeList = new ArrayList<>();
     private MyItemRecyclerViewAdapter adapter;
-    private LifecycleProvider<Lifecycle.Event> provider = null;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -74,8 +73,8 @@ public class ItemFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
-        provider = AndroidLifecycle.createLifecycleProvider(getViewLifecycleOwner());
 
         // Set the adapter
         if (view instanceof RecyclerView) {
@@ -88,32 +87,35 @@ public class ItemFragment extends Fragment {
             }
             adapter = new MyItemRecyclerViewAdapter(collegeList, mListener);
             recyclerView.setAdapter(adapter);
-
-            RetrofitUtils.getRetrofit().create(CollegeService.class)
-                    .getCollegeNameList()
-                    .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe((data) -> {
-                        if (data.getStatus() == 0) {
-                            collegeList.clear();
-                            collegeList.addAll(data.getData());
-                        } else {
-                            if (!TextUtils.isEmpty(data.getMsg())) {
-                                Utils.showToast(data.getMsg());
-                            }
-                        }
-                        adapter.notifyDataSetChanged();
-                    }, error -> {
-                        Log.e(getClass().getName(), error.toString());
-                    });
         }
         return view;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        RetrofitUtils.getRetrofit().create(CollegeService.class)
+                .getCollegeNameList()
+                .compose(getLifecycleProvider().bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((data) -> {
+                    if (data.getStatus() == 0) {
+                        collegeList.clear();
+                        collegeList.addAll(data.getData());
+                    } else {
+                        if (!TextUtils.isEmpty(data.getMsg())) {
+                            Utils.showToast(data.getMsg());
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                }, error -> {
+                    Log.e(getClass().getName(), error.toString());
+                });
+    }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NotNull Context context) {
         super.onAttach(context);
         if (context instanceof OnListFragmentInteractionListener) {
             mListener = (OnListFragmentInteractionListener) context;
@@ -140,7 +142,7 @@ public class ItemFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
+        // Update argument type and name
         void onListFragmentInteraction(String item);
     }
 }

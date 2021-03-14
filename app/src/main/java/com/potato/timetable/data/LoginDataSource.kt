@@ -21,12 +21,10 @@ class LoginDataSource {
                 return if (user.status == 0) {
                     Result.Success(user.data)
                 } else {
-                    Result.Error(Exception(user.msg));
+                    Result.Error(Exception(user.msg))
                 }
             }
-            return Result.Error(Exception("服务器不可用"));
-
-
+            return Result.Error(Exception("服务器不可用"))
         } catch (e: Throwable) {
             Log.d("test", e.stackTraceToString())
             return Result.Error(IOException("Error logging in", e))

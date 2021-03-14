@@ -1,34 +1,41 @@
 package com.potato.timetable.ui.login.login
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
+import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.EditText
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.potato.timetable.R
+import com.potato.timetable.base.ViewBindingFragment
 import com.potato.timetable.databinding.FragmentLoginBinding
+import com.potato.timetable.ext.afterTextChanged
+import com.potato.timetable.util.PatternUtils
 import com.potato.timetable.util.Utils
 
-class LoginFragment : Fragment() {
-    private lateinit var binding: FragmentLoginBinding
-
+class LoginFragment : ViewBindingFragment<FragmentLoginBinding>() {
     private lateinit var loginViewModel: LoginViewModel
 
     companion object {
+        const val ACCOUNT_KEY = "account"
         fun newInstance() = LoginFragment()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        super.onCreateView(inflater, container, savedInstanceState)
+        return binding.root
+    }
 
-        binding = FragmentLoginBinding.inflate(inflater, container, false)
-        return binding.root;
+    override fun onResume() {
+        super.onResume()
+        val account = arguments?.getString(ACCOUNT_KEY)
+        if (!TextUtils.isEmpty(account)) {
+            binding.username.setText(account)
+            binding.username.invalidate()
+        }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -84,11 +91,19 @@ class LoginFragment : Fragment() {
 
             setOnEditorActionListener { _, actionId, _ ->
                 when (actionId) {
-                    EditorInfo.IME_ACTION_DONE ->
-                        loginViewModel.login(
-                                binding.username.text.toString(),
-                                binding.password.text.toString()
-                        )
+                    EditorInfo.IME_ACTION_DONE -> {
+                        val account = binding.username.text.toString()
+                        val pwd = binding.password.text.toString()
+                        if (PatternUtils.isAccountValid(account) && PatternUtils.isPasswordValid(pwd)) {
+                            loginViewModel.login(
+                                    account,
+                                    pwd
+                            )
+                        } else {
+                            Utils.showToast("请输入有效账号和密码")
+                        }
+
+                    }
                 }
                 false
             }
@@ -117,17 +132,3 @@ class LoginFragment : Fragment() {
     }
 }
 
-/**
- * Extension function to simplify setting an afterTextChanged action to EditText components.
- */
-fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
-    this.addTextChangedListener(object : TextWatcher {
-        override fun afterTextChanged(editable: Editable?) {
-            afterTextChanged.invoke(editable.toString())
-        }
-
-        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-
-        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
-    })
-}

@@ -85,10 +85,11 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="prompt_account">账号</string>
     <string name="prompt_name">昵称</string>
-    <string name="action_sign_in_short">Sign in</string>
+    <string name="action_sign_in_short">登录</string>
     <string name="welcome">"Welcome !"</string>
-    <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="invalid_name">昵称3–8个字符</string>
+    <string name="invalid_account">无效账号！请使用邮箱或手机号</string>
+    <string name="invalid_password">密码最少为6位</string>
     <string name="login_failed">"Login failed"</string>
     <string name="menu_login">登录</string>
 </resources>

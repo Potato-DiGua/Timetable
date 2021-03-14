@@ -63,7 +63,7 @@ public class OkHttpUtils {
                 new SharedPrefsCookiePersistor(MyApplication.getApplication()));
         private static final OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .cookieJar(cookieJar)
-                .connectTimeout(5, TimeUnit.SECONDS)
+                .connectTimeout(3, TimeUnit.SECONDS)
                 .readTimeout(5, TimeUnit.SECONDS)
                 .writeTimeout(5, TimeUnit.SECONDS)
                 .followRedirects(true)
@@ -75,10 +75,12 @@ public class OkHttpUtils {
                     Response response = chain.proceed(request);
                     if (response.code() == 401) {
                         Intent intent = new Intent(MyApplication.getApplication(), LoginActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         MyApplication
                                 .getApplication()
                                 .startActivity(intent);
+
+                        throw new IOException("没有登录");
                     }
                     return response;
                 })

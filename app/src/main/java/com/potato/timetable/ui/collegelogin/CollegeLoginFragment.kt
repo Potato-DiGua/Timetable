@@ -6,15 +6,15 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.text.InputFilter.LengthFilter
+import android.text.TextUtils
 import android.util.Base64
-import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder
 import com.potato.timetable.R
+import com.potato.timetable.base.ViewBindingFragment
 import com.potato.timetable.databinding.FragmentCollegeLoginBinding
 import com.potato.timetable.httpservice.CollegeService
 import com.potato.timetable.ui.main.MainActivity
@@ -22,21 +22,14 @@ import com.potato.timetable.util.Config
 import com.potato.timetable.util.KeyStoreUtils.decrypt
 import com.potato.timetable.util.KeyStoreUtils.encrypt
 import com.potato.timetable.util.RetrofitUtils.Companion.retrofit
-import com.potato.timetable.util.Utils.showToast
-import com.trello.lifecycle4.android.lifecycle.AndroidLifecycle
-import com.trello.rxlifecycle4.LifecycleProvider
+import com.potato.timetable.util.Utils
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.*
 
 
-class CollegeLoginFragment : Fragment() {
+class CollegeLoginFragment : ViewBindingFragment<FragmentCollegeLoginBinding>() {
     private var collegeService: CollegeService = retrofit.create(CollegeService::class.java)
-    private var _binding: FragmentCollegeLoginBinding? = null
-    private val binding get() = _binding!!
-
-    private var _provider: LifecycleProvider<Lifecycle.Event>? = null
-    private val provider get() = _provider!!
 
     companion object {
         const val EXTRA_UPDATE_TIMETABLE = "update_timetable"
@@ -51,10 +44,9 @@ class CollegeLoginFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
+                              savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentCollegeLoginBinding.inflate(layoutInflater, container, false)
-        _provider = AndroidLifecycle.createLifecycleProvider(viewLifecycleOwner)
+        super.onCreateView(inflater, container, savedInstanceState)
         init()
         return binding.root
     }
@@ -69,7 +61,7 @@ class CollegeLoginFragment : Fragment() {
 
         collegeService
                 .isLogin
-                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                .compose(lifecycleProvider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ resp ->
@@ -79,8 +71,13 @@ class CollegeLoginFragment : Fragment() {
                         setRandomCodeLength()
                     }
                 }, {
-                    showToast("服务器不可用,判断是否登录 失败")
+                    if (TextUtils.isEmpty(it.message)) {
+                        Utils.showToast("服务器不可用,判断是否登录 失败")
+                    } else {
+                        Utils.showToast(it.message)
+                    }
                     setRandomCodeLength()
+
                 })
     }
 
@@ -95,7 +92,7 @@ class CollegeLoginFragment : Fragment() {
             val pw = binding.etPassword.text.toString()
             val randomCode = binding.etRandomCode.text.toString()
             if (pw.isEmpty() || account.isEmpty() || randomCode.isEmpty()) {
-                showToast("内容不能为空")
+                Utils.showToast("内容不能为空")
             } else {
                 setLoading(true)
                 login(account, pw, randomCode)
@@ -108,7 +105,7 @@ class CollegeLoginFragment : Fragment() {
 
     private fun setRandomCodeLength() {
         collegeService.getRandomCodeLength(Config.getCollegeName())
-                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                .compose(lifecycleProvider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ resp ->
@@ -116,7 +113,7 @@ class CollegeLoginFragment : Fragment() {
                         binding.etRandomCode.filters = arrayOf(LengthFilter(resp.data))
                         setRandomCodeImg()
                     }
-                }, { showToast("无法获取验证码长度") })
+                }, { Utils.showToast("无法获取验证码长度") })
     }
 
     private fun saveAccountToLocal(account: String, pwd: String) {
@@ -154,12 +151,12 @@ class CollegeLoginFragment : Fragment() {
     private fun selectTerm() {
         collegeService
                 .termOptions
-                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                .compose(lifecycleProvider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ resp ->
                     showSelectDialog(resp.data)
-                }, { showToast("服务器不可用,获取学期选项失败！") })
+                }, { Utils.showToast("服务器不可用,获取学期选项失败！") })
     }
 
     /**
@@ -169,7 +166,7 @@ class CollegeLoginFragment : Fragment() {
      */
     private fun showSelectDialog(termOptions: List<String>?) {
         if (termOptions == null || termOptions.isEmpty()) {
-            showToast("无法获取学期选项")
+            Utils.showToast("无法获取学期选项")
             return
         }
         val mOptionsPv = OptionsPickerBuilder(activity) { options1: Int, _: Int, _: Int, _: View? ->
@@ -190,7 +187,7 @@ class CollegeLoginFragment : Fragment() {
      */
     private fun getCourses(term: String) {
         collegeService.getCourses(term)
-                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                .compose(lifecycleProvider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ resp ->
@@ -198,15 +195,15 @@ class CollegeLoginFragment : Fragment() {
                     if (resp.status == 0 && resp.data != null) {
                         resp.data.sort()
 
-                        showToast(if (resp.data.isEmpty()) "该学期没有课程" else "导入成功")
+                        Utils.showToast(if (resp.data.isEmpty()) "该学期没有课程" else "导入成功")
                         MainActivity.sCourseList = resp.data
                         setUpdateResult()
                         activity?.finish()
                     } else {
-                        showToast("导入失败")
+                        Utils.showToast("导入失败")
                     }
                 }, {
-                    showToast("服务器不可用,获取课程失败")
+                    Utils.showToast("服务器不可用,获取课程失败")
                 })
     }
 
@@ -247,7 +244,7 @@ class CollegeLoginFragment : Fragment() {
      */
     private fun login(account: String, pwd: String, randomCode: String) {
         collegeService.login(account, pwd, randomCode)
-                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                .compose(lifecycleProvider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ resp ->
@@ -256,10 +253,10 @@ class CollegeLoginFragment : Fragment() {
                         saveAccountToLocal(binding.etAccount.text.toString(), binding.etPassword.text.toString())
                         selectTerm()
                     } else {
-                        showToast("账户或密码或验证码错误，登陆失败")
+                        Utils.showToast("账户或密码或验证码错误，登陆失败")
                         setRandomCodeImg()
                     }
-                }, { showToast("服务器不可用,登录失败!") })
+                }, { Utils.showToast("服务器不可用,登录失败!") })
     }
 
     /**
@@ -267,7 +264,7 @@ class CollegeLoginFragment : Fragment() {
      */
     private fun setRandomCodeImg() {
         collegeService.randomImg
-                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                .compose(lifecycleProvider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ resp ->
@@ -276,15 +273,9 @@ class CollegeLoginFragment : Fragment() {
                         binding.ivRandomCode.setImageBitmap(BitmapFactory.decodeByteArray(img, 0, img.size))
                     } else {
                         if (resp.msg.isNotEmpty()) {
-                            showToast(resp.msg)
+                            Utils.showToast(resp.msg)
                         }
                     }
-                }, { showToast("服务器不可用,获取验证码失败!") })
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-        Log.d("test", "摧毁view")
+                }, { Utils.showToast("服务器不可用,获取验证码失败!") })
     }
 }
