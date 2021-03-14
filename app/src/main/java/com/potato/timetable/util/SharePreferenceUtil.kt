@@ -7,12 +7,6 @@ object SharePreferenceUtil {
     const val TOKEN_KEY = "token"
 
 
-    @JvmStatic
-    fun getToken(): String {
-        val sp = getSharedPreferences("data")
-        return sp.getString(TOKEN_KEY, "") ?: ""
-    }
-
     fun getSharedPreferences(name: String) =
             MyApplication.getApplication().getSharedPreferences(name, Context.MODE_PRIVATE)
 
@@ -21,4 +15,9 @@ object SharePreferenceUtil {
         getSharedPreferences("data").edit().putString(TOKEN_KEY, token).apply()
     }
 
+    @JvmStatic
+    fun getToken(): String {
+        val sp = getSharedPreferences("data")
+        return sp.getString(TOKEN_KEY, "") ?: ""
+    }
 }

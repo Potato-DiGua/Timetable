@@ -20,7 +20,7 @@
         android:title="@string/menu_share" />
     <item
         android:id="@+id/menu_set_time"
-        android:title="@string/menu_set_time"/>
+        android:title="@string/menu_set_time" />
     <item
         android:id="@+id/menu_config"
         android:title="@string/menu_config" />

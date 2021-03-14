@@ -1,4 +1,4 @@
-package com.potato.timetable.data
+package com.potato.timetable.ui.login.login.data
 
 import com.potato.timetable.model.User
 import com.potato.timetable.util.SharePreferenceUtil

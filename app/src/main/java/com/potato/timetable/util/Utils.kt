@@ -372,6 +372,11 @@ object Utils {
         showToast(text, true)
     }
 
+    @JvmStatic
+    fun showToast(text: String?, default: String) {
+        Utils.showToast(if (TextUtils.isEmpty(text)) default else text)
+    }
+
     /**
      * 展示提醒
      * @param text 内容

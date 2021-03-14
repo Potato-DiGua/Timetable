@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.potato.timetable.R
-import com.potato.timetable.data.LoginRepository
-import com.potato.timetable.data.Result
+import com.potato.timetable.ui.login.login.data.LoginRepository
+import com.potato.timetable.ui.login.login.data.Result
 import com.potato.timetable.util.PatternUtils
 
 class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {

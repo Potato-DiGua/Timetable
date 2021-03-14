@@ -1,4 +1,4 @@
-package com.potato.timetable.data
+package com.potato.timetable.ui.login.login.data
 
 import android.util.Log
 import com.google.gson.Gson

@@ -27,9 +27,13 @@
         tools:targetApi="n">
         <activity
             android:name=".ui.login.LoginActivity"
-            android:label="@string/title_activity_login"
             android:theme="@style/AppTheme.NoActionBar"
-            android:launchMode="singleTask"/>
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="com.potato.timetable.LOGIN"/>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity android:name=".ui.settime.SetTimeActivity" />
         <activity android:name=".ui.collegelogin.CollegeLoginActivity" />
         <activity android:name=".ui.config.ConfigActivity" />

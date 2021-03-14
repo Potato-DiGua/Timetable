@@ -6,6 +6,7 @@ import io.reactivex.rxjava3.core.Observable
 import retrofit2.Call
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
+import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface UserService {
@@ -19,4 +20,7 @@ interface UserService {
     fun register(@Field("name") name: String,
                  @Field("account") account: String,
                  @Field("password") pwd: String): Observable<ResponseWrap<Any>>
+
+    @GET("/user/isLogin")
+    fun isLogin(): Observable<ResponseWrap<Any>>
 }

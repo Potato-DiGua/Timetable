@@ -1,4 +1,4 @@
-package com.potato.timetable.data
+package com.potato.timetable.ui.login.login.data
 
 /**
  * A generic class that holds a value with its loading status.

@@ -2,8 +2,8 @@ package com.potato.timetable.ui.login.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.potato.timetable.data.LoginDataSource
-import com.potato.timetable.data.LoginRepository
+import com.potato.timetable.ui.login.login.data.LoginDataSource
+import com.potato.timetable.ui.login.login.data.LoginRepository
 
 /**
  * ViewModel provider factory to instantiate LoginViewModel.

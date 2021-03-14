@@ -14,6 +14,7 @@
         android:layout_height="@dimen/toolbar_height"
         android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
+        app:popupTheme="@style/OverflowMenuStyle"
         android:theme="@style/AppTheme">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -24,6 +25,7 @@
                 android:id="@+id/tv_week_of_term"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
                 android:gravity="center"
                 android:text="第1周"
                 android:textColor="@color/colorWhite"
@@ -52,6 +54,15 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_scan" />
+
+            <ImageView
+                android:id="@+id/img_btn_select_term"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_baseline_article_32" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.appcompat.widget.Toolbar>

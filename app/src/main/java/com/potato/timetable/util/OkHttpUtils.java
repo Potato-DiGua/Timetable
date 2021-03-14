@@ -1,13 +1,5 @@
 package com.potato.timetable.util;
 
-import android.content.Intent;
-
-import com.franmontiel.persistentcookiejar.PersistentCookieJar;
-import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
-import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
-import com.potato.timetable.MyApplication;
-import com.potato.timetable.ui.login.LoginActivity;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,81 +10,49 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.CookieJar;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 public class OkHttpUtils {
     private static final byte[] EMPTY_BYTES = new byte[0];
-    public static final MediaType JSON
-            = MediaType.get("application/json; charset=utf-8");
 
-    /**
-     * 自动存储保存cookies
-     * <p>
-     * private static class MyCookieJar implements CookieJar {
-     * private Map<String, List<Cookie>> cookieStore = new HashMap<>();
-     *
-     * @NotNull
-     * @Override public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
-     * List<Cookie> cookies = cookieStore.get(httpUrl.host());
-     * return cookies != null ? cookies : new ArrayList<Cookie>();
-     * }
-     * @Override public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) {
-     * cookieStore.put(httpUrl.host(), list);
-     * }
-     * }
-     * <p>
-     * private static MyCookieJar cookieJar = new MyCookieJar();
-     */
-
-    /**
-     * 静态内部类单例模式
-     * 需要时加载
-     * <p>
-     * 只有第一次调用getInstance方法时，
-     * 虚拟机才加载 Inner 并初始化okHttpClient，
-     * 只有一个线程可以获得对象的初始化锁，其他线程无法进行初始化，
-     * 保证对象的唯一性。目前此方式是所有单例模式中最推荐的模式。
-     */
     private static class Inner {
-        private static final CookieJar cookieJar = new PersistentCookieJar(
-                new SetCookieCache(),
-                new SharedPrefsCookiePersistor(MyApplication.getApplication()));
         private static final OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .cookieJar(cookieJar)
                 .connectTimeout(3, TimeUnit.SECONDS)
                 .readTimeout(5, TimeUnit.SECONDS)
                 .writeTimeout(5, TimeUnit.SECONDS)
                 .followRedirects(true)
+//                .addInterceptor(chain -> {
+//                    /*
+//                     * 登录拦截器
+//                     * */
+//                    Request request = chain.request();
+//                    Response response = chain.proceed(request);
+//                    if (response.code() == 401) {
+//                        Intent intent = new Intent(MyApplication.getApplication(), LoginActivity.class);
+//                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                        MyApplication
+//                                .getApplication()
+//                                .startActivity(intent);
+//
+//                        throw new IOException("没有登录");
+//                    }
+//                    return response;
+//                })
                 .addInterceptor(chain -> {
-                    /*
-                     * 登录拦截器
-                     * */
-                    Request request = chain.request();
-                    Response response = chain.proceed(request);
-                    if (response.code() == 401) {
-                        Intent intent = new Intent(MyApplication.getApplication(), LoginActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        MyApplication
-                                .getApplication()
-                                .startActivity(intent);
-
-                        throw new IOException("没有登录");
-                    }
-                    return response;
+                    Request request = chain
+                            .request()
+                            .newBuilder()
+                            .header("cookie", "JSESSIONID=" + SharePreferenceUtil.getToken())
+                            .build();
+                    return chain.proceed(request);
                 })
                 .build();
     }
 
     public static OkHttpClient getOkHttpClient() {
         return Inner.okHttpClient;
-    }
-
-    public static CookieJar getCookieJar() {
-        return Inner.cookieJar;
     }
 
     /**

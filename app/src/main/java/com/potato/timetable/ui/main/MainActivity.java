@@ -49,7 +49,9 @@ import com.potato.timetable.R;
 import com.potato.timetable.bean.Course;
 import com.potato.timetable.bean.Time;
 import com.potato.timetable.help.OneClickListener;
+import com.potato.timetable.httpservice.CollegeService;
 import com.potato.timetable.httpservice.ShareService;
+import com.potato.timetable.httpservice.UserService;
 import com.potato.timetable.model.ResponseWrap;
 import com.potato.timetable.ui.collegelogin.CollegeLoginActivity;
 import com.potato.timetable.ui.config.ConfigActivity;
@@ -64,7 +66,6 @@ import com.potato.timetable.util.ExcelUtils;
 import com.potato.timetable.util.FileUtils;
 import com.potato.timetable.util.OkHttpUtils;
 import com.potato.timetable.util.RetrofitUtils;
-import com.potato.timetable.util.SharePreferenceUtil;
 import com.potato.timetable.util.Utils;
 import com.trello.lifecycle4.android.lifecycle.AndroidLifecycle;
 import com.trello.rxlifecycle4.LifecycleProvider;
@@ -137,6 +138,9 @@ public class MainActivity extends AppCompatActivity {
     private final Handler mHandler = new Handler();
     private final LifecycleProvider<Lifecycle.Event> provider = AndroidLifecycle.createLifecycleProvider(this);
 
+    private final UserService userService = RetrofitUtils.getRetrofit().create(UserService.class);
+    private final CollegeService collegeService = RetrofitUtils.getRetrofit().create(CollegeService.class);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -171,17 +175,14 @@ public class MainActivity extends AppCompatActivity {
         initScanQRCode();
 
         initTimetable();
+        initSelectTermImgBtn();
+
 
         Utils.setBackGround(this, mBgImageView);
-
-        isLogin();
     }
-
-    private void isLogin() {
-        String token = SharePreferenceUtil.getToken();
-        if (token.isEmpty()) {
-            Utils.showToast("请先登录");
-        }
+    private void initSelectTermImgBtn(){
+        ImageView imageView = findViewById(R.id.img_btn_select_term);
+        imageView.setOnClickListener(v -> selectTerm());
     }
 
     private void initToolbar() {
@@ -464,8 +465,11 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.menu_set_week) {//菜单设置当前周
             showSelectCurrentWeekDialog();
         } else if (id == R.id.menu_import) {//菜单登录教务系统
-            intent = new Intent(this, CollegeLoginActivity.class);
-            startActivityForResult(intent, REQUEST_CODE_LOGIN);
+            isLogin(() -> {
+                Intent i = new Intent(MainActivity.this, CollegeLoginActivity.class);
+                startActivityForResult(i, REQUEST_CODE_LOGIN);
+            });
+
         } else if (id == R.id.menu_append) {//菜单导入Excel
             intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("application/*");
@@ -475,7 +479,7 @@ public class MainActivity extends AppCompatActivity {
             intent = new Intent(this, EditActivity.class);
             startActivityForResult(intent, REQUEST_CODE_COURSE_EDIT);
         } else if (id == R.id.menu_share_timetable) {//分享
-            shareTimetable();
+            isLogin(() -> shareTimetable());
         } else if (id == R.id.menu_set_time) {//设置上课时间
             startActivityForResult(
                     new Intent(this, SetTimeActivity.class),
@@ -484,6 +488,86 @@ public class MainActivity extends AppCompatActivity {
             checkUpdate();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void selectTerm() {
+        isLogin(() -> {
+            collegeService
+                    .getTermOptions()
+                    .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(resp -> {
+                        if (resp.getStatus() == 0) {
+                            if (resp.getData() == null || resp.getData().size() <= 0) {
+                                DialogUtils.showTipDialog(this, "请先导入课程");
+                            } else {
+                                showTermSelectDialog(resp.getData());
+                            }
+                        } else {
+                            Utils.showToast(resp.getMsg(), "服务器不可用");
+                        }
+
+                    }, error -> {
+                        Utils.showToast("服务器不可用");
+                    });
+        });
+    }
+
+    private void showTermSelectDialog(final List<String> terms) {
+        OptionsPickerView<String> optionsPv = new OptionsPickerBuilder(this,
+                (options1, options2, options3, v) -> {
+                    String term = terms.get(options1);
+                    if (!TextUtils.isEmpty(term)) {
+                        collegeService
+                                .getCourses(term)
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(resp -> {
+                                    sCourseList.clear();
+                                    sCourseList.addAll(resp.getData());
+                                    updateTimetable();
+                                    saveCurrentTimetable();
+                                }, error -> {
+                                    Utils.showToast("服务器不可用");
+                                });
+                    }
+                })
+                .build();
+        optionsPv.setTitleText("选择学期");
+        optionsPv.setNPicker(terms, null, null);
+        optionsPv.show();
+    }
+
+
+    public interface LoginListener {
+        void onSuccess();
+    }
+
+    private void isLogin(LoginListener listener) {
+        userService
+                .isLogin()
+                .compose(provider.bindUntilEvent(Lifecycle.Event.ON_DESTROY))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(resp -> {
+                    if (resp.getStatus() == 0) {
+                        listener.onSuccess();
+                    } else {
+                        new AlertDialog.Builder(this)
+                                .setTitle("提示")
+                                .setMessage("请先登录!")
+                                .setPositiveButton("确定", (dialog, which) -> {
+                                    startActivity(new Intent("com.potato.timetable.LOGIN"));
+                                })
+                                .setNegativeButton("取消", null)
+                                .create()
+                                .show();
+                    }
+                }, error -> {
+                    Utils.showToast("服务器不可用");
+                });
+
     }
 
     /**
