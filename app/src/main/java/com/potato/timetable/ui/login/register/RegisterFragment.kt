@@ -31,16 +31,18 @@ class RegisterFragment : ViewBindingFragment<FragmentRegisterBinding>() {
         viewModel = ViewModelProvider(this).get(RegisterViewModel::class.java)
 
 
-        viewModel.registerResult.observe(viewLifecycleOwner, { success ->
+        viewModel.registerResult.observe(viewLifecycleOwner, { result ->
             binding.register.isEnabled = true
             binding.loading.visibility = View.GONE
-            if (success) {
+            if (result.success) {
                 Utils.showToast("注册成功")
                 if (activity is LoginActivity) {
                     val bundle = Bundle()
                     bundle.putString(LoginFragment.ACCOUNT_KEY, binding.account.text.toString())
                     (activity as LoginActivity).navigate(0, bundle)
                 }
+            } else {
+                Utils.showToast(result.error)
             }
         })
 

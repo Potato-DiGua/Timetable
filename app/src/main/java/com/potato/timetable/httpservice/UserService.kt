@@ -19,7 +19,7 @@ interface UserService {
     @FormUrlEncoded
     fun register(@Field("name") name: String,
                  @Field("account") account: String,
-                 @Field("password") pwd: String): Observable<ResponseWrap<Any>>
+                 @Field("password") pwd: String): Call<ResponseWrap<Any>>
 
     @GET("/user/isLogin")
     fun isLogin(): Observable<ResponseWrap<Any>>
