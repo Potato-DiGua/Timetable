@@ -9,7 +9,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class RetrofitUtils private constructor() {
     companion object {
-        private const val BASE_URL = "http://192.168.50.162"
+//        private const val BASE_URL = "http://192.168.50.162"
+        private const val BASE_URL = "http://39.106.212.166:8080"
 
         @JvmStatic
         val retrofit: Retrofit by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {

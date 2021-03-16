@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.potato.timetable.R
 import com.potato.timetable.base.ViewBindingFragment
 import com.potato.timetable.databinding.FragmentLoginBinding
 import com.potato.timetable.ext.afterTextChanged
@@ -121,9 +120,8 @@ class LoginFragment : ViewBindingFragment<FragmentLoginBinding>() {
     }
 
     private fun updateUiWithUser(model: LoggedInUserView) {
-        val welcome = getString(R.string.welcome)
         val displayName = model.displayName
-        Utils.showToast("$welcome $displayName");
+        Utils.showToast("欢迎回来 $displayName");
         activity?.finish()
     }
 

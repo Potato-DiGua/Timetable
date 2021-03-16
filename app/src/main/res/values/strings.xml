@@ -86,11 +86,9 @@
     <string name="prompt_account">账号</string>
     <string name="prompt_name">昵称</string>
     <string name="action_sign_in_short">登录</string>
-    <string name="welcome">"Welcome !"</string>
     <string name="invalid_name">昵称3–8个字符</string>
     <string name="invalid_account">无效账号！请使用邮箱或手机号</string>
     <string name="invalid_password">密码最少为6位</string>
-    <string name="login_failed">"Login failed"</string>
     <string name="menu_login">登录</string>
     <string name="menu_term_select">选择学期</string>
 </resources>
