@@ -24,7 +24,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="48dp"
             android:hint="@string/prompt_name"
-            android:inputType="textEmailAddress"
+            android:inputType="text"
+            android:maxLength="16"
             android:selectAllOnFocus="true" />
 
         <EditText
