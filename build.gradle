@@ -31,6 +31,8 @@ task clean(type: Delete) {
 }
 
 task upgradeVersion {
+    group 'help'
+    description '构建新版本'
     doLast {
         println("---自动升级版本号---\n")
         def versionProps = new Properties()
