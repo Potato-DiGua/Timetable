@@ -22,6 +22,7 @@
 
 -keep class com.potato.timetable.bean.* {*;}
 -keep class com.potato.timetable.model.* {*;}
+-keep class * implements androidx.viewbinding.ViewBinding {*;}
 
 
 ##---------------Begin: proguard configuration for Gson  ----------
@@ -54,6 +55,3 @@
 }
 
 ##---------------End: proguard configuration for Gson  ----------
-
--dontwarn org.jsoup.**
--keep class org.jsoup.** {*;}

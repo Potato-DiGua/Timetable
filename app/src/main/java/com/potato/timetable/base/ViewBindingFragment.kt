@@ -16,7 +16,7 @@ abstract class ViewBindingFragment<T : ViewBinding> : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        val entityClass = (this.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<T>
+        val entityClass = (this.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<*>
         val inflate = entityClass.getDeclaredMethod("inflate", LayoutInflater::class.java, ViewGroup::class.java, Boolean::class.java)
         val obj = inflate.invoke(null, layoutInflater, container, false)
         if (obj == null || obj !is ViewBinding) {

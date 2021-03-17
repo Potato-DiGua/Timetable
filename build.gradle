@@ -43,7 +43,7 @@ task upgradeVersion {
         if (oldVersionCode == null || oldVersionName == null ||
                 oldVersionCode.isEmpty() || oldVersionName.isEmpty()) {
             println("error:版本号不能为空")
-            return;
+            return
         }
         versionProps['versionCode'] = String.valueOf(versionProps['versionCode'].toInteger() + 1)
         String str = versionProps['versionName'].toString()
