@@ -21,6 +21,7 @@
 #-renamesourcefileattribute SourceFile
 
 -keep class com.potato.timetable.bean.* {*;}
+-keep class com.potato.timetable.model.* {*;}
 
 
 ##---------------Begin: proguard configuration for Gson  ----------
