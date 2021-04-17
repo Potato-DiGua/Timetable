@@ -267,10 +267,22 @@ object Utils {
      */
     @JvmStatic
     fun getFormatStringFromWeekOfTerm(weekOfTerm: Int): String {
+        if (!isWeekOfTermValid(weekOfTerm)) {
+            return "请选择周数"
+        }
         return getStringFromWeekOfTerm(weekOfTerm) +
                 " [" +
                 WEEK_OPTIONS[getWeekOptionFromWeekOfTerm(weekOfTerm)] +
                 "]"
+    }
+
+    /**
+     * @param weekOfTerm
+     * @return 是否有上课的周数
+     */
+    @JvmStatic
+    fun isWeekOfTermValid(weekOfTerm: Int): Boolean {
+        return ((1 shl Config.getMaxWeekNum()) - 1) and weekOfTerm != 0
     }
 
     /**

@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 
+import androidx.annotation.Keep;
+
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
@@ -218,6 +220,7 @@ public class CSUCollege implements College {
      "kcmc": "大学英语（..."
 
      */
+    @Keep
     private static class TimetableItem {
         /**
          * 第几节课
@@ -233,7 +236,9 @@ public class CSUCollege implements College {
          */
         @SerializedName("xq")
         private int DayOfWeek;
+        @SerializedName("title")
         private String title;
+        @SerializedName("kcmc")
         private String kcmc;
 
         public int getLesson() {

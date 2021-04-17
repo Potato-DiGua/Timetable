@@ -180,6 +180,10 @@ public class EditActivity extends AppCompatActivity {
      */
     private void saveCourse() {
         if (setCourseFromView()) {
+            if (!Utils.isWeekOfTermValid(mCourse.getWeekOfTerm())) {
+                Utils.showToast("请选择周数！");
+                return;
+            }
             if (mIndex == -1) {
                 MainActivity.sCourseList.add(getInsertIndex(), mCourse);
             } else {
