@@ -15,7 +15,7 @@
 
 ---
 ### 界面
-[![8shJ2R.md.png](https://s1.ax1x.com/2020/03/19/8shJ2R.md.png)](https://imgchr.com/i/8shJ2R "界面")
+<img src="https://s1.ax1x.com/2020/03/19/8shJ2R.md.png" width="40%" />
 
 ---
 ### 注意事项
