@@ -17,20 +17,29 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 public class CalendarReminderUtils {
-    private static final String CALENDER_URL = "content://com.android.calendar/calendars";
-    private static final String CALENDER_EVENT_URL = "content://com.android.calendar/events";
-    private static final String CALENDER_REMINDER_URL = "content://com.android.calendar/reminders";
+    private static final Uri CALENDER_URI = CalendarContract.Calendars.CONTENT_URI;
+    private static final Uri CALENDER_EVENT_URI = CalendarContract.Events.CONTENT_URI;
+    private static final Uri CALENDER_REMINDER_URI = CalendarContract.Reminders.CONTENT_URI;
 
     private static final String CALENDARS_NAME = "LightTimetable";
-    private static final String CALENDARS_ACCOUNT_NAME = "LightTimetable@test.com";
-    private static final String CALENDARS_ACCOUNT_TYPE = "com.android.LightTimetable";
-    private static final String CALENDARS_DISPLAY_NAME = "LightTimetable账户";
+    private static final String CALENDARS_ACCOUNT_NAME = "LightTimetable@potato.com";
+    private static final String CALENDARS_ACCOUNT_TYPE = "com.potato.timetable";
+    //    private static final String CALENDARS_ACCOUNT_TYPE = CalendarContract.ACCOUNT_TYPE_LOCAL;
+    private static final String CALENDARS_DISPLAY_NAME = "轻课程表";
 
     public static final String DESCRIPTION = "小轻课程表自动创建";
 
+    public static int deleteCalendarAccount(Context context, String accountName) {
+        return context.getContentResolver().
+                delete(CALENDER_URI,
+                        CalendarContract.Calendars.ACCOUNT_NAME + "=?",
+                        new String[]{accountName});
+    }
+
     /**
      * 检查是否已经添加了日历账户，如果没有添加先添加一个日历账户再查询
-     * 获取账户成功返回账户id，否则返回-1
+     *
+     * @return 获取账户成功返回账户id，否则返回-1
      */
     public static int checkAndAddCalendarAccount(Context context) {
         int oldId = checkCalendarAccount(context);
@@ -47,11 +56,16 @@ public class CalendarReminderUtils {
     }
 
     /**
-     * 检查是否存在现有账户，存在则返回账户id，否则返回-1
+     * 检查是否存在现有账户
+     *
+     * @return 存在则返回账户id，否则返回-1
      */
     private static int checkCalendarAccount(Context context) {
-        Cursor userCursor = context.getContentResolver().query(Uri.parse(CALENDER_URL), null, null, null, null);
-        try {
+        try (Cursor userCursor = context.getContentResolver().query(CALENDER_URI, null,
+                CalendarContract.Calendars.ACCOUNT_NAME + " = ? AND " +
+                        CalendarContract.Calendars.ACCOUNT_TYPE + " = ?",
+                new String[]{CALENDARS_ACCOUNT_NAME, CALENDARS_ACCOUNT_TYPE},
+                null)) {
             if (userCursor == null) { //查询返回空值
                 return -1;
             }
@@ -61,10 +75,6 @@ public class CalendarReminderUtils {
                 return userCursor.getInt(userCursor.getColumnIndex(CalendarContract.Calendars._ID));
             } else {
                 return -1;
-            }
-        } finally {
-            if (userCursor != null) {
-                userCursor.close();
             }
         }
     }
@@ -102,8 +112,7 @@ public class CalendarReminderUtils {
         value.put(CalendarContract.Calendars.OWNER_ACCOUNT, CALENDARS_ACCOUNT_NAME);
         value.put(CalendarContract.Calendars.CAN_ORGANIZER_RESPOND, 0);
 
-        Uri calendarUri = Uri.parse(CALENDER_URL);
-        calendarUri = calendarUri.buildUpon()
+        Uri calendarUri = CALENDER_URI.buildUpon()
                 .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
                 .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, CALENDARS_ACCOUNT_NAME)
                 .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, CALENDARS_ACCOUNT_TYPE)
@@ -114,7 +123,9 @@ public class CalendarReminderUtils {
     }
 
     /**
-     * @param context
+     * 添加日历事件
+     *
+     * @param context        context
      * @param title          日程内容
      * @param description    日程备注
      * @param location       地点
@@ -151,12 +162,14 @@ public class CalendarReminderUtils {
         event.put(CalendarContract.Events.DTEND, end);
         event.put(CalendarContract.Events.HAS_ALARM, 1);//设置有闹钟提醒
         event.put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().getID());//这个是时区，必须有
-        return context.getContentResolver().insert(Uri.parse(CALENDER_EVENT_URL), event); //添加事件
+        return context.getContentResolver().insert(CALENDER_EVENT_URI, event); //添加事件
 
     }
 
     /**
-     * @param context
+     * 添加提醒
+     *
+     * @param context        context
      * @param event          日程事件uri
      * @param previousMinute 提前previousMinute分钟提醒
      * @return
@@ -169,12 +182,14 @@ public class CalendarReminderUtils {
         values.put(CalendarContract.Reminders.EVENT_ID, ContentUris.parseId(event));
         values.put(CalendarContract.Reminders.MINUTES, previousMinute);// 提前previousMinute分钟提醒
         values.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
-        return context.getContentResolver().insert(Uri.parse(CALENDER_REMINDER_URL), values);
+        return context.getContentResolver().insert(CALENDER_REMINDER_URI, values);
 
     }
 
     /**
-     * @param context
+     * 查找日历事件
+     *
+     * @param context     context
      * @param description 备注
      * @param start       事件开始时间
      * @param end         事件结束时间
@@ -185,7 +200,7 @@ public class CalendarReminderUtils {
             return -1;
         }
         Cursor eventCursor = context.getContentResolver()
-                .query(Uri.parse(CALENDER_EVENT_URL), new String[]{CalendarContract.Events._ID},
+                .query(CALENDER_EVENT_URI, new String[]{CalendarContract.Events._ID},
                         CalendarContract.Events.DESCRIPTION + "=? and " +
                                 CalendarContract.Events.DTSTART + ">? and " +
                                 CalendarContract.Events.DTEND + "<?",
@@ -207,13 +222,15 @@ public class CalendarReminderUtils {
     }
 
     /**
-     * @param context
+     * 删除日历事件
+     *
+     * @param context     context
      * @param description 日程备注
-     * @return
+     * @return 是否删除成功
      */
     public static boolean deleteCalendarEvent(Context context, String description) {
         int rows = context.getContentResolver().
-                delete(Uri.parse(CALENDER_EVENT_URL),
+                delete(CALENDER_EVENT_URI,
                         CalendarContract.Events.DESCRIPTION + "=?",
                         new String[]{description});
         return rows != -1; //事件删除失败
@@ -222,8 +239,8 @@ public class CalendarReminderUtils {
     /**
      * 检查是否具有日程添加权限
      *
-     * @param activity
-     * @return
+     * @param activity activity
+     * @return 是否具有日程添加权限
      */
     public static boolean checkPermission(Activity activity) {
         try {
