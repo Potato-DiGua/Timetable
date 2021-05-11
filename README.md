@@ -1,3 +1,4 @@
+![下载](https://img.shields.io/github/downloads/Potato-DiGua/Timetable/total) ![Release](https://img.shields.io/github/v/release/Potato-DiGua/Timetable)
 # LightTimetable
 仿超级课程表/Android课程表/简洁
 
